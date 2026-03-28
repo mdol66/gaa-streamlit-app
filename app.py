@@ -128,20 +128,20 @@ def build_pitch_shapes() -> list[dict]:
         for x, y in pts[1:]:
             path += f" L {x},{y}"
         return path
-
+    
     r13 = sy(13)
     r40 = sy(40)
-
+    
     # 13m semi-circles centred on 20m lines, visible away from the goals.
     shapes.append(dict(type="path", path=circle_arc_path(cx, y20, r13, 0, 180), line=line))
     shapes.append(dict(type="path", path=circle_arc_path(cx, y100_20, r13, 180, 360), line=line))
-
+    
     # 40m arcs centred on endlines, visible only beyond the 20m lines.
     theta = math.degrees(math.asin(20.0 / 40.0))
     shapes.append(dict(type="path", path=circle_arc_path(cx, 0.0, r40, theta, 180 - theta), line=line))
     shapes.append(dict(type="path", path=circle_arc_path(cx, 100.0, r40, 180 + theta, 360 - theta), line=line))
-
-return shapes
+    
+    return shapes
 
 
 def add_pitch_labels(fig: go.Figure) -> None:
