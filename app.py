@@ -47,6 +47,17 @@ def build_pitch_shapes() -> list[dict]:
 
     line = dict(color="#E8E8E8", width=2)
 
+    def arc_path(x0: float, x1: float, y_flat: float, y_deep: float, side: str) -> str:
+        """
+        Build a semi-ellipse as an SVG path for Plotly.
+        side='top' gives a downward-bulging arc.
+        side='bottom' gives an upward-bulging arc.
+        """
+        rx = (x1 - x0) / 2.0
+        ry = abs(y_deep - y_flat)
+        sweep = 1 if side == "top" else 0
+        return f"M {x0},{y_flat} A {rx},{ry} 0 0,{sweep} {x1},{y_flat}"
+
     # Outer boundary
     shapes.append(dict(type="rect", x0=0, y0=0, x1=100, y1=100, line=line))
 
@@ -70,14 +81,14 @@ def build_pitch_shapes() -> list[dict]:
     shapes.append(dict(type="line", x0=46.3, y0=100, x1=46.3, y1=99.2, line=line))
     shapes.append(dict(type="line", x0=53.7, y0=100, x1=53.7, y1=99.2, line=line))
 
-    # Arcs are approximated with circles clipped by the plotting area.
-    # Top D / arc
-    shapes.append(dict(type="circle", x0=35.5, y0=12.2, x1=64.5, y1=28.0, line=line))
-    shapes.append(dict(type="circle", x0=11.5, y0=12.8, x1=88.5, y1=36.8, line=line))
+    # Proper semi-circular / semi-elliptical arcs
+    # Top scoring arc and top 40m arc
+    shapes.append(dict(type="path", path=arc_path(34.5, 65.5, 14.0, 21.5, "top"), line=line))
+    shapes.append(dict(type="path", path=arc_path(11.5, 88.5, 14.8, 27.2, "top"), line=line))
 
-    # Bottom D / arc
-    shapes.append(dict(type="circle", x0=35.5, y0=72.0, x1=64.5, y1=87.8, line=line))
-    shapes.append(dict(type="circle", x0=11.5, y0=63.2, x1=88.5, y1=87.2, line=line))
+    # Bottom scoring arc and bottom 40m arc
+    shapes.append(dict(type="path", path=arc_path(34.5, 65.5, 85.8, 78.3, "bottom"), line=line))
+    shapes.append(dict(type="path", path=arc_path(11.5, 88.5, 85.2, 72.8, "bottom"), line=line))
 
     return shapes
 
@@ -85,7 +96,7 @@ def build_pitch_shapes() -> list[dict]:
 def add_pitch_labels(fig: go.Figure) -> None:
     fig.add_annotation(x=50, y=14.7, text="Ballintubber GOAL", showarrow=False,
                        font=dict(size=28, color="rgba(255,255,255,0.42)"))
-    fig.add_annotation(x=50, y=85.3, text="Opposition GOAL", showarrow=False,
+    fig.add_annotation(x=50, y=85.3, text="Parke GOAL", showarrow=False,
                        font=dict(size=28, color="rgba(0,0,0,0.42)"))
 
 
@@ -238,7 +249,7 @@ with st.expander("Expected coordinates"):
     st.write(
         """
         - `x_posn_%`: 0 at the left sideline, 100 at the right sideline
-        - `y_posn_%`: 0 at the Ballintubber goal end at the top of the image, 100 at the Opposition GOAL end at the bottom
+        - `y_posn_%`: 0 at the Ballintubber goal end at the top of the image, 100 at the Parke goal end at the bottom
         - This app keeps the same screen-style coordinate system as your Android output
         """
     )
@@ -365,3 +376,4 @@ st.write(
     - add shot-distance and zone summaries
     """
 )
+
