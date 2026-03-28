@@ -31,17 +31,21 @@ def build_pitch_shapes() -> list[dict]:
     line = dict(color="#E8E8E8", width=2)
     dashed = dict(color="#E8E8E8", width=2, dash="dash")
 
-    # Pitch scale: 145m long x 90m wide mapped to 0..100 screen coordinates
-    pitch_len = 145.0
-    pitch_wid = 90.0
+    # The original app image has margins left/right of the pitch.
+    x_left = 4.0
+    x_right = 96.0
 
-    def sx(m: float) -> float:
-        return (m / pitch_wid) * 100.0
+    # Real pitch dimensions
+    pitch_len = 145.0
+    pitch_wid = 80.0
+
+    def sw(m: float) -> float:
+        return (m / pitch_wid) * (x_right - x_left)
 
     def sy(m: float) -> float:
         return (m / pitch_len) * 100.0
 
-    # Key horizontal lines from each endline
+    # Horizontal lines from each endline
     y13 = sy(13)
     y20 = sy(20)
     y45 = sy(45)
@@ -50,19 +54,20 @@ def build_pitch_shapes() -> list[dict]:
     y100_20 = 100.0 - y20
     y100_45 = 100.0 - y45
 
-    # Rectangles and goal widths
-    large_w = sx(19.0)
-    small_w = sx(14.0)
-    goal_w = sx(6.5)
+    # Widths
+    large_w = sw(19.0)   # keep these outer vertical lines 19m apart
+    small_w = sw(14.0)
+    goal_w = sw(6.5)
     cx = 50.0
 
-    # Outer boundary
-    shapes.append(dict(type="rect", x0=0, y0=0, x1=100, y1=100, line=line))
+    # Outer boundary of the pitch
+    shapes.append(dict(type="rect", x0=x_left, y0=0, x1=x_right, y1=100, line=line))
 
     # Horizontal lines
     for y in [y13, y20, y45, y100_45, y100_20, y100_13]:
-        shapes.append(dict(type="line", x0=0, y0=y, x1=100, y1=y, line=line))
-    shapes.append(dict(type="line", x0=0, y0=y50, x1=100, y1=y50, line=dashed))
+        shapes.append(dict(type="line", x0=x_left, y0=y, x1=x_right, y1=y, line=line))
+
+    shapes.append(dict(type="line", x0=x_left, y0=y50, x1=x_right, y1=y50, line=dashed))
 
     # Top rectangles + goal
     shapes.append(dict(type="rect", x0=cx - large_w / 2, y0=0, x1=cx + large_w / 2, y1=y13, line=line))
@@ -76,39 +81,60 @@ def build_pitch_shapes() -> list[dict]:
     shapes.append(dict(type="line", x0=cx - goal_w / 2, y0=100, x1=cx - goal_w / 2, y1=100 - sy(1.0), line=line))
     shapes.append(dict(type="line", x0=cx + goal_w / 2, y0=100, x1=cx + goal_w / 2, y1=100 - sy(1.0), line=line))
 
-    # Arc helper
-    def circle_arc_path(cx0: float, cy0: float, r: float, start_deg: float, end_deg: float, steps: int = 120) -> str:
+    def ellipse_arc_path(
+        cx0: float,
+        cy0: float,
+        rx: float,
+        ry: float,
+        start_deg: float,
+        end_deg: float,
+        steps: int = 120,
+    ) -> str:
         pts = []
         for i in range(steps + 1):
             t = math.radians(start_deg + (end_deg - start_deg) * i / steps)
-            x = cx0 + r * math.cos(t)
-            y = cy0 + r * math.sin(t)
+            x = cx0 + rx * math.cos(t)
+            y = cy0 + ry * math.sin(t)
             pts.append((x, y))
+
         path = f"M {pts[0][0]},{pts[0][1]}"
         for x, y in pts[1:]:
             path += f" L {x},{y}"
         return path
 
-    r13 = sy(13)
-    r40 = sy(40)
+    # 13m semi-circle from 20m line
+    rx13 = sw(13.0)
+    ry13 = sy(13.0)
 
-    # 13m semi-circles centred on 20m lines, visible away from goals
-    shapes.append(dict(type="path", path=circle_arc_path(cx, y20, r13, 0, 180), line=line))
-    shapes.append(dict(type="path", path=circle_arc_path(cx, y100_20, r13, 180, 360), line=line))
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, y20, rx13, ry13, 0, 180), line=line))
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, y100_20, rx13, ry13, 180, 360), line=line))
 
-    # 40m arcs centred on the endlines, visible only beyond the 20m lines
+    # 40m arcs centred on endlines, clipped beyond 20m line
+    rx40 = sw(40.0)
+    ry40 = sy(40.0)
     theta = math.degrees(math.asin(20.0 / 40.0))
-    shapes.append(dict(type="path", path=circle_arc_path(cx, 0.0, r40, theta, 180 - theta), line=line))
-    shapes.append(dict(type="path", path=circle_arc_path(cx, 100.0, r40, 180 + theta, 360 - theta), line=line))
+
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 0.0, rx40, ry40, theta, 180 - theta), line=line))
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 100.0, rx40, ry40, 180 + theta, 360 - theta), line=line))
 
     return shapes
 
 
 def add_pitch_labels(fig: go.Figure) -> None:
-    fig.add_annotation(x=50, y=15, text="Ballintubber GOAL", showarrow=False,
-                       font=dict(size=24, color="rgba(255,255,255,0.42)"))
-    fig.add_annotation(x=50, y=85, text="Opposition GOAL", showarrow=False,
-                       font=dict(size=24, color="rgba(0,0,0,0.42)"))
+    fig.add_annotation(
+        x=50,
+        y=15,
+        text="Ballintubber GOAL",
+        showarrow=False,
+        font=dict(size=24, color="rgba(255,255,255,0.42)"),
+    )
+    fig.add_annotation(
+        x=50,
+        y=85,
+        text="Opposition GOAL",
+        showarrow=False,
+        font=dict(size=24, color="rgba(0,0,0,0.42)"),
+    )
 
 
 def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
@@ -127,8 +153,8 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
             xanchor="right",
             x=-0.05,
             bgcolor="rgba(255,255,255,0.0)",
-            font=dict(size=14)
-        )
+            font=dict(size=14),
+        ),
     )
     fig.update_xaxes(range=[0, 100], visible=False, fixedrange=True)
     fig.update_yaxes(range=[100, 0], visible=False, fixedrange=True, scaleanchor="x", scaleratio=1)
@@ -176,7 +202,14 @@ def event_palette() -> dict[str, str]:
     }
 
 
-def add_numbered_markers(fig: go.Figure, df: pd.DataFrame, x_col: str, y_col: str, label_col: str, category_col: str) -> None:
+def add_numbered_markers(
+    fig: go.Figure,
+    df: pd.DataFrame,
+    x_col: str,
+    y_col: str,
+    label_col: str,
+    category_col: str,
+) -> None:
     palette = event_palette()
     df = df.copy()
     df[category_col] = df[category_col].map(normalize_outcome)
@@ -292,7 +325,16 @@ if outcome_choice != "All":
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce")
 plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce")
 plot_df = plot_df.dropna(subset=[cols["x"], cols["y"]])
-plot_df = plot_df[(plot_df[cols["x"]] >= 0) & (plot_df[cols["x"]] <= 100) & (plot_df[cols["y"]] >= 0) & (plot_df[cols["y"]] <= 100)]
+plot_df = plot_df[
+    (plot_df[cols["x"]] >= 0) & (plot_df[cols["x"]] <= 100) &
+    (plot_df[cols["y"]] >= 0) & (plot_df[cols["y"]] <= 100)
+]
+
+# Map x positions inside the sidelines rather than edge-to-edge
+x_left = 4.0
+x_right = 96.0
+plot_df["__x_plot__"] = x_left + (plot_df[cols["x"]] / 100.0) * (x_right - x_left)
+plot_df["__y_plot__"] = plot_df[cols["y"]]
 
 c1, c2 = st.columns(2)
 c1.metric("Raw events", len(df))
@@ -300,7 +342,7 @@ c2.metric("Plotted events", len(plot_df))
 
 fig = make_pitch_figure()
 if len(plot_df):
-    add_numbered_markers(fig, plot_df, cols["x"], cols["y"], "__plot_number__", cols["outcome"])
+    add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"])
 
 st.plotly_chart(fig, use_container_width=True)
 
