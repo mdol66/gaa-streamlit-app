@@ -210,6 +210,8 @@ def infer_columns(df: pd.DataFrame) -> dict[str, Optional[str]]:
         "number": first_existing(df, [["event_no"], ["event_number"], ["number"], ["id"]], required=False),
         "half": first_existing(df, [["half"], ["period"]], required=False),
         "match": first_existing(df, [["match"], ["match_name"], ["fixture"]], required=False),
+        "stat1": first_existing(df, [["Stat_1"], ["stat_1"], ["stat1"]], required=False),
+        "stat2": first_existing(df, [["Stat_2"], ["stat_2"], ["stat2"]], required=False),
     }
 
 
@@ -241,7 +243,10 @@ cols = infer_columns(df)
 plot_df = df.copy()
 plot_df["__plot_number__"] = build_display_number(plot_df, cols["number"])
 
-if cols["outcome"] is None and cols["event"] is not None:
+if cols["outcome"] is None and cols["stat1"] is not None:
+    plot_df["__plot_category__"] = plot_df[cols["stat1"]].astype(str)
+    cols["outcome"] = "__plot_category__"
+elif cols["outcome"] is None and cols["event"] is not None:
     plot_df["__plot_category__"] = plot_df[cols["event"]].astype(str)
     cols["outcome"] = "__plot_category__"
 elif cols["outcome"] is None:
@@ -300,7 +305,7 @@ if len(plot_df):
 st.plotly_chart(fig, use_container_width=True)
 
 st.subheader("Filtered events being plotted")
-show_cols = [c for c in [cols.get("number"), cols.get("team"), cols.get("player"), cols.get("event"), cols.get("outcome"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
+show_cols = [c for c in [cols.get("number"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
 if "__plot_number__" not in show_cols:
     show_cols = ["__plot_number__"] + show_cols
 st.dataframe(plot_df[show_cols], use_container_width=True)
