@@ -322,13 +322,21 @@ if cols["half"]:
 
 mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts"], index=0)
 
-if cols["event"]:
-    event_series = plot_df[cols["event"]].astype(str).str.lower()
+if cols["stat1"]:
+    stat_series = plot_df[cols["stat1"]].astype(str).str.lower()
+
     if mode == "Shots":
-        shot_mask = event_series.str.contains("shot|score|point|goal|wide|short|saved|post", na=False)
+        shot_mask = stat_series.str.contains(
+            "goal|point|2 point|wide|short|post|saved",
+            na=False
+        )
         plot_df = plot_df[shot_mask]
+
     elif mode == "Kickouts":
-        ko_mask = event_series.str.contains("kick ?out|puck ?out", na=False)
+        ko_mask = stat_series.str.contains(
+            "kick out|puck out",
+            na=False
+        )
         plot_df = plot_df[ko_mask]
 
 outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outcome).astype(str).unique().tolist())
