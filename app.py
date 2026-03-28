@@ -224,8 +224,8 @@ def add_numbered_markers(
                 name=str(category),
                 text=group[label_col].astype(str),
                 textposition="middle center",
-                textfont=dict(color="white", size=13, family="Arial Black"),
-                marker=dict(size=26, color=color, line=dict(color="#E8E8E8", width=2)),
+                textfont=dict(color="white", size=10, family="Arial Black"),
+                marker=dict(size=20, color=color, line=dict(color="#E8E8E8", width=2)),
                 customdata=group[[label_col]].values,
                 hovertemplate="#%{customdata[0]}<br>x=%{x:.1f}<br>y=%{y:.1f}<extra></extra>",
             )
