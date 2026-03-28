@@ -121,13 +121,14 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
         margin=dict(l=8, r=8, t=50, b=8),
         height=950,
         legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=0.01,
-            xanchor="center",
-            x=0.5,
+            orientation="v",
+            yanchor="middle",
+            y=0.5,
+            xanchor="right",
+            x=-0.05,
             bgcolor="rgba(255,255,255,0.0)",
             font=dict(size=14),
+        ),
         ),
     )
     fig.update_xaxes(range=[0, 100], visible=False, fixedrange=True)
