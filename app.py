@@ -51,7 +51,7 @@ def build_pitch_shapes() -> list[dict]:
     y100_45 = 100.0 - y45
 
     # Rectangles and goal widths
-    large_w = sx(40.0)
+    large_w = sx(19.0)
     small_w = sx(14.0)
     goal_w = sx(6.5)
     cx = 50.0
