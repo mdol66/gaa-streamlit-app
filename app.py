@@ -51,7 +51,7 @@ def build_pitch_shapes() -> list[dict]:
     y100_45 = 100.0 - y45
 
     # Rectangles and goal widths
-    large_w = sx(19.0)
+    large_w = sx(40.0)
     small_w = sx(14.0)
     goal_w = sx(6.5)
     cx = 50.0
@@ -191,9 +191,10 @@ def add_numbered_markers(fig: go.Figure, df: pd.DataFrame, x_col: str, y_col: st
                 name=str(category),
                 text=group[label_col].astype(str),
                 textposition="middle center",
-                textfont=dict(color="black", size=13, family="Arial Black"),
+                textfont=dict(color="white", size=13, family="Arial Black"),
                 marker=dict(size=26, color=color, line=dict(color="#E8E8E8", width=2)),
-                hovertemplate="#%{text}<br>x=%{x:.1f}<br>y=%{y:.1f}<extra></extra>",
+                customdata=group[[label_col]].values,
+                hovertemplate="#%{customdata[0]}<br>x=%{x:.1f}<br>y=%{y:.1f}<extra></extra>",
             )
         )
 
@@ -232,6 +233,9 @@ try:
 except UnicodeDecodeError:
     uploaded.seek(0)
     df = pd.read_csv(uploaded, encoding="latin1")
+
+st.subheader("Raw data preview")
+st.dataframe(df.head(20), use_container_width=True)
 
 cols = infer_columns(df)
 plot_df = df.copy()
@@ -285,8 +289,18 @@ plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce")
 plot_df = plot_df.dropna(subset=[cols["x"], cols["y"]])
 plot_df = plot_df[(plot_df[cols["x"]] >= 0) & (plot_df[cols["x"]] <= 100) & (plot_df[cols["y"]] >= 0) & (plot_df[cols["y"]] <= 100)]
 
+c1, c2 = st.columns(2)
+c1.metric("Raw events", len(df))
+c2.metric("Plotted events", len(plot_df))
+
 fig = make_pitch_figure()
 if len(plot_df):
     add_numbered_markers(fig, plot_df, cols["x"], cols["y"], "__plot_number__", cols["outcome"])
 
 st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("Filtered events being plotted")
+show_cols = [c for c in [cols.get("number"), cols.get("team"), cols.get("player"), cols.get("event"), cols.get("outcome"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
+if "__plot_number__" not in show_cols:
+    show_cols = ["__plot_number__"] + show_cols
+st.dataframe(plot_df[show_cols], use_container_width=True)
