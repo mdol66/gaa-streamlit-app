@@ -243,6 +243,7 @@ def infer_columns(df: pd.DataFrame) -> dict[str, Optional[str]]:
         "number": first_existing(df, [["event_no"], ["event_number"], ["number"], ["id"]], required=False),
         "half": first_existing(df, [["half"], ["period"]], required=False),
         "match": first_existing(df, [["match"], ["match_name"], ["fixture"]], required=False),
+        "match_no": first_existing(df, [["match_no"], ["match_number"], ["matchnum"], ["game_no"], ["game_number"]], required=False),
         "stat1": first_existing(df, [["Stat_1"], ["stat_1"], ["stat1"]], required=False),
         "stat2": first_existing(df, [["Stat_2"], ["stat_2"], ["stat2"]], required=False),
     }
@@ -253,7 +254,13 @@ def build_display_number(df: pd.DataFrame, number_col: Optional[str]) -> pd.Seri
         return df[number_col].astype(str)
     return pd.Series(range(1, len(df) + 1), index=df.index).astype(str)
 
-
+def clean_player_name(value: str) -> str:
+    text = str(value).strip()
+    parts = text.split()
+    if len(parts) >= 2 and parts[0].isdigit():
+        return " ".join(parts[1:])
+    return text
+    
 st.title("Gaelic Football Pitch Maps")
 st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -288,6 +295,12 @@ elif cols["outcome"] is None:
 
 st.sidebar.header("Filters")
 
+if cols["match_no"]:
+    match_nos = ["All"] + sorted(plot_df[cols["match_no"]].dropna().astype(str).unique().tolist())
+    match_no_choice = st.sidebar.selectbox("Match Number", match_nos)
+    if match_no_choice != "All":
+        plot_df = plot_df[plot_df[cols["match_no"]].astype(str) == match_no_choice]
+
 if cols["team"]:
     teams = ["All"] + sorted(plot_df[cols["team"]].dropna().astype(str).unique().tolist())
     team_choice = st.sidebar.selectbox("Team", teams)
@@ -295,10 +308,11 @@ if cols["team"]:
         plot_df = plot_df[plot_df[cols["team"]].astype(str) == team_choice]
 
 if cols["player"]:
-    players = ["All"] + sorted(plot_df[cols["player"]].dropna().astype(str).unique().tolist())
+    plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
+    players = ["All"] + sorted(plot_df["__player_clean__"].dropna().unique().tolist())
     player_choice = st.sidebar.selectbox("Player", players)
     if player_choice != "All":
-        plot_df = plot_df[plot_df[cols["player"]].astype(str) == player_choice]
+        plot_df = plot_df[plot_df["__player_clean__"] == player_choice]
 
 if cols["half"]:
     halves = ["All"] + sorted(plot_df[cols["half"]].dropna().astype(str).unique().tolist())
@@ -347,7 +361,7 @@ if len(plot_df):
 st.plotly_chart(fig, use_container_width=True)
 
 st.subheader("Filtered events being plotted")
-show_cols = [c for c in [cols.get("number"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
+show_cols = [c for c in [cols.get("number"), cols.get("match_no"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
 if "__plot_number__" not in show_cols:
     show_cols = ["__plot_number__"] + show_cols
 st.dataframe(plot_df[show_cols], use_container_width=True)
