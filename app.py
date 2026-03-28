@@ -118,7 +118,7 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
         shapes=build_pitch_shapes(),
         plot_bgcolor="#4A8242",
         paper_bgcolor="#4A8242",
-        margin=dict(l=8, r=8, t=50, b=8),
+        margin=dict(l=140, r=8, t=50, b=8),
         height=950,
         legend=dict(
             orientation="v",
@@ -127,9 +127,8 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
             xanchor="right",
             x=-0.05,
             bgcolor="rgba(255,255,255,0.0)",
-            font=dict(size=14),
-        ),
-        ),
+            font=dict(size=14)
+        )
     )
     fig.update_xaxes(range=[0, 100], visible=False, fixedrange=True)
     fig.update_yaxes(range=[100, 0], visible=False, fixedrange=True, scaleanchor="x", scaleratio=1)
