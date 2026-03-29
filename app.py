@@ -146,6 +146,7 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
         paper_bgcolor="#4A8242",
         margin=dict(l=20, r=8, t=40, b=8),
         height=950,
+        width=900,,
 showlegend=False,
     )
     fig.update_xaxes(range=[3.5, 96.5], visible=False, fixedrange=True)
@@ -412,7 +413,7 @@ with col1:
         )
 
 with col2:
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=False)
 
 st.subheader("Event category counts")
 
