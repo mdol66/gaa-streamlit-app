@@ -148,7 +148,7 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
         height=950,
 showlegend=False,
     )
-    fig.update_xaxes(range=[0, 100], visible=False, fixedrange=True)
+    fig.update_xaxes(range=[2, 98], visible=False, fixedrange=True)
     fig.update_yaxes(range=[100, 0], visible=False, fixedrange=True, scaleanchor="x", scaleratio=1)
     add_pitch_labels(fig)
     return fig
