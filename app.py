@@ -321,19 +321,34 @@ if cols["half"]:
         plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
 
 mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts"], index=0)
+shot_type_filter = "All"
+if mode == "Shots" and cols["stat1"] and cols["stat2"]:
+    shot_type_filter = st.sidebar.selectbox(
+        "Shot Type",
+        ["All", "From Play", "From Placed"]
+    )
 
 if cols["stat1"]:
-    stat_series = plot_df[cols["stat1"]].astype(str).str.lower()
+    stat1_series = plot_df[cols["stat1"]].astype(str).str.lower()
 
     if mode == "Shots":
-        shot_mask = stat_series.str.contains(
+        shot_mask = stat1_series.str.contains(
             "goal|point|2 point|wide|short|post|saved",
             na=False
         )
         plot_df = plot_df[shot_mask]
 
+        if cols["stat2"]:
+            stat2_filled = plot_df[cols["stat2"]].fillna("").astype(str).str.strip() != ""
+
+            if shot_type_filter == "From Play":
+                plot_df = plot_df[~stat2_filled]
+
+            elif shot_type_filter == "From Placed":
+                plot_df = plot_df[stat2_filled]
+
     elif mode == "Kickouts":
-        ko_mask = stat_series.str.contains(
+        ko_mask = stat1_series.str.contains(
             "kick out|puck out",
             na=False
         )
