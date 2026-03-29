@@ -377,12 +377,39 @@ col1, col2 = st.columns([1, 6])
 
 with col1:
     st.markdown("### Legend")
-    st.markdown("🟢 Goal")
-    st.markdown("🟡 Point")
-    st.markdown("🔴 Wide")
-    st.markdown("🟣 Short")
-    st.markdown("⚫ Saved")
-    st.markdown("🟤 2 Pointer")
+
+    legend_counts = (
+        plot_df[cols["outcome"]]
+        .map(normalize_outcome)
+        .value_counts()
+        .reset_index()
+    )
+    legend_counts.columns = ["category", "count"]
+
+    palette = event_palette()
+
+    for _, row in legend_counts.iterrows():
+        cat = row["category"]
+        cnt = row["count"]
+        color = palette.get(cat, "#000000")
+
+        st.markdown(
+            f"""
+            <div style="display:flex; align-items:center; margin-bottom:6px;">
+                <div style="
+                    width:14px;
+                    height:14px;
+                    border-radius:50%;
+                    background:{color};
+                    border:2px solid #E8E8E8;
+                    margin-right:8px;
+                    flex-shrink:0;
+                "></div>
+                <div style="font-size:14px;">{cat} ({cnt})</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 with col2:
     st.plotly_chart(fig, use_container_width=True)
