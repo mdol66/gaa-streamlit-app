@@ -146,15 +146,7 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
         paper_bgcolor="#4A8242",
         margin=dict(l=20, r=8, t=40, b=8),
         height=950,
-        legend=dict(
-            orientation="v",
-            yanchor="middle",
-            y=0.55,
-            xanchor="left",
-            x=0.005,
-            bgcolor="rgba(255,255,255,0.0)",
-            font=dict(size=14)
-        )
+showlegend=False,
     )
     fig.update_xaxes(range=[0, 100], visible=False, fixedrange=True)
     fig.update_yaxes(range=[100, 0], visible=False, fixedrange=True, scaleanchor="x", scaleratio=1)
@@ -381,7 +373,19 @@ fig = make_pitch_figure()
 if len(plot_df):
     add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"])
 
-st.plotly_chart(fig, use_container_width=True)
+col1, col2 = st.columns([1, 6])
+
+with col1:
+    st.markdown("### Legend")
+    st.markdown("🟢 Goal")
+    st.markdown("🟡 Point")
+    st.markdown("🔴 Wide")
+    st.markdown("🟣 Short")
+    st.markdown("⚫ Saved")
+    st.markdown("🟤 2 Pointer")
+
+with col2:
+    st.plotly_chart(fig, use_container_width=True)
 
 st.subheader("Event category counts")
 
