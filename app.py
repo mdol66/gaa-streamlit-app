@@ -144,14 +144,14 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
         shapes=build_pitch_shapes(),
         plot_bgcolor="#4A8242",
         paper_bgcolor="#4A8242",
-        margin=dict(l=60, r=8, t=40, b=8),
+        margin=dict(l=20, r=8, t=40, b=8),
         height=950,
         legend=dict(
             orientation="v",
             yanchor="middle",
             y=0.55,
-            xanchor="right",
-            x=-0.01,
+            xanchor="left",
+            x=0.005,
             bgcolor="rgba(255,255,255,0.0)",
             font=dict(size=14)
         )
