@@ -172,7 +172,7 @@ def normalize_outcome(value):
     if "post" in v:
         return "off posts"
     if "45" in v or "65" in v:
-        return "out for 45/65"
+        return "out for 45"
     if "save" in v or "saved" in v:
         return "saved"
     if "short" in v:
@@ -192,7 +192,7 @@ def event_palette() -> dict[str, str]:
         "2 pointer": "#A39A00",
         "wide": "#FF3B30",
         "off posts": "#A8A8A8",
-        "out for 45/65": "#20D5E8",
+        "out for 45": "#20D5E8",
         "saved": "#1886F7",
         "short": "#E85BF7",
         "won": "#15FF00",
