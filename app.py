@@ -289,10 +289,10 @@ elif cols["outcome"] is None:
 st.sidebar.header("Filters")
 
 if cols["match_no"]:
-    match_nos = ["All"] + sorted(plot_df[cols["match_no"]].dropna().astype(str).unique().tolist())
-    match_no_choice = st.sidebar.selectbox("Match Number", match_nos)
-    if match_no_choice != "All":
-        plot_df = plot_df[plot_df[cols["match_no"]].astype(str) == match_no_choice]
+    match_nos = sorted(plot_df[cols["match_no"]].dropna().astype(str).unique().tolist())
+    match_no_choices = st.sidebar.multiselect("Match Number", match_nos)
+    if match_no_choices:
+        plot_df = plot_df[plot_df[cols["match_no"]].astype(str).isin(match_no_choices)]
 
 if cols["team"]:
     teams = sorted(plot_df[cols["team"]].dropna().astype(str).unique().tolist())
