@@ -295,17 +295,17 @@ if cols["match_no"]:
         plot_df = plot_df[plot_df[cols["match_no"]].astype(str) == match_no_choice]
 
 if cols["team"]:
-    teams = ["All"] + sorted(plot_df[cols["team"]].dropna().astype(str).unique().tolist())
-    team_choice = st.sidebar.selectbox("Team", teams)
-    if team_choice != "All":
-        plot_df = plot_df[plot_df[cols["team"]].astype(str) == team_choice]
+    teams = sorted(plot_df[cols["team"]].dropna().astype(str).unique().tolist())
+    team_choices = st.sidebar.multiselect("Team", teams)
+    if team_choices:
+        plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
 
 if cols["player"]:
     plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
-    players = ["All"] + sorted(plot_df["__player_clean__"].dropna().unique().tolist())
-    player_choice = st.sidebar.selectbox("Player", players)
-    if player_choice != "All":
-        plot_df = plot_df[plot_df["__player_clean__"] == player_choice]
+    players = sorted(plot_df["__player_clean__"].dropna().unique().tolist())
+    player_choices = st.sidebar.multiselect("Player", players)
+    if player_choices:
+        plot_df = plot_df[plot_df["__player_clean__"].isin(player_choices)]
 
 if cols["half"]:
     halves = ["All"] + sorted(plot_df[cols["half"]].dropna().astype(str).unique().tolist())
