@@ -157,7 +157,7 @@ showlegend=False,
 
 def normalize_outcome(value):
     if pd.isna(value) or str(value).strip().lower() in ["", "nan", "none"]:
-    return None
+        return None
 
     v = str(value).strip().lower()
 
