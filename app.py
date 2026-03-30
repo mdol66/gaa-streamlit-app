@@ -435,7 +435,7 @@ count_df = (
     .reset_index(name="count")
 )
 
-st.dataframe(count_df, use_container_width=true)
+st.dataframe(count_df, use_container_width=True)
 
 st.subheader("Other Match Events (Non-Shots / Non-Kickouts)")
 
