@@ -357,12 +357,17 @@ outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
 if outcome_choice != "All":
     plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 
-plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce")
-plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce")
-plot_df = plot_df.dropna(subset=[cols["x"], cols["y"]])
+plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
+plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce").fillna(-1)
 plot_df = plot_df[
-    (plot_df[cols["x"]] >= 0) & (plot_df[cols["x"]] <= 100) &
-    (plot_df[cols["y"]] >= 0) & (plot_df[cols["y"]] <= 100)
+    (
+        (plot_df[cols["x"]] >= 0) & (plot_df[cols["x"]] <= 100) &
+        (plot_df[cols["y"]] >= 0) & (plot_df[cols["y"]] <= 100)
+    )
+    |
+    (
+        (plot_df[cols["x"]] == -1) & (plot_df[cols["y"]] == -1)
+    )
 ]
 
 # Map x positions inside the sidelines rather than edge-to-edge
