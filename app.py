@@ -347,7 +347,7 @@ if cols["stat1"]:
 
     elif mode == "Kickouts":
         ko_mask = stat1_series.str.contains(
-            "kick out|puck out",
+            "kickout",
             na=False
         )
         plot_df = plot_df[ko_mask]
