@@ -7,6 +7,13 @@ import streamlit as st
 
 st.set_page_config(page_title="Gaelic Football Pitch Maps", layout="wide")
 
+st.markdown("""
+    <style>
+        section[data-testid="stSidebar"] {
+            width: 30% !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 def safe_col_lookup(df: pd.DataFrame, candidates: list[str]) -> Optional[str]:
     lower_map = {c.lower(): c for c in df.columns}
@@ -324,7 +331,7 @@ if cols["half"]:
     if half_choice != "All":
         plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
 
-mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts"], index=0)
+mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
 shot_type_filter = "All"
 if mode == "Shots" and cols["stat1"] and cols["stat2"]:
     shot_type_filter = st.sidebar.selectbox(
@@ -357,6 +364,13 @@ if cols["stat1"]:
             na=False
         )
         plot_df = plot_df[ko_mask]
+        
+    elif mode == "Turnovers":
+        to_mask = stat1_series.str.contains(
+            "turnover",
+            na=False
+        )
+        plot_df = plot_df[to_mask]
 
 outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outcome).astype(str).unique().tolist())
 outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
