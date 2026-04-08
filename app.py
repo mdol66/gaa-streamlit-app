@@ -387,10 +387,18 @@ plot_df = plot_df[
     )
 ]
 # Map x positions inside the sidelines rather than edge-to-edge
+# Map x positions inside the sidelines rather than edge-to-edge
 x_left = 4.0
 x_right = 96.0
+
 plot_df["__x_plot__"] = x_left + (plot_df[cols["x"]] / 100.0) * (x_right - x_left)
 plot_df["__y_plot__"] = plot_df[cols["y"]]
+
+# Hide rows with no plotted location
+plot_df.loc[
+    (plot_df[cols["x"]] == -1) | (plot_df[cols["y"]] == -1),
+    ["__x_plot__", "__y_plot__"]
+] = pd.NA
 
 c1, c2 = st.columns(2)
 c1.metric("Raw events", len(df))
