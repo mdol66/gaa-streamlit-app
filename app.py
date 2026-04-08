@@ -375,6 +375,7 @@ if outcome_choice != "All":
 
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
 plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce").fillna(-1)
+
 plot_df = plot_df[
     (
         (plot_df[cols["x"]] >= 0) & (plot_df[cols["x"]] <= 100) &
@@ -385,7 +386,6 @@ plot_df = plot_df[
         (plot_df[cols["x"]] == -1) & (plot_df[cols["y"]] == -1)
     )
 ]
-
 # Map x positions inside the sidelines rather than edge-to-edge
 x_left = 4.0
 x_right = 96.0
