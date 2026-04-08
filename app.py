@@ -359,7 +359,9 @@ if cols["stat1"]:
                 plot_df = plot_df[stat2_filled]
 
     elif mode == "Kickouts":
-        plot_df = plot_df[plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kickout", na=False)]
+        plot_df = plot_df[
+            plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kick ?out", na=False)
+        ]
         
     elif mode == "Turnovers":
         to_mask = stat1_series.str.contains(
