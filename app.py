@@ -177,14 +177,14 @@ def normalize_outcome(value):
         return "saved"
     if "short" in v:
         return "short"
-    if "won" in v:
-        return "won"
-    if "lost" in v:
-        return "lost"
     if "turnover won" in v:
         return "turnover won"
     if "turnover lost" in v:
         return "turnover lost"
+    if "won" in v:
+        return "won"
+    if "lost" in v:
+        return "lost"
 
     return v
 
