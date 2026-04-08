@@ -360,8 +360,6 @@ if cols["stat1"]:
 
     elif mode == "Kickouts":
         plot_df = plot_df[plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kickout", na=False)]
-        st.dataframe(plot_df[[cols["stat1"], cols["stat2"], cols["x"], cols["y"]]], use_container_width=True)
-        st.stop()
         
     elif mode == "Turnovers":
         to_mask = stat1_series.str.contains(
