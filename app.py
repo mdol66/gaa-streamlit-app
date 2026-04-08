@@ -201,6 +201,8 @@ def event_palette() -> dict[str, str]:
         "short": "#E85BF7",
         "won": "#15FF00",
         "lost": "#FF3B30",
+        "turnover won": "#15FF00",
+        "turnover lost": "#FF3B30",
     }
 
 
