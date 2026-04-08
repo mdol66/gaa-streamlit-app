@@ -10,7 +10,7 @@ st.set_page_config(page_title="Gaelic Football Pitch Maps", layout="wide")
 st.markdown("""
     <style>
         section[data-testid="stSidebar"] {
-            width: 30% !important;
+            width: 20% !important;
         }
     </style>
 """, unsafe_allow_html=True)
