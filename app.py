@@ -442,7 +442,7 @@ with col1:
     )
     legend_counts.columns = ["category", "count"]
 
-    palette = event_palette()
+    palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
 
     for _, row in legend_counts.iterrows():
         cat = row["category"]
