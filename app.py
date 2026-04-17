@@ -192,6 +192,8 @@ def normalize_outcome(value):
         return "KO won"
     if "lost" in v:
         return "KO lost"
+    if "free/pen conceded" in v:
+        return "free conceded"
 
     return v
 
