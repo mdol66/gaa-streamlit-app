@@ -482,54 +482,6 @@ count_df = (
 
 st.dataframe(count_df, use_container_width=True)
 
-st.subheader("Other Match Events (Non-Shots / Non-Kickouts)")
-
-if cols["stat1"]:
-    stat_series = plot_df[cols["stat1"]].astype(str).str.lower()
-
-    shot_mask = stat_series.str.contains(
-        "goal|point|2 point|wide|short|post|saved",
-        na=False
-    )
-
-    ko_mask = stat_series.str.contains(
-        "kick out|puck out",
-        na=False
-    )
-
-    other_events_df = plot_df[~(shot_mask | ko_mask)]
-
-    if len(other_events_df):
-
-        st.markdown("#### Event Counts")
-
-        other_counts = (
-            other_events_df[cols["stat1"]]
-            .value_counts()
-            .rename_axis("event")
-            .reset_index(name="count")
-        )
-
-        st.dataframe(other_counts, use_container_width=False)
-
-        st.markdown("#### Event Details")
-
-        show_cols_other = [c for c in [
-            cols.get("match_no"),
-            cols.get("team"),
-            cols.get("player"),
-            cols.get("stat1"),
-            cols.get("stat2"),
-            cols.get("half"),
-        ] if c]
-
-        st.dataframe(other_events_df[show_cols_other], use_container_width=True)
-
-    else:
-        st.info("No additional events for current filters.")
-
-
-
 st.subheader("Filtered events being plotted")
 show_cols = [c for c in [cols.get("number"), cols.get("match_no"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
 if "__plot_number__" not in show_cols:
