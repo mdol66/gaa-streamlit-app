@@ -189,9 +189,9 @@ def normalize_outcome(value):
     if "turnover lost" in v:
         return "turnover lost"
     if "won" in v:
-        return "won"
+        return "KO won"
     if "lost" in v:
-        return "lost"
+        return "KO lost"
 
     return v
 
