@@ -212,6 +212,23 @@ def event_palette() -> dict[str, str]:
         "turnover lost": "#FF3B30",
     }
 
+def event_palette_all() -> dict[str, str]:
+    return {
+        "goal": "#00C853",
+        "point": "#FFB300",
+        "2 pointer": "#8E24AA",
+        "wide": "#F4511E",
+        "off posts": "#90A4AE",
+        "out for 45": "#00ACC1",
+        "saved": "#1E88E5",
+        "short": "#D81B60",
+        "won": "#7CB342",
+        "lost": "#E53935",
+        "turnover won": "#43A047",
+        "turnover lost": "#C62828",
+        "free conceded": "#212121",
+        "free/pen conceded": "#6D4C41",
+    }
 
 def add_numbered_markers(
     fig: go.Figure,
@@ -221,7 +238,8 @@ def add_numbered_markers(
     label_col: str,
     category_col: str,
 ) -> None:
-    palette = event_palette()
+    D
+    palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
     df[category_col] = df[category_col].map(normalize_outcome)
 
@@ -332,6 +350,7 @@ if cols["half"]:
         plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
 
 mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
+st.session_state["mode"] = mode
 shot_type_filter = "All"
 if mode == "Shots" and cols["stat1"] and cols["stat2"]:
     shot_type_filter = st.sidebar.selectbox(
