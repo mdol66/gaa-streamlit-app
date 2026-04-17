@@ -470,18 +470,6 @@ with col1:
 with col2:
     st.plotly_chart(fig, use_container_width=False)
 
-st.subheader("Event category counts")
-
-count_df = (
-    plot_df[cols["outcome"]]
-    .map(normalize_outcome)
-    .value_counts()
-    .rename_axis("category")
-    .reset_index(name="count")
-)
-
-st.dataframe(count_df, use_container_width=True)
-
 st.subheader("Filtered events being plotted")
 show_cols = [c for c in [cols.get("number"), cols.get("match_no"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
 if "__plot_number__" not in show_cols:
