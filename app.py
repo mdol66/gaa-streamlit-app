@@ -1,6 +1,6 @@
 import math
 from typing import Optional
-
+import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -232,6 +232,15 @@ def event_palette_all() -> dict[str, str]:
         "free/pen conceded": "#6D4C41",
     }
 
+def classify_shot_result(value: str) -> str | None:
+    v = str(value).strip().lower()
+
+    if v in ["goal", "point", "2 pointer"]:
+        return "Score"
+    if v in ["wide", "short", "off posts", "saved", "out for 45", "out for 45/65"]:
+        return "Miss"
+    return None
+    
 def add_numbered_markers(
     fig: go.Figure,
     df: pd.DataFrame,
@@ -488,6 +497,41 @@ with col2:
     
 st.markdown("<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>", unsafe_allow_html=True)
 
+st.subheader("Shots / Scores / Misses by Match")
+
+if cols["match_no"] and cols["stat1"]:
+    shot_df = plot_df.copy()
+
+    stat1_series = shot_df[cols["stat1"]].astype(str).str.lower()
+
+    shot_mask = stat1_series.str.contains(
+        "goal|point|2 point|wide|short|post|saved",
+        na=False
+    )
+
+    shot_df = shot_df[shot_mask]
+
+    shot_df["result"] = shot_df[cols["outcome"]].map(normalize_outcome)
+    shot_df["category"] = shot_df["result"].apply(classify_shot_result)
+
+    summary = (
+        shot_df.dropna(subset=["category"])
+        .groupby([cols["match_no"], "category"])
+        .size()
+        .reset_index(name="count")
+    )
+
+    fig_summary = px.bar(
+        summary,
+        x=cols["match_no"],
+        y="count",
+        color="category",
+        barmode="group",
+        title="Shots, Scores and Misses per Match"
+    )
+
+    st.plotly_chart(fig_summary, use_container_width=True)
+    
 st.subheader("Filtered events being plotted")
 show_cols = [c for c in [cols.get("number"), cols.get("match_no"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
 if "__plot_number__" not in show_cols:
