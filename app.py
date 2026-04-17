@@ -445,7 +445,7 @@ fig = make_pitch_figure()
 if len(plot_df):
     add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"])
 
-col1, col2 = st.columns([1, 6])
+col1, col2 = st.columns([1, 6], vertical_alignment="center")
 
 with col1:
     st.markdown("### Legend")
