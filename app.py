@@ -419,6 +419,8 @@ outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
 if outcome_choice != "All":
     plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 
+tab1, tab2 = st.tabs(["Pitch Map", "Match Analysis"])
+
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
 plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce").fillna(-1)
 
@@ -450,54 +452,88 @@ c1, c2 = st.columns(2)
 c1.metric("Raw events", len(df))
 c2.metric("Plotted events", len(plot_df))
 
-fig = make_pitch_figure()
-if len(plot_df):
-    add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"])
+with tab1:
+    fig = make_pitch_figure()
+    if len(plot_df):
+        add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"])
 
-col1, col2 = st.columns([1, 6], vertical_alignment="center")
+    col1, col2 = st.columns([1, 6], vertical_alignment="center")
 
-with col1:
-    st.markdown("### Legend")
+    with col1:
+        st.markdown("### Legend")
 
-    legend_counts = (
-        plot_df[cols["outcome"]]
-        .map(normalize_outcome)
-        .value_counts()
-        .reset_index()
-    )
-    legend_counts.columns = ["category", "count"]
-
-    palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
-
-    for _, row in legend_counts.iterrows():
-        cat = row["category"]
-        cnt = row["count"]
-        color = palette.get(cat, "#000000")
-
-        st.markdown(
-            f"""
-            <div style="display:flex; align-items:center; margin-bottom:6px;">
-                <div style="
-                    width:14px;
-                    height:14px;
-                    border-radius:50%;
-                    background:{color};
-                    border:2px solid #E8E8E8;
-                    margin-right:8px;
-                    flex-shrink:0;
-                "></div>
-                <div style="font-size:14px;">{cat} ({cnt})</div>
-            </div>
-            """,
-            unsafe_allow_html=True
+        legend_counts = (
+            plot_df[cols["outcome"]]
+            .map(normalize_outcome)
+            .value_counts()
+            .reset_index()
         )
+        legend_counts.columns = ["category", "count"]
 
-with col2:
-    st.plotly_chart(fig, use_container_width=False)
+        palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
+
+        for _, row in legend_counts.iterrows():
+            cat = row["category"]
+            cnt = row["count"]
+            color = palette.get(cat, "#000000")
+
+            st.markdown(
+                f"""
+                <div style="display:flex; align-items:center; margin-bottom:6px;">
+                    <div style="
+                        width:14px;
+                        height:14px;
+                        border-radius:50%;
+                        background:{color};
+                        border:2px solid #E8E8E8;
+                        margin-right:8px;
+                        flex-shrink:0;
+                    "></div>
+                    <div style="font-size:14px;">{cat} ({cnt})</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    with col2:
+        st.plotly_chart(fig, use_container_width=False)
     
-st.markdown("<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>", unsafe_allow_html=True)
 
+    st.subheader("Shots / Scores / Misses by Match")
+    with tab2:
+        if cols["match_no"] and cols["stat1"]:
+            shot_df = plot_df.copy()
 
+            stat1_series = shot_df[cols["stat1"]].astype(str).str.lower()
+
+          shot_mask = stat1_series.str.contains(
+              "goal|point|2 point|wide|short|post|saved",
+             na=False
+         )
+
+     shot_df = shot_df[shot_mask]
+
+          shot_df["result"] = shot_df[cols["outcome"]].map(normalize_outcome)
+           shot_df["category"] = shot_df["result"].apply(classify_shot_result)
+
+        summary = (
+              shot_df.dropna(subset=["category"])
+            .groupby([cols["match_no"], "category"])
+            .size()
+            .reset_index(name="count")
+         )
+
+         fig_summary = px.bar(
+             summary,
+             x=cols["match_no"],
+             y="count",
+            color="category",
+               barmode="group",
+               title="Shots, Scores and Misses per Match"
+         )
+
+            st.plotly_chart(fig_summary, use_container_width=True)
     
 st.subheader("Filtered events being plotted")
 show_cols = [c for c in [cols.get("number"), cols.get("match_no"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
