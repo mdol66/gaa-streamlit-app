@@ -498,45 +498,67 @@ with tab1:
     with col2:
         st.plotly_chart(fig, use_container_width=False)
     
-    st.markdown("<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
+        unsafe_allow_html=True
+    )
 
+with tab2:
     st.subheader("Shots / Scores / Misses by Match")
-    with tab2:
-        if cols["match_no"] and cols["stat1"]:
-            shot_df = plot_df.copy()
 
-            stat1_series = shot_df[cols["stat1"]].astype(str).str.lower()
+    if cols["match_no"] and cols["stat1"]:
+        shot_df = plot_df.copy()
 
-          shot_mask = stat1_series.str.contains(
-              "goal|point|2 point|wide|short|post|saved",
-             na=False
-         )
+        stat1_series = shot_df[cols["stat1"]].astype(str).str.lower()
 
-     shot_df = shot_df[shot_mask]
+        shot_mask = stat1_series.str.contains(
+            "goal|point|2 point|wide|short|post|saved",
+            na=False
+        )
 
-          shot_df["result"] = shot_df[cols["outcome"]].map(normalize_outcome)
-           shot_df["category"] = shot_df["result"].apply(classify_shot_result)
+        shot_df = shot_df[shot_mask]
+
+        shot_df["result"] = shot_df[cols["outcome"]].map(normalize_outcome)
+        shot_df["category"] = shot_df["result"].apply(classify_shot_result)
 
         summary = (
-              shot_df.dropna(subset=["category"])
+            shot_df.dropna(subset=["category"])
             .groupby([cols["match_no"], "category"])
             .size()
             .reset_index(name="count")
-         )
+        )
 
-         fig_summary = px.bar(
-             summary,
-             x=cols["match_no"],
-             y="count",
+        fig_summary = px.bar(
+            summary,
+            x=cols["match_no"],
+            y="count",
             color="category",
-               barmode="group",
-               title="Shots, Scores and Misses per Match"
-         )
+            barmode="group",
+            title="Shots, Scores and Misses per Match"
+        )
 
-            st.plotly_chart(fig_summary, use_container_width=True)
-    
-st.subheader("Filtered events being plotted")
-show_cols = [c for c in [cols.get("number"), cols.get("match_no"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
-if "__plot_number__" not in show_cols:
-    show_cols = ["__plot_number__"] + show_cols
-st.dataframe(plot_df[show_cols], use_container_width=True)
+        st.plotly_chart(fig_summary, use_container_width=True)
+
+    st.subheader("Filtered events being plotted")
+    st.markdown(
+        "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
+        unsafe_allow_html=True
+    )
+
+    show_cols = [
+        c for c in [
+            cols.get("number"),
+            cols.get("match_no"),
+            cols.get("team"),
+            cols.get("player"),
+            cols.get("stat1"),
+            cols.get("stat2"),
+            cols.get("half"),
+            cols.get("match"),
+        ] if c
+    ]
+
+    if "__plot_number__" not in show_cols:
+        show_cols = ["__plot_number__"] + show_cols
+
+    st.dataframe(plot_df[show_cols], use_container_width=True)
