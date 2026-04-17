@@ -310,7 +310,10 @@ if cols["match_no"]:
         plot_df = plot_df[plot_df[cols["match_no"]].astype(str).isin(match_no_choices)]
 
 if cols["team"]:
-    teams = sorted(plot_df[cols["team"]].dropna().astype(str).unique().tolist())
+    teams = sorted([
+        t for t in plot_df[cols["team"]].dropna().astype(str).unique().tolist()
+        if t.lower() not in ["1st half", "2nd half"]
+    ])
     team_choices = st.sidebar.multiselect("Team", teams)
     if team_choices:
         plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
