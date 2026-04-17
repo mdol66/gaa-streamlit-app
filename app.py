@@ -485,6 +485,8 @@ with col1:
 
 with col2:
     st.plotly_chart(fig, use_container_width=False)
+    
+st.markdown("<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>", unsafe_allow_html=True)
 
 st.subheader("Filtered events being plotted")
 show_cols = [c for c in [cols.get("number"), cols.get("match_no"), cols.get("team"), cols.get("player"), cols.get("stat1"), cols.get("stat2"), cols.get("half"), cols.get("match"), cols.get("x"), cols.get("y")] if c]
