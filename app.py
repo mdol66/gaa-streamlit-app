@@ -294,9 +294,8 @@ st.title("Gaelic Football Pitch Maps")
 st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
 uploaded = st.file_uploader("Upload GAAScores match events CSV", type=["csv"])
-
-if not uploaded:
-    st.info("Upload your CSV to start plotting shots or kickouts.")
+if uploaded is None:
+    st.warning("Please upload a match CSV file to view the analysis.")
     st.stop()
 
 try:
