@@ -238,7 +238,7 @@ def add_numbered_markers(
     label_col: str,
     category_col: str,
 ) -> None:
-    D
+    
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
     df[category_col] = df[category_col].map(normalize_outcome)
