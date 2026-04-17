@@ -287,9 +287,6 @@ except UnicodeDecodeError:
     uploaded.seek(0)
     df = pd.read_csv(uploaded, encoding="latin1")
 
-st.subheader("Raw data preview")
-st.dataframe(df.head(20), use_container_width=True)
-
 cols = infer_columns(df)
 plot_df = df.copy()
 plot_df["__plot_number__"] = build_display_number(plot_df, cols["number"])
@@ -502,8 +499,6 @@ if cols["stat1"]:
             cols.get("stat1"),
             cols.get("stat2"),
             cols.get("half"),
-            cols.get("x"),
-            cols.get("y")
         ] if c]
 
         st.dataframe(other_events_df[show_cols_other], use_container_width=True)
