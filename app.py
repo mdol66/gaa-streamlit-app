@@ -321,11 +321,26 @@ elif cols["outcome"] is None:
 
 st.sidebar.header("Filters")
 
-if cols["match_no"]:
-    match_nos = sorted(plot_df[cols["match_no"]].dropna().astype(str).unique().tolist())
-    match_no_choices = st.sidebar.multiselect("Match Number", match_nos)
-    if match_no_choices:
-        plot_df = plot_df[plot_df[cols["match_no"]].astype(str).isin(match_no_choices)]
+if cols["match_no"] and cols["team"]:
+    match_info = (
+        plot_df[[cols["match_no"], cols["team"]]]
+        .dropna()
+        .astype(str)
+        .drop_duplicates()
+    )
+
+    match_labels = {}
+    for match_no in sorted(match_info[cols["match_no"]].unique(), key=lambda x: int(x) if x.isdigit() else x):
+        teams_for_match = sorted(match_info[match_info[cols["match_no"]] == match_no][cols["team"]].unique().tolist())
+        opposition = [t for t in teams_for_match if t.lower() != "ballintubber"]
+        opp_text = opposition[0] if opposition else "Unknown"
+        match_labels[f"{match_no} v {opp_text}"] = match_no
+
+    match_display_choices = st.sidebar.multiselect("Match Number", list(match_labels.keys()))
+
+    if match_display_choices:
+        selected_match_nos = [match_labels[label] for label in match_display_choices]
+        plot_df = plot_df[plot_df[cols["match_no"]].astype(str).isin(selected_match_nos)]
 
 if cols["team"]:
     teams = sorted([
