@@ -620,6 +620,7 @@ with tab2:
             barmode="group",
             category_orders={"measure": ["Shots", "Scores", "Misses"]},
             title="Ballintubber Shots, Scores and Misses per Match"
+        )
         x_vals = []
         y_vals = []
         text_vals = []
