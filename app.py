@@ -620,18 +620,27 @@ with tab2:
             barmode="group",
             category_orders={"measure": ["Shots", "Scores", "Misses"]},
             title="Ballintubber Shots, Scores and Misses per Match"
-        )
-        for i, row in efficiency_summary.iterrows():
-            label = next((label for label, num in match_labels.items() if num == row[cols["match_no"]]), row[cols["match_no"]])
+        x_vals = []
+        y_vals = []
+        text_vals = []
 
-            fig_summary.add_scatter(
-                x=[label],
-                y=[row["Shot Efficiency"] * summary["count"].max()],
-                mode="lines+markers+text",
-                text=[f'{round(row["Shot Efficiency"]*100)}%'],
-                textposition="top center",
-                name="Shot Efficiency",
-                showlegend=False
+        for _, row in efficiency_summary.iterrows():
+            label = next(
+                (label for label, num in match_labels.items() if num == row[cols["match_no"]]),
+                row[cols["match_no"]]
+            )
+            x_vals.append(label)
+            y_vals.append(row["Shot Efficiency"] * summary["count"].max())
+            text_vals.append(f'{round(row["Shot Efficiency"]*100)}%')
+
+        fig_summary.add_scatter(
+            x=x_vals,
+            y=y_vals,
+            mode="lines+markers+text",
+            text=text_vals,
+            textposition="top center",
+            name="Shot Efficiency",
+            showlegend=False
         )
         fig_summary.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_summary, use_container_width=True)
