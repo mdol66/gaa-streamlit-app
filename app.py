@@ -526,7 +526,51 @@ with tab1:
 
     st.dataframe(plot_df[show_cols], use_container_width=True)
 with tab2:
+    def is_in(event_series, values):
+    return event_series.isin(values)
+    
     st.subheader("Shots / Scores / Misses by Match")
+    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
+
+    miss_events = [
+        "wide", "wide from free", "short", "out for 45", "saved",
+        "short from free", "wide from 45", "off posts from 45", "short from 45", "off posts"
+    ]
+
+    score_events = [
+        "point", "point from free", "2 pointer", "point from 45",
+        "2 pointer from free", "goal", "goal from penalty",
+        "goal from free"
+    ]
+    count_misses = is_in(event_series, miss_events).sum()
+    count_scores = is_in(event_series, score_events).sum()
+    count_score_attempts = count_misses + count_scores
+    shot_efficiency = count_scores / count_score_attempts if count_score_attempts else 0
+
+    miss_events_from_frees = [
+        "wide from free", "short from free", "out for 45 from free",
+        "saved from free", "wide from 45", "short from 45", "off posts from free"
+    ]
+
+    score_events_from_frees = [
+        "point from free", "point from 45", "2 pointer from free", "goal from free"
+    ]
+            count_misses_from_frees = is_in(event_series, miss_events_from_frees).sum()
+    count_scores_from_frees = is_in(event_series, score_events_from_frees).sum()
+    count_attempts_from_frees = count_misses_from_frees + count_scores_from_frees
+    count_misses_from_play = count_misses - count_misses_from_frees
+    count_scores_from_play = count_scores - count_scores_from_frees
+    count_attempts_from_play = count_misses_from_play + count_scores_from_play
+
+    shot_efficiency_from_play = (
+        count_scores_from_play / count_attempts_from_play
+        if count_attempts_from_play else 0
+    )
+
+    shot_efficiency_from_frees = (
+        count_scores_from_frees / count_attempts_from_frees
+        if count_attempts_from_frees else 0
+    )
 
     if cols["match_no"] and cols["stat1"]:
         shot_df = plot_df.copy()
