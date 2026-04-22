@@ -605,6 +605,7 @@ with tab2:
             y="count",
             color="measure",
             barmode="group",
+            category_orders={"measure": ["Shots", "Scores", "Misses"]},
             title="Ballintubber Shots, Scores and Misses per Match"
         )
 
