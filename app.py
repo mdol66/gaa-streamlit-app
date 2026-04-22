@@ -527,7 +527,7 @@ with tab1:
     st.dataframe(plot_df[show_cols], use_container_width=True)
 with tab2:
     def is_in(event_series, values):
-    return event_series.isin(values)
+        return event_series.isin(values)
     
     st.subheader("Shots / Scores / Misses by Match")
     event_series = plot_df[cols["stat1"]].astype(str).str.lower()
