@@ -555,7 +555,7 @@ with tab2:
     score_events_from_frees = [
         "point from free", "point from 45", "2 pointer from free", "goal from free"
     ]
-            count_misses_from_frees = is_in(event_series, miss_events_from_frees).sum()
+    count_misses_from_frees = is_in(event_series, miss_events_from_frees).sum()
     count_scores_from_frees = is_in(event_series, score_events_from_frees).sum()
     count_attempts_from_frees = count_misses_from_frees + count_scores_from_frees
     count_misses_from_play = count_misses - count_misses_from_frees
