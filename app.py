@@ -622,24 +622,15 @@ with tab2:
             title="Ballintubber Shots, Scores and Misses per Match"
         )
         fig_summary.update_xaxes(categoryorder="array", categoryarray=summary["match_label"].unique())
-        x_vals = []
-        y_vals = []
-        text_vals = []
-
-        for _, row in efficiency_summary.iterrows():
-            label = next(
-                (label for label, num in match_labels.items() if str(num) == str(row[cols["match_no"]])),
-                row[cols["match_no"]]
-            )
-            x_vals.append(label)
-            y_vals.append(row["Shot Efficiency"] * summary["count"].max())
-            text_vals.append(f'{round(row["Shot Efficiency"]*100)}%')
+        efficiency_summary["match_label"] = efficiency_summary[cols["match_no"]].astype(str).map(
+            lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
+        )
 
         fig_summary.add_scatter(
-            x=x_vals,
-            y=y_vals,
+            x=efficiency_summary["match_label"],
+            y=efficiency_summary["Shot Efficiency"] * summary["count"].max(),
             mode="lines+markers+text",
-            text=text_vals,
+            text=[f"{round(v*100)}%" for v in efficiency_summary["Shot Efficiency"]],
             textposition="top center",
             name="Shot Efficiency",
             showlegend=False
