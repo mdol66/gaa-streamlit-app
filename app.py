@@ -621,6 +621,7 @@ with tab2:
             category_orders={"measure": ["Shots", "Scores", "Misses"]},
             title="Ballintubber Shots, Scores and Misses per Match"
         )
+        fig_summary.update_xaxes(categoryorder="array", categoryarray=summary["match_label"].unique())
         x_vals = []
         y_vals = []
         text_vals = []
