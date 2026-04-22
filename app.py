@@ -598,6 +598,16 @@ with tab2:
             .size()
             .reset_index(name="count")
         )
+        efficiency_summary = (
+            summary.pivot(index=cols["match_no"], columns="measure", values="count")
+            .fillna(0)
+            .reset_index()
+        )
+
+        efficiency_summary["Shot Efficiency"] = (
+            efficiency_summary["Scores"] / efficiency_summary["Shots"]
+        ).fillna(0)
+        
         summary["match_label"] = summary[cols["match_no"]].astype(str).map(
             lambda x: next((label for label, num in match_labels.items() if num == x), x)
         )
