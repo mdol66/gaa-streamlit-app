@@ -572,24 +572,29 @@ with tab2:
         if count_attempts_from_frees else 0
     )
 
-    if cols["match_no"] and cols["stat1"]:
+    if cols["match_no"] and cols["stat1"] and cols["team"]:
         shot_df = plot_df.copy()
+        shot_df = shot_df[shot_df[cols["team"]].astype(str).str.lower() == "ballintubber"]
 
-        stat1_series = shot_df[cols["stat1"]].astype(str).str.lower()
+        event_series = shot_df[cols["stat1"]].astype(str).str.lower()
 
-        shot_mask = stat1_series.str.contains(
-            "goal|point|2 point|wide|short|post|saved",
-            na=False
-        )
+        miss_mask = is_in(event_series, miss_events)
+        score_mask = is_in(event_series, score_events)
+        shot_mask = miss_mask | score_mask
 
-        shot_df = shot_df[shot_mask]
+        shot_df = shot_df[shot_mask].copy()
+        shot_df["measure"] = "Shots"
 
-        shot_df["result"] = shot_df[cols["outcome"]].map(normalize_outcome)
-        shot_df["category"] = shot_df["result"].apply(classify_shot_result)
+        scores_df = shot_df[is_in(shot_df[cols["stat1"]].astype(str).str.lower(), score_events)].copy()
+        scores_df["measure"] = "Scores"
+
+        misses_df = shot_df[is_in(shot_df[cols["stat1"]].astype(str).str.lower(), miss_events)].copy()
+        misses_df["measure"] = "Misses"
+
+        summary_df = pd.concat([shot_df, scores_df, misses_df], ignore_index=True)
 
         summary = (
-            shot_df.dropna(subset=["category"])
-            .groupby([cols["match_no"], "category"])
+            summary_df.groupby([cols["match_no"], "measure"])
             .size()
             .reset_index(name="count")
         )
@@ -598,11 +603,10 @@ with tab2:
             summary,
             x=cols["match_no"],
             y="count",
-            color="category",
+            color="measure",
             barmode="group",
-            title="Shots, Scores and Misses per Match"
+            title="Ballintubber Shots, Scores and Misses per Match"
         )
 
         st.plotly_chart(fig_summary, use_container_width=True)
-
 
