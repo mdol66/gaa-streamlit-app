@@ -628,7 +628,7 @@ with tab2:
 
         for _, row in efficiency_summary.iterrows():
             label = next(
-                (label for label, num in match_labels.items() if num == row[cols["match_no"]]),
+                (label for label, num in match_labels.items() if str(num) == str(row[cols["match_no"]])),
                 row[cols["match_no"]]
             )
             x_vals.append(label)
