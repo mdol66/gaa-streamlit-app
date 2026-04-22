@@ -598,11 +598,14 @@ with tab2:
             .size()
             .reset_index(name="count")
         )
-
+        summary["match_label"] = summary[cols["match_no"]].astype(str).map(
+            lambda x: next((label for label, num in match_labels.items() if num == x), x)
+        )
         fig_summary = px.bar(
             summary,
-            x=cols["match_no"],
+            x="match_label",
             y="count",
+            text="count",
             color="measure",
             barmode="group",
             category_orders={"measure": ["Shots", "Scores", "Misses"]},
