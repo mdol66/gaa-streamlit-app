@@ -611,6 +611,6 @@ with tab2:
             category_orders={"measure": ["Shots", "Scores", "Misses"]},
             title="Ballintubber Shots, Scores and Misses per Match"
         )
-
+        fig_summary.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_summary, use_container_width=True)
 
