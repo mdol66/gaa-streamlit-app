@@ -621,6 +621,18 @@ with tab2:
             category_orders={"measure": ["Shots", "Scores", "Misses"]},
             title="Ballintubber Shots, Scores and Misses per Match"
         )
+        for i, row in efficiency_summary.iterrows():
+            label = next((label for label, num in match_labels.items() if num == row[cols["match_no"]]), row[cols["match_no"]])
+
+            fig_summary.add_scatter(
+                x=[label],
+                y=[row["Shot Efficiency"] * summary["count"].max()],
+                mode="lines+markers+text",
+                text=[f'{round(row["Shot Efficiency"]*100)}%'],
+                textposition="top center",
+                name="Shot Efficiency",
+                showlegend=False
+        )
         fig_summary.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_summary, use_container_width=True)
 
