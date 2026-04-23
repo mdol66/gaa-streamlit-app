@@ -588,33 +588,39 @@ with tab2:
 
     overall_summary["Efficiency"] = overall_summary["Scores"] / overall_summary["Shots"]
     y_max = overall_summary[["Shots", "Scores", "Misses"]].max().max()
-    col1, col2 = st.columns(2)
+    has_ball = (overall_summary["__team_group__"] == "Ballintubber").any()
+    has_opp = (overall_summary["__team_group__"] == "Opposition").any()
 
-    with col1:
-        ballintubber_summary = overall_summary[overall_summary["__team_group__"] == "Ballintubber"].melt(
-            id_vars="__team_group__",
-            value_vars=["Shots", "Scores", "Misses"],
-            var_name="Metric",
-            value_name="Count"
-        )
+    if not has_ball and not has_opp:
+        st.info("No scoring data available for the current filters.")
+    else:
+        col1, col2 = st.columns(2)
 
-        fig_ball = px.bar(
-            ballintubber_summary,
-            x="Metric",
-            y="Count",
-            text="Count",
-            title="Ballintubber Scoring Summary",
-            color="Metric",
-            color_discrete_map={
-                "Shots": "#1f77b4",
-                "Scores": "#90EE90",
-                "Misses": "#FF3B30"
-            }
-        )
+        with col1:
+            ballintubber_summary = overall_summary[overall_summary["__team_group__"] == "Ballintubber"].melt(
+                id_vars="__team_group__",
+                value_vars=["Shots", "Scores", "Misses"],
+                var_name="Metric",
+                value_name="Count"
+            )
 
-        ball_eff = overall_summary.loc[
-            overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
-        ].iloc[0]
+            fig_ball = px.bar(
+                ballintubber_summary,
+                x="Metric",
+                y="Count",
+                text="Count",
+                title="Ballintubber Scoring Summary",
+                color="Metric",
+                color_discrete_map={
+                    "Shots": "#1f77b4",
+                    "Scores": "#90EE90",
+                    "Misses": "#FF3B30"
+                }
+            )
+
+            ball_eff = overall_summary.loc[
+                overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
+            ].iloc[0]
 
         fig_ball.add_annotation(
             x=0.5,
