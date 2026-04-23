@@ -609,7 +609,8 @@ with tab2:
                 "Shots": "#1f77b4",
                 "Scores": "#90EE90",
                 "Misses": "#FF3B30"
-            }
+            },
+            legend=False
         )
 
         ball_eff = overall_summary.loc[
@@ -658,7 +659,8 @@ with tab2:
                 "Shots": "#1f77b4",
                 "Scores": "#90EE90",
                 "Misses": "#FF3B30"
-            }
+            },
+            legend=False
         )
         fig_opp.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
