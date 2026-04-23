@@ -397,7 +397,7 @@ if cols["player"]:
         .unique()
         .tolist()
     )
-
+    st.sidebar.caption("Only players with events matching current filters are shown")
     player_choices = st.sidebar.multiselect("Player", players)
 
     if player_choices:
