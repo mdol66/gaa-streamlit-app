@@ -374,7 +374,10 @@ if cols["player"]:
 
         if mode == "Shots":
             player_source_df = player_source_df[
-                stat1_for_players.isin(miss_events + score_events)
+                stat1_for_players.str.contains(
+                    "goal|point|2 point|wide|short|post|saved",
+                    na=False
+                )
             ]
 
         elif mode == "Kickouts":
