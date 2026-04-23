@@ -248,6 +248,7 @@ def add_numbered_markers(
     y_col: str,
     label_col: str,
     category_col: str,
+    player_col: Optional[str] = None,
 ) -> None:
     
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
@@ -266,8 +267,10 @@ def add_numbered_markers(
                 textposition="middle center",
                 textfont=dict(color="white", size=10, family="Arial Black"),
                 marker=dict(size=20, color=color, line=dict(color="#E8E8E8", width=2)),
-                customdata=group[[label_col]].values,
-                hovertemplate="#%{customdata[0]}<br>x=%{x:.1f}<br>y=%{y:.1f}<extra></extra>",
+                customdata=group[
+                    [label_col] + ([player_col] if player_col and player_col in group.columns else [])
+                ].values,
+                hovertemplate="#%{customdata[0]}<br>Player=%{customdata[1]}<extra></extra>" if player_col and player_col in group.columns else "#%{customdata[0]}<extra></extra>",
             )
         )
 
@@ -455,7 +458,7 @@ c2.metric("Plotted events", len(plot_df))
 with tab1:
     fig = make_pitch_figure()
     if len(plot_df):
-        add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"])
+        add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"], cols["player"])
 
     col1, col2 = st.columns([1, 6], vertical_alignment="center")
 
