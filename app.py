@@ -587,7 +587,69 @@ with tab2:
     )
 
     overall_summary["Efficiency"] = overall_summary["Scores"] / overall_summary["Shots"]
+    col1, col2 = st.columns(2)
 
+    with col1:
+        ballintubber_summary = overall_summary[overall_summary["__team_group__"] == "Ballintubber"].melt(
+            id_vars="__team_group__",
+            value_vars=["Shots", "Scores", "Misses"],
+            var_name="Metric",
+            value_name="Count"
+        )
+
+        fig_ball = px.bar(
+            ballintubber_summary,
+            x="Metric",
+            y="Count",
+            text="Count",
+            title="Ballintubber Scoring Summary"
+        )
+
+        ball_eff = overall_summary.loc[
+            overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
+        ].iloc[0]
+
+        fig_ball.add_scatter(
+            x=["Shots", "Scores", "Misses"],
+            y=[ball_eff * ballintubber_summary["Count"].max()] * 3,
+            mode="text",
+            text=["", f"Efficiency: {ball_eff:.0%}", ""],
+            textposition="top center",
+            showlegend=False
+        )
+
+        st.plotly_chart(fig_ball, use_container_width=True)
+
+    with col2:
+        opp_summary = overall_summary[overall_summary["__team_group__"] == "Opposition"].melt(
+            id_vars="__team_group__",
+            value_vars=["Shots", "Scores", "Misses"],
+            var_name="Metric",
+            value_name="Count"
+        )
+
+        fig_opp = px.bar(
+            opp_summary,
+            x="Metric",
+            y="Count",
+            text="Count",
+            title="Opposition Scoring Summary"
+        )
+
+        opp_eff = overall_summary.loc[
+            overall_summary["__team_group__"] == "Opposition", "Efficiency"
+        ].iloc[0]
+
+        fig_opp.add_scatter(
+            x=["Shots", "Scores", "Misses"],
+            y=[opp_eff * opp_summary["Count"].max()] * 3,
+            mode="text",
+            text=["", f"Efficiency: {opp_eff:.0%}", ""],
+            textposition="top center",
+            showlegend=False
+        )
+
+        st.plotly_chart(fig_opp, use_container_width=True)
 
     count_misses = is_in(event_series, miss_events).sum()
     count_scores = is_in(event_series, score_events).sum()
