@@ -931,25 +931,8 @@ with tab2:
             player_summary = player_summary[non_zero_cols]
     
             st.markdown("### Player scoring breakdown")
-            st.markdown("""
-                <style>
-                div[data-testid="stDataFrame"] th {
-                    white-space: normal !important;
-                    line-height: 1.1;
-                    font-size: 12px;
-                }
-    
-                div[data-testid="stDataFrame"] td {
-                    white-space: normal !important;
-                    font-size: 12px;
-                }
-    
-                div[data-testid="stDataFrame"] table {
-                    table-layout: fixed;
-                    width: 100%;
-                }
-                </style>
-                """, unsafe_allow_html=True)
+            st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
+
     
                 st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
 
