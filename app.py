@@ -956,8 +956,10 @@ with tab2:
 
 with tab3:
     st.markdown("### Kickout Analysis")
+
     st.info("Table will go here next.")
-        if cols["stat1"] and cols["team"]:
+
+    if cols["stat1"] and cols["team"]:
         ko_df = plot_df.copy()
 
         ko_df["__stat1_lower__"] = ko_df[cols["stat1"]].astype(str).str.lower()
