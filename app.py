@@ -933,14 +933,16 @@ with tab2:
             st.markdown("### Player scoring breakdown")
             st.markdown("""
             <style>
-            div[data-testid="stDataFrame"] [role="gridcell"] {
-                text-align: center !important;
+            /* Column headers */
+            div[data-testid="stDataFrame"] [role="columnheader"] > div {
                 justify-content: center !important;
+                text-align: center !important;
             }
 
-            div[data-testid="stDataFrame"] [role="columnheader"] {
-                text-align: center !important;
+            /* Cell values */
+            div[data-testid="stDataFrame"] [role="gridcell"] > div {
                 justify-content: center !important;
+                text-align: center !important;
             }
             </style>
             """, unsafe_allow_html=True)
