@@ -1,7 +1,8 @@
 import math
 from typing import Optional
-import plotly.express as px
+
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -225,16 +226,6 @@ def event_palette_all() -> dict[str, str]:
     }
 
 
-def classify_shot_result(value: str) -> str | None:
-    v = str(value).strip().lower()
-
-    if v in ["goal", "point", "2 pointer"]:
-        return "Score"
-    if v in ["wide", "short", "off posts", "saved", "out for 45", "out for 45/65"]:
-        return "Miss"
-    return None
-
-
 def add_numbered_markers(
     fig: go.Figure,
     df: pd.DataFrame,
@@ -301,6 +292,94 @@ def clean_player_name(value: str) -> str:
     return text
 
 
+def build_player_scoring_table(
+    plot_df: pd.DataFrame,
+    cols: dict[str, Optional[str]],
+    score_events: list[str],
+    miss_events: list[str],
+) -> Optional[pd.DataFrame]:
+    if not (cols["player"] and cols["stat1"] and cols["team"]):
+        return None
+
+    player_scoring_df = plot_df.copy()
+    player_scoring_df = player_scoring_df[
+        player_scoring_df[cols["team"]].astype(str).str.lower() == "ballintubber"
+    ].copy()
+
+    if player_scoring_df.empty:
+        return None
+
+    player_scoring_df["__player_clean__"] = player_scoring_df[cols["player"]].astype(str).apply(clean_player_name)
+    player_scoring_df["__stat1_lower__"] = player_scoring_df[cols["stat1"]].astype(str).str.lower()
+
+    shot_event_list = score_events + miss_events
+
+    player_scoring_df = player_scoring_df[
+        player_scoring_df["__stat1_lower__"].isin(shot_event_list)
+    ].copy()
+
+    if player_scoring_df.empty:
+        return None
+
+    player_summary = (
+        player_scoring_df.groupby(["__player_clean__", "__stat1_lower__"])
+        .size()
+        .unstack(fill_value=0)
+        .reset_index()
+    )
+
+    if player_summary.empty:
+        return None
+
+    for col_name in shot_event_list:
+        if col_name not in player_summary.columns:
+            player_summary[col_name] = 0
+
+    player_summary["Shots"] = player_summary[shot_event_list].sum(axis=1)
+    player_summary["Scores"] = player_summary[score_events].sum(axis=1)
+
+    player_summary["Shot Efficiency"] = (
+        player_summary["Scores"] / player_summary["Shots"].replace(0, pd.NA)
+    ).fillna(0)
+
+    player_summary["Shot Efficiency"] = (
+        (player_summary["Shot Efficiency"] * 100).round(0).astype(int).astype(str) + "%"
+    )
+
+    player_summary = player_summary.sort_values(
+        by=["Shots", "Scores"],
+        ascending=[False, False]
+    )
+
+    player_summary = player_summary.rename(columns={
+        "__player_clean__": "Player"
+    })
+
+    keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency"]
+
+    non_zero_cols = [
+        col for col in player_summary.columns
+        if col in keep_cols or player_summary[col].sum() > 0
+    ]
+    player_summary = player_summary[non_zero_cols]
+
+    summary_cols = ["Shots", "Scores", "Shot Efficiency"]
+    score_cols = [c for c in ["goal", "2 pointer", "point"] if c in player_summary.columns]
+    miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45"] if c in player_summary.columns]
+
+    ordered_cols = ["Player"] + summary_cols + score_cols + miss_cols
+    ordered_cols = [c for c in ordered_cols if c in player_summary.columns]
+    player_summary = player_summary[ordered_cols]
+
+    player_summary["Player"] = (
+        player_summary["Player"]
+        .replace("nan", pd.NA)
+        .fillna("Not Allocated")
+    )
+
+    return player_summary.astype(str)
+
+
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -360,7 +439,7 @@ if cols["team"]:
     team_choices = st.sidebar.multiselect("Team", teams)
     if team_choices:
         plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
-        
+
 mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
 st.session_state["mode"] = mode
 
@@ -379,12 +458,10 @@ if cols["player"]:
                     na=False
                 )
             ]
-
         elif mode == "Kickouts":
             player_source_df = player_source_df[
                 stat1_for_players.str.contains("kick ?out", na=False)
             ]
-
         elif mode == "Turnovers":
             player_source_df = player_source_df[
                 stat1_for_players.str.contains("turnover", na=False)
@@ -397,6 +474,7 @@ if cols["player"]:
         .unique()
         .tolist()
     )
+
     st.sidebar.caption("Only players with events matching current filters are shown")
     player_choices = st.sidebar.multiselect("Player", players)
 
@@ -408,7 +486,6 @@ if cols["half"]:
     half_choice = st.sidebar.selectbox("Half", halves)
     if half_choice != "All":
         plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
-
 
 shot_type_filter = "All"
 
@@ -539,9 +616,7 @@ with tab1:
         "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         unsafe_allow_html=True
     )
-
     st.subheader("Filtered events being plotted")
-
     st.markdown(
         "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         unsafe_allow_html=True
@@ -657,12 +732,9 @@ with tab2:
                 }
             )
 
-            ball_eff = (
-                overall_summary.loc[
-                    overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
-                ].iloc[0]
-                if has_ball else 0
-            )
+            ball_eff = overall_summary.loc[
+                overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
+            ].iloc[0]
 
             fig_ball.add_annotation(
                 x=0.5,
@@ -716,12 +788,9 @@ with tab2:
                 }
             )
 
-            opp_eff = (
-                overall_summary.loc[
-                    overall_summary["__team_group__"] == "Opposition", "Efficiency"
-                ].iloc[0]
-                if has_opp else 0
-            )
+            opp_eff = overall_summary.loc[
+                overall_summary["__team_group__"] == "Opposition", "Efficiency"
+            ].iloc[0]
 
             fig_opp.add_annotation(
                 x=0.5,
@@ -871,87 +940,19 @@ with tab2:
 
         fig_summary.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_summary, use_container_width=True)
-        if cols["player"] and cols["stat1"] and cols["team"]:
-            player_scoring_df = plot_df.copy()
-            player_scoring_df = player_scoring_df[
-                player_scoring_df[cols["team"]].astype(str).str.lower() == "ballintubber"
-            ].copy()
-    
-            player_scoring_df["__player_clean__"] = player_scoring_df[cols["player"]].astype(str).apply(clean_player_name)
-            player_scoring_df["__stat1_lower__"] = player_scoring_df[cols["stat1"]].astype(str).str.lower()
-    
-            shot_event_list = score_events + miss_events
-    
-            player_scoring_df = player_scoring_df[
-                player_scoring_df["__stat1_lower__"].isin(shot_event_list)
-            ]
-    
-            if not player_scoring_df.empty:
-            player_summary = (
-                player_scoring_df.groupby(["__player_clean__", "__stat1_lower__"])
-                .size()
-                .unstack(fill_value=0)
-                .reset_index()
-            )
 
-            if not player_summary.empty:
-                    
-                for col_name in shot_event_list:
-                    if col_name not in player_summary.columns:
-                        player_summary[col_name] = 0
+        player_summary_display = build_player_scoring_table(
+            plot_df=plot_df,
+            cols=cols,
+            score_events=score_events,
+            miss_events=miss_events,
+        )
 
-                            player_summary["Shots"] = player_summary[shot_event_list].sum(axis=1)
-                            player_summary["Scores"] = player_summary[score_events].sum(axis=1)
-        
-                        player_summary["Shot Efficiency"] = (
-                            player_summary["Scores"] / player_summary["Shots"].replace(0, pd.NA)
-                        ).fillna(0)
-        
-                        player_summary["Shot Efficiency"] = (
-                            (player_summary["Shot Efficiency"] * 100).round(0).astype(int).astype(str) + "%"
-                        )
-        
-                        player_summary = player_summary.sort_values(
-                            by=["Shots", "Scores"],
-                            ascending=[False, False]
-                        )
-        
-                        player_summary = player_summary.rename(columns={
-                            "__player_clean__": "Player"
-                        })
-        
-                        keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency"]
-        
-                        non_zero_cols = [
-                            col for col in player_summary.columns
-                            if col in keep_cols or player_summary[col].sum() > 0
-                        ]
+        if player_summary_display is not None and not player_summary_display.empty:
+            st.markdown("### Player scoring breakdown")
+            st.table(player_summary_display)
+        else:
+            st.info("No player scoring data for current filters.")
 
-                player_summary = player_summary[non_zero_cols]
-
-                summary_cols = ["Shots", "Scores", "Shot Efficiency"]
-                score_cols = [c for c in ["goal", "2 pointer", "point"] if c in player_summary.columns]
-                miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45"] if c in player_summary.columns]
-
-                ordered_cols = ["Player"] + summary_cols + score_cols + miss_cols
-                ordered_cols = [c for c in ordered_cols if c in player_summary.columns]
-
-                player_summary = player_summary[ordered_cols]
-
-                player_summary["Player"] = (
-                    player_summary["Player"]
-                    .replace("nan", pd.NA)
-                    .fillna("Not Allocated")
-                )
-
-                player_summary_display = player_summary.astype(str)
-
-                st.markdown("### Player scoring breakdown")
-                st.table(player_summary_display)
-
-            else:
-                st.info("No player scoring data for current filters.")
-
-            
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
