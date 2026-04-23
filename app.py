@@ -588,7 +588,7 @@ with tab2:
 
     overall_summary["Efficiency"] = overall_summary["Scores"] / overall_summary["Shots"]
 
-    st.plotly_chart(fig_overall, use_container_width=True)
+
     count_misses = is_in(event_series, miss_events).sum()
     count_scores = is_in(event_series, score_events).sum()
     count_score_attempts = count_misses + count_scores
