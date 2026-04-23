@@ -363,8 +363,37 @@ if cols["team"]:
 
 if cols["player"]:
     plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
-    players = sorted(plot_df["__player_clean__"].dropna().unique().tolist())
+
+    player_source_df = plot_df.copy()
+
+    if cols["stat1"]:
+        stat1_for_players = player_source_df[cols["stat1"]].astype(str).str.lower()
+
+        if mode == "Shots":
+            player_source_df = player_source_df[
+                stat1_for_players.isin(miss_events + score_events)
+            ]
+
+        elif mode == "Kickouts":
+            player_source_df = player_source_df[
+                stat1_for_players.str.contains("kick ?out", na=False)
+            ]
+
+        elif mode == "Turnovers":
+            player_source_df = player_source_df[
+                stat1_for_players.str.contains("turnover", na=False)
+            ]
+
+    players = sorted(
+        player_source_df["__player_clean__"]
+        .dropna()
+        .loc[lambda s: s.astype(str).str.strip() != ""]
+        .unique()
+        .tolist()
+    )
+
     player_choices = st.sidebar.multiselect("Player", players)
+
     if player_choices:
         plot_df = plot_df[plot_df["__player_clean__"].isin(player_choices)]
 
