@@ -887,31 +887,29 @@ with tab2:
             ]
     
             if not player_scoring_df.empty:
-                player_summary = (
-                    player_scoring_df.groupby(["__player_clean__", "__stat1_lower__"])
-                    .size()
-                    .unstack(fill_value=0)
-                    .reset_index()
-                )
-    
+            player_summary = (
+                player_scoring_df.groupby(["__player_clean__", "__stat1_lower__"])
+                .size()
+                .unstack(fill_value=0)
+                .reset_index()
+            )
+
+            if not player_summary.empty:
+
                 for col_name in shot_event_list:
                     if col_name not in player_summary.columns:
                         player_summary[col_name] = 0
-    
+
                 player_summary["Shots"] = player_summary[shot_event_list].sum(axis=1)
                 player_summary["Scores"] = player_summary[score_events].sum(axis=1)
-    
+
                 player_summary["Shot Efficiency"] = (
                     player_summary["Scores"] / player_summary["Shots"].replace(0, pd.NA)
                 ).fillna(0)
-    
+
                 player_summary["Shot Efficiency"] = (
                     (player_summary["Shot Efficiency"] * 100).round(0).astype(int).astype(str) + "%"
                 )
-    
-                player_summary["Total"] = player_summary["Shots"]
-    
-            if not player_summary.empty:
 
                 player_summary = player_summary.sort_values(
                     by=["Shots", "Scores"],
@@ -922,7 +920,6 @@ with tab2:
                     "__player_clean__": "Player"
                 })
 
-                # Drop columns where total = 0 (except key columns)
                 keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency"]
 
                 non_zero_cols = [
@@ -932,7 +929,6 @@ with tab2:
 
                 player_summary = player_summary[non_zero_cols]
 
-                # Reorder columns
                 summary_cols = ["Shots", "Scores", "Shot Efficiency"]
                 score_cols = [c for c in ["goal", "2 pointer", "point"] if c in player_summary.columns]
                 miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45"] if c in player_summary.columns]
@@ -955,6 +951,7 @@ with tab2:
 
             else:
                 st.info("No player scoring data for current filters.")
+
             
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
