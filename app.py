@@ -871,6 +871,57 @@ with tab2:
 
         fig_summary.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_summary, use_container_width=True)
-
+        if cols["player"] and cols["stat1"] and cols["team"]:
+            player_scoring_df = plot_df.copy()
+            player_scoring_df = player_scoring_df[
+                player_scoring_df[cols["team"]].astype(str).str.lower() == "ballintubber"
+            ].copy()
+    
+            player_scoring_df["__player_clean__"] = player_scoring_df[cols["player"]].astype(str).apply(clean_player_name)
+            player_scoring_df["__stat1_lower__"] = player_scoring_df[cols["stat1"]].astype(str).str.lower()
+    
+            shot_event_list = score_events + miss_events
+    
+            player_scoring_df = player_scoring_df[
+                player_scoring_df["__stat1_lower__"].isin(shot_event_list)
+            ]
+    
+            if not player_scoring_df.empty:
+                player_summary = (
+                    player_scoring_df.groupby(["__player_clean__", "__stat1_lower__"])
+                    .size()
+                    .unstack(fill_value=0)
+                    .reset_index()
+                )
+    
+                for col_name in shot_event_list:
+                    if col_name not in player_summary.columns:
+                        player_summary[col_name] = 0
+    
+                player_summary["Shots"] = player_summary[shot_event_list].sum(axis=1)
+                player_summary["Scores"] = player_summary[score_events].sum(axis=1)
+    
+                player_summary["Shot Efficiency"] = (
+                    player_summary["Scores"] / player_summary["Shots"].replace(0, pd.NA)
+                ).fillna(0)
+    
+                player_summary["Shot Efficiency"] = (
+                    (player_summary["Shot Efficiency"] * 100).round(0).astype(int).astype(str) + "%"
+                )
+    
+                player_summary["Total"] = player_summary["Shots"]
+    
+                player_summary = player_summary.sort_values(
+                    by=["Shots", "Scores"],
+                    ascending=[False, False]
+                )
+    
+                player_summary = player_summary.rename(columns={
+                    "__player_clean__": "Player"
+                })
+    
+                st.markdown("### Player scoring breakdown")
+                st.dataframe(player_summary, use_container_width=True, hide_index=True)
+            
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
