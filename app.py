@@ -723,7 +723,7 @@ with tab2:
     )
 
     if cols["match_no"] and cols["stat1"] and cols["team"]:
-        shot_df = df.copy()
+        shot_df = plot_df.copy()
         shot_df = shot_df[shot_df[cols["team"]].astype(str).str.lower() == "ballintubber"]
 
         event_series = shot_df[cols["stat1"]].astype(str).str.lower()
