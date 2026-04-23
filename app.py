@@ -933,18 +933,19 @@ with tab2:
             st.markdown("### Player scoring breakdown")
             st.markdown("""
             <style>
-            div[data-testid="stDataFrame"] td {
+            div[data-testid="stDataFrame"] [role="gridcell"] {
                 text-align: center !important;
+                justify-content: center !important;
             }
-            div[data-testid="stDataFrame"] th {
+
+            div[data-testid="stDataFrame"] [role="columnheader"] {
                 text-align: center !important;
+                justify-content: center !important;
             }
             </style>
             """, unsafe_allow_html=True)
 
             st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
-
-
             
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
