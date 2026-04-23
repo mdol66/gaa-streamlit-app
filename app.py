@@ -616,13 +616,14 @@ with tab2:
             overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
         ].iloc[0]
 
-        fig_ball.add_scatter(
-            x=["Shots", "Scores", "Misses"],
-            y=[ball_eff * ballintubber_summary["Count"].max()] * 3,
-            mode="text",
-            text=["", f"Efficiency: {ball_eff:.0%}", ""],
-            textposition="top center",
-            showlegend=False
+        fig_ball.add_annotation(
+            x=0.5,
+            y=1.12,
+            xref="paper",
+            yref="paper",
+            text=f"Efficiency: {ball_eff:.0%}",
+            showarrow=False,
+            font=dict(size=16)
         )
         fig_ball.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
@@ -677,13 +678,14 @@ with tab2:
             overall_summary["__team_group__"] == "Opposition", "Efficiency"
         ].iloc[0]
 
-        fig_opp.add_scatter(
-            x=["Shots", "Scores", "Misses"],
-            y=[opp_eff * opp_summary["Count"].max()] * 3,
-            mode="text",
-            text=["", f"Efficiency: {opp_eff:.0%}", ""],
-            textposition="top center",
-            showlegend=False
+        fig_opp.add_annotation(
+            x=0.5,
+            y=1.12,
+            xref="paper",
+            yref="paper",
+            text=f"Efficiency: {opp_eff:.0%}",
+            showarrow=False,
+            font=dict(size=16)
         )
         fig_opp.update_layout(yaxis=dict(range=[0, y_max]))
         fig_opp.update_layout(showlegend=False)
