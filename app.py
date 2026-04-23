@@ -932,9 +932,7 @@ with tab2:
     
             st.markdown("### Player scoring breakdown")
             st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
-
-    
-                st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
+            st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
 
             
 with tab3:
