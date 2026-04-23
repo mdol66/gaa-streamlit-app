@@ -929,6 +929,23 @@ with tab2:
             ]
 
             player_summary = player_summary[non_zero_cols]
+            # Reorder columns
+            summary_cols = ["Shots", "Scores", "Shot Efficiency", "Total"]
+
+            score_cols = [c for c in ["goal", "2 pointer", "point"] if c in player_summary.columns]
+            miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45"] if c in player_summary.columns]
+
+            ordered_cols = (
+                ["Player"] +
+                summary_cols +
+                score_cols +
+                miss_cols
+            )
+
+            # Keep only columns that exist
+            ordered_cols = [c for c in ordered_cols if c in player_summary.columns]
+
+            player_summary = player_summary[ordered_cols]
     
             st.markdown("### Player scoring breakdown")
 
