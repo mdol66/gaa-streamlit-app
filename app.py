@@ -681,9 +681,13 @@ with tab2:
         )
         fig_opp.update_layout(margin=dict(t=60))
 
-        opp_eff = overall_summary.loc[
-            overall_summary["__team_group__"] == "Opposition", "Efficiency"
-        ].iloc[0]
+        opp_eff = (
+            overall_summary.loc[
+                overall_summary["__team_group__"] == "Opposition", "Efficiency"
+            ].iloc[0]
+            if (overall_summary["__team_group__"] == "Opposition").any()
+            else 0
+        )
 
         fig_opp.add_annotation(
             x=0.5,
