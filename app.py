@@ -930,7 +930,7 @@ with tab2:
 
             player_summary = player_summary[non_zero_cols]
     
-                st.markdown("### Player scoring breakdown")
+            st.markdown("### Player scoring breakdown")
                 st.markdown("""
                 <style>
                 div[data-testid="stDataFrame"] th {
