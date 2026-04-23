@@ -609,8 +609,7 @@ with tab2:
                 "Shots": "#1f77b4",
                 "Scores": "#90EE90",
                 "Misses": "#FF3B30"
-            },
-            legend=False
+            }
         )
 
         ball_eff = overall_summary.loc[
@@ -638,6 +637,7 @@ with tab2:
         )
 
         fig_ball.update_layout(yaxis=dict(range=[0, y_max]))
+        fig_ball.update_layout(showlegend=False)
         st.plotly_chart(fig_ball, use_container_width=True)
 
     with col2:
@@ -659,8 +659,7 @@ with tab2:
                 "Shots": "#1f77b4",
                 "Scores": "#90EE90",
                 "Misses": "#FF3B30"
-            },
-            legend=False
+            }
         )
         fig_opp.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
@@ -687,6 +686,7 @@ with tab2:
             showlegend=False
         )
         fig_opp.update_layout(yaxis=dict(range=[0, y_max]))
+        fig_opp.update_layout(showlegend=False)
         st.plotly_chart(fig_opp, use_container_width=True)
 
     count_misses = is_in(event_series, miss_events).sum()
