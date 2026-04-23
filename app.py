@@ -966,7 +966,7 @@ with tab3:
         ko_df = ko_df[ko_df["__stat1_lower__"].str.contains("kick ?out", na=False)]
 
         if not ko_df.empty:
-                        ko_df["__team_lower__"] = ko_df[cols["team"]].astype(str).str.lower()
+            ko_df["__team_lower__"] = ko_df[cols["team"]].astype(str).str.lower()
             ko_df["__is_ball__"] = ko_df["__team_lower__"] == "ballintubber"
             ko_df["__is_won__"] = ko_df["__stat1_lower__"].str.contains("won", na=False)
             ko_df["__is_lost__"] = ko_df["__stat1_lower__"].str.contains("lost", na=False)
