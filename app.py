@@ -911,52 +911,50 @@ with tab2:
     
                 player_summary["Total"] = player_summary["Shots"]
     
+            if not player_summary.empty:
+
                 player_summary = player_summary.sort_values(
                     by=["Shots", "Scores"],
                     ascending=[False, False]
                 )
-    
-            player_summary = player_summary.rename(columns={
-                "__player_clean__": "Player"
-            })
 
-            # Drop columns where total = 0 (except key columns)
-            keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency", "Total"]
+                player_summary = player_summary.rename(columns={
+                    "__player_clean__": "Player"
+                })
 
-            non_zero_cols = [
-                col for col in player_summary.columns
-                if col in keep_cols or player_summary[col].sum() > 0
-            ]
+                # Drop columns where total = 0 (except key columns)
+                keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency"]
 
-            player_summary = player_summary[non_zero_cols]
-            # Reorder columns
-            summary_cols = ["Shots", "Scores", "Shot Efficiency"]
+                non_zero_cols = [
+                    col for col in player_summary.columns
+                    if col in keep_cols or player_summary[col].sum() > 0
+                ]
 
-            score_cols = [c for c in ["goal", "2 pointer", "point"] if c in player_summary.columns]
-            miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45"] if c in player_summary.columns]
+                player_summary = player_summary[non_zero_cols]
 
-            ordered_cols = (
-                ["Player"] +
-                summary_cols +
-                score_cols +
-                miss_cols
-            )
+                # Reorder columns
+                summary_cols = ["Shots", "Scores", "Shot Efficiency"]
+                score_cols = [c for c in ["goal", "2 pointer", "point"] if c in player_summary.columns]
+                miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45"] if c in player_summary.columns]
 
-            # Keep only columns that exist
-            ordered_cols = [c for c in ordered_cols if c in player_summary.columns]
+                ordered_cols = ["Player"] + summary_cols + score_cols + miss_cols
+                ordered_cols = [c for c in ordered_cols if c in player_summary.columns]
 
-            player_summary = player_summary[ordered_cols]
-    
-            st.markdown("### Player scoring breakdown")
+                player_summary = player_summary[ordered_cols]
 
-            player_summary["Player"] = (
-                player_summary["Player"]
-                .replace("nan", pd.NA)
-                .fillna("Not Allocated")
-            )
-            player_summary_display = player_summary.astype(str)
+                player_summary["Player"] = (
+                    player_summary["Player"]
+                    .replace("nan", pd.NA)
+                    .fillna("Not Allocated")
+                )
 
-            st.table(player_summary_display)
+                player_summary_display = player_summary.astype(str)
+
+                st.markdown("### Player scoring breakdown")
+                st.table(player_summary_display)
+
+            else:
+                st.info("No player scoring data for current filters.")
             
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
