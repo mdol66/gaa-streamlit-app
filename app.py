@@ -602,7 +602,13 @@ with tab2:
             x="Metric",
             y="Count",
             text="Count",
-            title="Ballintubber Scoring Summary"
+            title="Ballintubber Scoring Summary",
+            color="Metric",
+            color_discrete_map={
+                "Shots": "#1f77b4",
+                "Scores": "#90EE90",
+                "Misses": "#FF3B30"
+            }
         )
 
         ball_eff = overall_summary.loc[
@@ -633,7 +639,13 @@ with tab2:
             x="Metric",
             y="Count",
             text="Count",
-            title="Opposition Scoring Summary"
+            title="Opposition Scoring Summary",
+            color="Metric",
+            color_discrete_map={
+                "Shots": "#1f77b4",
+                "Scores": "#90EE90",
+                "Misses": "#FF3B30"
+            }
         )
 
         opp_eff = overall_summary.loc[
