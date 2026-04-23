@@ -931,7 +931,7 @@ with tab2:
             player_summary = player_summary[non_zero_cols]
     
             st.markdown("### Player scoring breakdown")
-                st.markdown("""
+            st.markdown("""
                 <style>
                 div[data-testid="stDataFrame"] th {
                     white-space: normal !important;
