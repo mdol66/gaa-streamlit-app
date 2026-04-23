@@ -931,23 +931,8 @@ with tab2:
             player_summary = player_summary[non_zero_cols]
     
             st.markdown("### Player scoring breakdown")
-            st.markdown("""
-            <style>
-            /* Column headers */
-            div[data-testid="stDataFrame"] [role="columnheader"] > div {
-                justify-content: flex-start !important;
-                text-align: left !important;
-            }
 
-            /* Cell values */
-            div[data-testid="stDataFrame"] [role="gridcell"] > div {
-                justify-content: flex-start !important;
-                text-align: left !important;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-
-                        st.table(
+            st.table(
                 player_summary.style
                 .hide(axis="index")
                 .set_properties(**{"text-align": "left"})
