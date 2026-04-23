@@ -947,7 +947,15 @@ with tab2:
             </style>
             """, unsafe_allow_html=True)
 
-            st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
+                        st.table(
+                player_summary.style
+                .hide(axis="index")
+                .set_properties(**{"text-align": "left"})
+                .set_table_styles([
+                    {"selector": "th", "props": [("text-align", "left")]},
+                    {"selector": "td", "props": [("text-align", "left")]}
+                ])
+            )
             
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
