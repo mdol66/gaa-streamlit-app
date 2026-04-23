@@ -916,8 +916,10 @@ with tab2:
                     ascending=[False, False]
                 )
     
-                player_summary = player_summary.rename(columns={
-                    "__player_clean__": "Player"
+            player_summary = player_summary.rename(columns={
+                "__player_clean__": "Player"
+            })
+
             # Drop columns where total = 0 (except key columns)
             keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency", "Total"]
 
@@ -925,8 +927,6 @@ with tab2:
                 col for col in player_summary.columns
                 if col in keep_cols or player_summary[col].sum() > 0
             ]
-
-            player_summary = player_summary[non_zero_cols]
 
             player_summary = player_summary[non_zero_cols]
     
@@ -951,7 +951,7 @@ with tab2:
                 </style>
                 """, unsafe_allow_html=True)
     
-                st.dataframe(player_summary, use_container_width=True, hide_index=True)
+                st.dataframe(player_summary, use_container_width=True, height=600, hide_index=True)
 
             
 with tab3:
