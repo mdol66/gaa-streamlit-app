@@ -636,7 +636,7 @@ with tab2:
             ]
         )
 
-
+        fig_ball.update_layout(yaxis=dict(range=[0, y_max]))
         st.plotly_chart(fig_ball, use_container_width=True)
 
     with col2:
@@ -684,7 +684,7 @@ with tab2:
             textposition="top center",
             showlegend=False
         )
-
+        fig_opp.update_layout(yaxis=dict(range=[0, y_max]))
         st.plotly_chart(fig_opp, use_container_width=True)
 
     count_misses = is_in(event_series, miss_events).sum()
