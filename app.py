@@ -587,6 +587,7 @@ with tab2:
     )
 
     overall_summary["Efficiency"] = overall_summary["Scores"] / overall_summary["Shots"]
+    y_max = overall_summary[["Shots", "Scores", "Misses"]].max().max()
     col1, col2 = st.columns(2)
 
     with col1:
