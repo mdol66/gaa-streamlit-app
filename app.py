@@ -657,19 +657,19 @@ with tab2:
                 value_name="Count"
             )
 
-        fig_opp = px.bar(
-            opp_summary,
-            x="Metric",
-            y="Count",
-            text="Count",
-            title="Opposition Scoring Summary",
-            color="Metric",
-            color_discrete_map={
-                "Shots": "#1f77b4",
-                "Scores": "#90EE90",
-                "Misses": "#FF3B30"
-            }
-        )
+            fig_opp = px.bar(
+                opp_summary,
+                x="Metric",
+                y="Count",
+                text="Count",
+                title="Opposition Scoring Summary",
+                color="Metric",
+                color_discrete_map={
+                    "Shots": "#1f77b4",
+                    "Scores": "#90EE90",
+                    "Misses": "#FF3B30"
+                }
+            )
         fig_opp.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             shapes=[
@@ -681,28 +681,28 @@ with tab2:
                 )
             ]
         )
-        fig_opp.update_layout(margin=dict(t=60))
-
-        opp_eff = (
-            overall_summary.loc[
-                overall_summary["__team_group__"] == "Opposition", "Efficiency"
-            ].iloc[0]
-            if (overall_summary["__team_group__"] == "Opposition").any()
-            else 0
-        )
-
-        fig_opp.add_annotation(
-            x=0.5,
-            y=1.12,
-            xref="paper",
-            yref="paper",
-            text=f"Efficiency: {opp_eff:.0%}",
-            showarrow=False,
-            font=dict(size=16)
-        )
-        fig_opp.update_layout(yaxis=dict(range=[0, y_max]))
-        fig_opp.update_layout(showlegend=False)
-        st.plotly_chart(fig_opp, use_container_width=True)
+            fig_opp.update_layout(margin=dict(t=60))
+    
+            opp_eff = (
+                overall_summary.loc[
+                    overall_summary["__team_group__"] == "Opposition", "Efficiency"
+                ].iloc[0]
+                if (overall_summary["__team_group__"] == "Opposition").any()
+                else 0
+            )
+    
+            fig_opp.add_annotation(
+                x=0.5,
+                y=1.12,
+                xref="paper",
+                yref="paper",
+                text=f"Efficiency: {opp_eff:.0%}",
+                showarrow=False,
+                font=dict(size=16)
+            )
+            fig_opp.update_layout(yaxis=dict(range=[0, y_max]))
+            fig_opp.update_layout(showlegend=False)
+            st.plotly_chart(fig_opp, use_container_width=True)
 
     count_misses = is_in(event_series, miss_events).sum()
     count_scores = is_in(event_series, score_events).sum()
