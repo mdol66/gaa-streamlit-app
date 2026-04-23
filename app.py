@@ -966,6 +966,28 @@ with tab3:
         ko_df = ko_df[ko_df["__stat1_lower__"].str.contains("kick ?out", na=False)]
 
         if not ko_df.empty:
-            st.write("Kickout data found")
+                        ko_df["__team_lower__"] = ko_df[cols["team"]].astype(str).str.lower()
+            ko_df["__is_ball__"] = ko_df["__team_lower__"] == "ballintubber"
+            ko_df["__is_won__"] = ko_df["__stat1_lower__"].str.contains("won", na=False)
+            ko_df["__is_lost__"] = ko_df["__stat1_lower__"].str.contains("lost", na=False)
+
+            summary = (
+                ko_df.groupby(cols["team"])
+                .agg(
+                    Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Won=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Lost=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                )
+                .reset_index()
+            )
+
+            summary["Own KO Index +/-"] = summary["Own_KO_Won"] - summary["Own_KO_Lost"]
+            summary["Opp KO Index +/-"] = summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
+            summary["Overall KO Index +/-"] = summary["Own KO Index +/-"] + summary["Opp KO Index +/-"]
+
+            summary = summary.rename(columns={cols["team"]: "Opposition"})
+
+            st.table(summary)
         else:
             st.info("No kickout data for current filters.")
