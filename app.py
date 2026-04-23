@@ -15,6 +15,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+
 def safe_col_lookup(df: pd.DataFrame, candidates: list[str]) -> Optional[str]:
     lower_map = {c.lower(): c for c in df.columns}
     for candidate in candidates:
@@ -38,11 +39,9 @@ def build_pitch_shapes() -> list[dict]:
     line = dict(color="#E8E8E8", width=2)
     dashed = dict(color="#E8E8E8", width=2, dash="dash")
 
-    # The original app image has margins left/right of the pitch.
     x_left = 4.0
     x_right = 96.0
 
-    # Real pitch dimensions
     pitch_len = 145.0
     pitch_wid = 80.0
 
@@ -52,7 +51,6 @@ def build_pitch_shapes() -> list[dict]:
     def sy(m: float) -> float:
         return (m / pitch_len) * 100.0
 
-    # Horizontal lines from each endline
     y13 = sy(13)
     y20 = sy(20)
     y45 = sy(45)
@@ -61,28 +59,23 @@ def build_pitch_shapes() -> list[dict]:
     y100_20 = 100.0 - y20
     y100_45 = 100.0 - y45
 
-    # Widths
-    large_w = sw(19.0)   # keep these outer vertical lines 19m apart
+    large_w = sw(19.0)
     small_w = sw(14.0)
     goal_w = sw(6.5)
     cx = 50.0
 
-    # Outer boundary of the pitch
     shapes.append(dict(type="rect", x0=x_left, y0=0, x1=x_right, y1=100, line=line))
 
-    # Horizontal lines
     for y in [y13, y20, y45, y100_45, y100_20, y100_13]:
         shapes.append(dict(type="line", x0=x_left, y0=y, x1=x_right, y1=y, line=line))
 
     shapes.append(dict(type="line", x0=x_left, y0=y50, x1=x_right, y1=y50, line=dashed))
 
-    # Top rectangles + goal
     shapes.append(dict(type="rect", x0=cx - large_w / 2, y0=0, x1=cx + large_w / 2, y1=y13, line=line))
     shapes.append(dict(type="rect", x0=cx - small_w / 2, y0=0, x1=cx + small_w / 2, y1=sy(4.5), line=line))
     shapes.append(dict(type="line", x0=cx - goal_w / 2, y0=0, x1=cx - goal_w / 2, y1=sy(1.0), line=line))
     shapes.append(dict(type="line", x0=cx + goal_w / 2, y0=0, x1=cx + goal_w / 2, y1=sy(1.0), line=line))
 
-    # Bottom rectangles + goal
     shapes.append(dict(type="rect", x0=cx - large_w / 2, y0=y100_13, x1=cx + large_w / 2, y1=100, line=line))
     shapes.append(dict(type="rect", x0=cx - small_w / 2, y0=100 - sy(4.5), x1=cx + small_w / 2, y1=100, line=line))
     shapes.append(dict(type="line", x0=cx - goal_w / 2, y0=100, x1=cx - goal_w / 2, y1=100 - sy(1.0), line=line))
@@ -109,14 +102,12 @@ def build_pitch_shapes() -> list[dict]:
             path += f" L {x},{y}"
         return path
 
-    # 13m semi-circle from 20m line
     rx13 = sw(13.0)
     ry13 = sy(13.0)
 
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y20, rx13, ry13, 0, 180), line=line))
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y100_20, rx13, ry13, 180, 360), line=line))
 
-    # 40m arcs centred on endlines, clipped beyond 20m line
     rx40 = sw(40.0)
     ry40 = sy(40.0)
     theta = math.degrees(math.asin(20.0 / 40.0))
@@ -253,7 +244,6 @@ def add_numbered_markers(
     category_col: str,
     player_col: Optional[str] = None,
 ) -> None:
-
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
     df[category_col] = df[category_col].map(normalize_outcome)
@@ -273,7 +263,9 @@ def add_numbered_markers(
                 customdata=group[
                     [label_col] + ([player_col] if player_col and player_col in group.columns else [])
                 ].values,
-                hovertemplate="#%{customdata[0]}<br>Player=%{customdata[1]}<extra></extra>" if player_col and player_col in group.columns else "#%{customdata[0]}<extra></extra>",
+                hovertemplate="#%{customdata[0]}<br>Player=%{customdata[1]}<extra></extra>"
+                if player_col and player_col in group.columns
+                else "#%{customdata[0]}<extra></extra>",
             )
         )
 
@@ -385,6 +377,7 @@ if cols["half"]:
 mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
 st.session_state["mode"] = mode
 shot_type_filter = "All"
+
 if mode == "Shots" and cols["stat1"] and cols["stat2"]:
     shot_type_filter = st.sidebar.selectbox(
         "Shot Type",
@@ -415,10 +408,7 @@ if cols["stat1"]:
         ]
 
     elif mode == "Turnovers":
-        to_mask = stat1_series.str.contains(
-            "turnover",
-            na=False
-        )
+        to_mask = stat1_series.str.contains("turnover", na=False)
         plot_df = plot_df[to_mask]
 
 outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outcome).astype(str).unique().tolist())
@@ -460,7 +450,15 @@ c2.metric("Plotted events", len(plot_df))
 with tab1:
     fig = make_pitch_figure()
     if len(plot_df):
-        add_numbered_markers(fig, plot_df, "__x_plot__", "__y_plot__", "__plot_number__", cols["outcome"], cols["player"])
+        add_numbered_markers(
+            fig,
+            plot_df,
+            "__x_plot__",
+            "__y_plot__",
+            "__plot_number__",
+            cols["outcome"],
+            cols["player"]
+        )
 
     col1, col2 = st.columns([1, 6], vertical_alignment="center")
 
@@ -507,7 +505,9 @@ with tab1:
         "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         unsafe_allow_html=True
     )
+
     st.subheader("Filtered events being plotted")
+
     st.markdown(
         "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         unsafe_allow_html=True
@@ -537,11 +537,6 @@ with tab2:
 
     st.subheader("Shots / Scores / Misses by Match")
 
-
-
-    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
-    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
-
     miss_events = [
         "wide", "wide from free", "short", "out for 45", "saved",
         "short from free", "wide from 45", "off posts from 45", "short from 45", "off posts"
@@ -552,24 +547,26 @@ with tab2:
         "2 pointer from free", "goal", "goal from penalty",
         "goal from free"
     ]
-        # --- Overall scoring summary data ---
+
     scoring_df = plot_df.copy()
 
-    scoring_df = scoring_df[scoring_df[cols["team"]].astype(str).str.lower().isin(
-        ["ballintubber"] + [
-            t.lower() for t in df[cols["team"]].dropna().astype(str).unique().tolist()
-            if t.lower() != "ballintubber" and t.lower() not in ["1st half", "2nd half"]
-        ]
-    )].copy()
+    scoring_df = scoring_df[
+        scoring_df[cols["team"]].astype(str).str.lower().isin(
+            ["ballintubber"] + [
+                t.lower()
+                for t in df[cols["team"]].dropna().astype(str).unique().tolist()
+                if t.lower() != "ballintubber" and t.lower() not in ["1st half", "2nd half"]
+            ]
+        )
+    ].copy()
 
     scoring_df["__team_group__"] = scoring_df[cols["team"]].astype(str).str.lower().apply(
         lambda x: "Ballintubber" if x == "ballintubber" else "Opposition"
     )
 
-    event_series = scoring_df[cols["stat1"]].astype(str).str.lower()
-
-    score_mask = event_series.isin(score_events)
-    miss_mask = event_series.isin(miss_events)
+    scoring_event_series = scoring_df[cols["stat1"]].astype(str).str.lower()
+    score_mask = scoring_event_series.isin(score_events)
+    miss_mask = scoring_event_series.isin(miss_events)
     shot_mask = score_mask | miss_mask
 
     scoring_df = scoring_df[shot_mask].copy()
@@ -586,8 +583,13 @@ with tab2:
         .reset_index()
     )
 
-    overall_summary["Efficiency"] = overall_summary["Scores"] / overall_summary["Shots"]
-    y_max = overall_summary[["Shots", "Scores", "Misses"]].max().max()
+    if not overall_summary.empty:
+        overall_summary["Efficiency"] = overall_summary["Scores"] / overall_summary["Shots"]
+        y_max = overall_summary[["Shots", "Scores", "Misses"]].max().max()
+    else:
+        overall_summary["Efficiency"] = pd.Series(dtype=float)
+        y_max = 1
+
     has_ball = (overall_summary["__team_group__"] == "Ballintubber").any()
     has_opp = (overall_summary["__team_group__"] == "Opposition").any()
 
@@ -598,7 +600,9 @@ with tab2:
 
     with col1:
         if has_ball:
-            ballintubber_summary = overall_summary[overall_summary["__team_group__"] == "Ballintubber"].melt(
+            ballintubber_summary = overall_summary[
+                overall_summary["__team_group__"] == "Ballintubber"
+            ].melt(
                 id_vars="__team_group__",
                 value_vars=["Shots", "Scores", "Misses"],
                 var_name="Metric",
@@ -619,38 +623,45 @@ with tab2:
                 }
             )
 
-            ball_eff = overall_summary.loc[
-                overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
-            ].iloc[0]
+            ball_eff = (
+                overall_summary.loc[
+                    overall_summary["__team_group__"] == "Ballintubber", "Efficiency"
+                ].iloc[0]
+                if has_ball else 0
+            )
 
-        fig_ball.add_annotation(
-            x=0.5,
-            y=1.12,
-            xref="paper",
-            yref="paper",
-            text=f"Efficiency: {ball_eff:.0%}",
-            showarrow=False,
-            font=dict(size=16)
-        )
-        fig_ball.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            shapes=[
-                dict(
-                    type="rect",
-                    xref="paper", yref="paper",
-                    x0=0, y0=0, x1=1, y1=1,
-                    line=dict(color="#FF7F7F", width=2)
-                )
-            ]
-        )
-        fig_ball.update_layout(margin=dict(t=60))
-        fig_ball.update_layout(yaxis=dict(range=[0, y_max]))
-        fig_ball.update_layout(showlegend=False)
-        st.plotly_chart(fig_ball, use_container_width=True)
+            fig_ball.add_annotation(
+                x=0.5,
+                y=1.12,
+                xref="paper",
+                yref="paper",
+                text=f"Efficiency: {ball_eff:.0%}",
+                showarrow=False,
+                font=dict(size=16)
+            )
+
+            fig_ball.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                shapes=[
+                    dict(
+                        type="rect",
+                        xref="paper", yref="paper",
+                        x0=0, y0=0, x1=1, y1=1,
+                        line=dict(color="#FF7F7F", width=2)
+                    )
+                ],
+                margin=dict(t=60),
+                yaxis=dict(range=[0, y_max]),
+                showlegend=False
+            )
+
+            st.plotly_chart(fig_ball, use_container_width=True)
 
     with col2:
         if has_opp:
-            opp_summary = overall_summary[overall_summary["__team_group__"] == "Opposition"].melt(
+            opp_summary = overall_summary[
+                overall_summary["__team_group__"] == "Opposition"
+            ].melt(
                 id_vars="__team_group__",
                 value_vars=["Shots", "Scores", "Misses"],
                 var_name="Metric",
@@ -670,27 +681,14 @@ with tab2:
                     "Misses": "#FF3B30"
                 }
             )
-        fig_opp.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            shapes=[
-                dict(
-                    type="rect",
-                    xref="paper", yref="paper",
-                    x0=0, y0=0, x1=1, y1=1,
-                    line=dict(color="#333333", width=2)
-                )
-            ]
-        )
-            fig_opp.update_layout(margin=dict(t=60))
-    
+
             opp_eff = (
                 overall_summary.loc[
                     overall_summary["__team_group__"] == "Opposition", "Efficiency"
                 ].iloc[0]
-                if (overall_summary["__team_group__"] == "Opposition").any()
-                else 0
+                if has_opp else 0
             )
-    
+
             fig_opp.add_annotation(
                 x=0.5,
                 y=1.12,
@@ -700,9 +698,25 @@ with tab2:
                 showarrow=False,
                 font=dict(size=16)
             )
-            fig_opp.update_layout(yaxis=dict(range=[0, y_max]))
-            fig_opp.update_layout(showlegend=False)
+
+            fig_opp.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                shapes=[
+                    dict(
+                        type="rect",
+                        xref="paper", yref="paper",
+                        x0=0, y0=0, x1=1, y1=1,
+                        line=dict(color="#333333", width=2)
+                    )
+                ],
+                margin=dict(t=60),
+                yaxis=dict(range=[0, y_max]),
+                showlegend=False
+            )
+
             st.plotly_chart(fig_opp, use_container_width=True)
+
+    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
 
     count_misses = is_in(event_series, miss_events).sum()
     count_scores = is_in(event_series, score_events).sum()
@@ -717,6 +731,7 @@ with tab2:
     score_events_from_frees = [
         "point from free", "point from 45", "2 pointer from free", "goal from free"
     ]
+
     count_misses_from_frees = is_in(event_series, miss_events_from_frees).sum()
     count_scores_from_frees = is_in(event_series, score_events_from_frees).sum()
     count_attempts_from_frees = count_misses_from_frees + count_scores_from_frees
@@ -747,10 +762,14 @@ with tab2:
         shot_df = shot_df[shot_mask].copy()
         shot_df["measure"] = "Shots"
 
-        scores_df = shot_df[is_in(shot_df[cols["stat1"]].astype(str).str.lower(), score_events)].copy()
+        scores_df = shot_df[
+            is_in(shot_df[cols["stat1"]].astype(str).str.lower(), score_events)
+        ].copy()
         scores_df["measure"] = "Scores"
 
-        misses_df = shot_df[is_in(shot_df[cols["stat1"]].astype(str).str.lower(), miss_events)].copy()
+        misses_df = shot_df[
+            is_in(shot_df[cols["stat1"]].astype(str).str.lower(), miss_events)
+        ].copy()
         misses_df["measure"] = "Misses"
 
         summary_df = pd.concat([shot_df, scores_df, misses_df], ignore_index=True)
@@ -760,19 +779,26 @@ with tab2:
             .size()
             .reset_index(name="count")
         )
+
         efficiency_summary = (
             summary.pivot(index=cols["match_no"], columns="measure", values="count")
             .fillna(0)
             .reset_index()
         )
 
+        if "Scores" not in efficiency_summary.columns:
+            efficiency_summary["Scores"] = 0
+        if "Shots" not in efficiency_summary.columns:
+            efficiency_summary["Shots"] = 0
+
         efficiency_summary["Shot Efficiency"] = (
-            efficiency_summary["Scores"] / efficiency_summary["Shots"]
+            efficiency_summary["Scores"] / efficiency_summary["Shots"].replace(0, pd.NA)
         ).fillna(0)
 
         summary["match_label"] = summary[cols["match_no"]].astype(str).map(
             lambda x: next((label for label, num in match_labels.items() if num == x), x)
         )
+
         fig_summary = px.bar(
             summary,
             x="match_label",
@@ -781,22 +807,34 @@ with tab2:
             color="measure",
             barmode="group",
             category_orders={"measure": ["Shots", "Scores", "Misses"]},
-            title="Ballintubber Shots, Scores and Misses per Match"
+            title="Ballintubber Shots, Scores and Misses per Match",
+            color_discrete_map={
+                "Shots": "#1f77b4",
+                "Scores": "#90EE90",
+                "Misses": "#FF3B30"
+            }
         )
-        fig_summary.update_xaxes(categoryorder="array", categoryarray=summary["match_label"].unique())
+
+        fig_summary.update_xaxes(
+            categoryorder="array",
+            categoryarray=summary["match_label"].unique()
+        )
+
         efficiency_summary["match_label"] = efficiency_summary[cols["match_no"]].astype(str).map(
             lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
         )
 
-        fig_summary.add_scatter(
-            x=efficiency_summary["match_label"],
-            y=efficiency_summary["Shot Efficiency"] * summary["count"].max(),
-            mode="lines+markers+text",
-            text=[f"{round(v * 100)}%" for v in efficiency_summary["Shot Efficiency"]],
-            textposition="top center",
-            name="Shot Efficiency",
-            showlegend=False
-        )
+        if not summary.empty:
+            fig_summary.add_scatter(
+                x=efficiency_summary["match_label"],
+                y=efficiency_summary["Shot Efficiency"] * summary["count"].max(),
+                mode="lines+markers+text",
+                text=[f"{round(v * 100)}%" for v in efficiency_summary["Shot Efficiency"]],
+                textposition="top center",
+                name="Shot Efficiency",
+                showlegend=False
+            )
+
         fig_summary.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_summary, use_container_width=True)
 
