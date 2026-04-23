@@ -591,12 +591,13 @@ with tab2:
     has_ball = (overall_summary["__team_group__"] == "Ballintubber").any()
     has_opp = (overall_summary["__team_group__"] == "Opposition").any()
 
+    col1, col2 = st.columns(2)
+
     if not has_ball and not has_opp:
         st.info("No scoring data available for the current filters.")
-    else:
-        col1, col2 = st.columns(2)
 
-        with col1:
+    with col1:
+        if has_ball:
             ballintubber_summary = overall_summary[overall_summary["__team_group__"] == "Ballintubber"].melt(
                 id_vars="__team_group__",
                 value_vars=["Shots", "Scores", "Misses"],
@@ -648,12 +649,13 @@ with tab2:
         st.plotly_chart(fig_ball, use_container_width=True)
 
     with col2:
-        opp_summary = overall_summary[overall_summary["__team_group__"] == "Opposition"].melt(
-            id_vars="__team_group__",
-            value_vars=["Shots", "Scores", "Misses"],
-            var_name="Metric",
-            value_name="Count"
-        )
+        if has_opp:
+            opp_summary = overall_summary[overall_summary["__team_group__"] == "Opposition"].melt(
+                id_vars="__team_group__",
+                value_vars=["Shots", "Scores", "Misses"],
+                var_name="Metric",
+                value_name="Count"
+            )
 
         fig_opp = px.bar(
             opp_summary,
