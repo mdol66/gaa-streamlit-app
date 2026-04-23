@@ -623,6 +623,28 @@ with tab2:
             textposition="top center",
             showlegend=False
         )
+        fig_ball.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            shapes=[
+                dict(
+                    type="rect",
+                    xref="paper", yref="paper",
+                    x0=0, y0=0, x1=1, y1=1,
+                    line=dict(color="#FF7F7F", width=2)
+                )
+            ]
+        )
+        fig_opp.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            shapes=[
+                dict(
+                    type="rect",
+                    xref="paper", yref="paper",
+                    x0=0, y0=0, x1=1, y1=1,
+                    line=dict(color="#333333", width=2)
+                )
+            ]
+        )
 
         st.plotly_chart(fig_ball, use_container_width=True)
 
