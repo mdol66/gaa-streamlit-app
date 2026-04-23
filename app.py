@@ -554,9 +554,9 @@ plot_df.loc[
     ["__x_plot__", "__y_plot__"]
 ] = pd.NA
 
-c1, c2 = st.columns(2)
-c1.metric("Raw events", len(df))
-c2.metric("Plotted events", len(plot_df))
+# c1, c2 = st.columns(2)
+# c1.metric("Raw events", len(df))
+# c2.metric("Plotted events", len(plot_df))
 
 with tab1:
     fig = make_pitch_figure()
