@@ -935,14 +935,14 @@ with tab2:
             <style>
             /* Column headers */
             div[data-testid="stDataFrame"] [role="columnheader"] > div {
-                justify-content: center !important;
-                text-align: center !important;
+                justify-content: flex-start !important;
+                text-align: left !important;
             }
 
             /* Cell values */
             div[data-testid="stDataFrame"] [role="gridcell"] > div {
-                justify-content: center !important;
-                text-align: center !important;
+                justify-content: flex-start !important;
+                text-align: left !important;
             }
             </style>
             """, unsafe_allow_html=True)
