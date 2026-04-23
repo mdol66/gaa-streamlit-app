@@ -930,10 +930,10 @@ with tab2:
 
             player_summary = player_summary[non_zero_cols]
             # Reorder columns
-            summary_cols = ["Shots", "Scores", "Shot Efficiency", "Total"]
+            summary_cols = ["Shots", "Scores", "Shot Efficiency"]
 
             score_cols = [c for c in ["goal", "2 pointer", "point"] if c in player_summary.columns]
-            miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45"] if c in player_summary.columns]
+            miss_cols = [c for c in ["wide", "short", "off posts", "saved", "out for 45", "Total"] if c in player_summary.columns]
 
             ordered_cols = (
                 ["Player"] +
