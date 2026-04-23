@@ -154,7 +154,7 @@ def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
         margin=dict(l=20, r=8, t=40, b=8),
         height=950,
         width=900,
-showlegend=False,
+        showlegend=False,
     )
     fig.update_xaxes(range=[3.5, 96.5], visible=False, fixedrange=True)
     fig.update_yaxes(range=[100, 0], visible=False, fixedrange=True, scaleanchor="x", scaleratio=1)
@@ -214,6 +214,7 @@ def event_palette() -> dict[str, str]:
         "turnover lost": "#FF3B30",
     }
 
+
 def event_palette_all() -> dict[str, str]:
     return {
         "goal": "#00C853",
@@ -232,6 +233,7 @@ def event_palette_all() -> dict[str, str]:
         "free/pen conceded": "#6D4C41",
     }
 
+
 def classify_shot_result(value: str) -> str | None:
     v = str(value).strip().lower()
 
@@ -240,7 +242,8 @@ def classify_shot_result(value: str) -> str | None:
     if v in ["wide", "short", "off posts", "saved", "out for 45", "out for 45/65"]:
         return "Miss"
     return None
-    
+
+
 def add_numbered_markers(
     fig: go.Figure,
     df: pd.DataFrame,
@@ -250,7 +253,7 @@ def add_numbered_markers(
     category_col: str,
     player_col: Optional[str] = None,
 ) -> None:
-    
+
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
     df[category_col] = df[category_col].map(normalize_outcome)
@@ -297,13 +300,15 @@ def build_display_number(df: pd.DataFrame, number_col: Optional[str]) -> pd.Seri
         return df[number_col].astype(str)
     return pd.Series(range(1, len(df) + 1), index=df.index).astype(str)
 
+
 def clean_player_name(value: str) -> str:
     text = str(value).strip()
     parts = text.split()
     if len(parts) >= 2 and parts[0].isdigit():
         return " ".join(parts[1:])
     return text
-    
+
+
 st.title("Gaelic Football Pitch Maps")
 st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -401,7 +406,6 @@ if cols["stat1"]:
 
             if shot_type_filter == "From Play":
                 plot_df = plot_df[~stat2_filled]
-
             elif shot_type_filter == "From Placed":
                 plot_df = plot_df[stat2_filled]
 
@@ -409,7 +413,7 @@ if cols["stat1"]:
         plot_df = plot_df[
             plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kick ?out", na=False)
         ]
-        
+
     elif mode == "Turnovers":
         to_mask = stat1_series.str.contains(
             "turnover",
@@ -422,7 +426,7 @@ outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
 if outcome_choice != "All":
     plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 
-tab1, tab2 = st.tabs(["Pitch Map", "Match Analysis"])
+tab1, tab2, tab3 = st.tabs(["Pitch Map", "Scoring Analysis", "Non-Scoring Analysis"])
 
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
 plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce").fillna(-1)
@@ -437,15 +441,13 @@ plot_df = plot_df[
         (plot_df[cols["x"]] == -1) & (plot_df[cols["y"]] == -1)
     )
 ]
-# Map x positions inside the sidelines rather than edge-to-edge
-# Map x positions inside the sidelines rather than edge-to-edge
+
 x_left = 4.0
 x_right = 96.0
 
 plot_df["__x_plot__"] = x_left + (plot_df[cols["x"]] / 100.0) * (x_right - x_left)
 plot_df["__y_plot__"] = plot_df[cols["y"]]
 
-# Hide rows with no plotted location
 plot_df.loc[
     (plot_df[cols["x"]] == -1) | (plot_df[cols["y"]] == -1),
     ["__x_plot__", "__y_plot__"]
@@ -500,7 +502,7 @@ with tab1:
 
     with col2:
         st.plotly_chart(fig, use_container_width=False)
-    
+
     st.markdown(
         "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         unsafe_allow_html=True
@@ -528,10 +530,11 @@ with tab1:
         show_cols = ["__plot_number__"] + show_cols
 
     st.dataframe(plot_df[show_cols], use_container_width=True)
+
 with tab2:
     def is_in(event_series, values):
         return event_series.isin(values)
-    
+
     st.subheader("Shots / Scores / Misses by Match")
     event_series = plot_df[cols["stat1"]].astype(str).str.lower()
 
@@ -576,7 +579,7 @@ with tab2:
     )
 
     if cols["match_no"] and cols["stat1"] and cols["team"]:
-        shot_df = plot_df.copy()
+        shot_df = df.copy()
         shot_df = shot_df[shot_df[cols["team"]].astype(str).str.lower() == "ballintubber"]
 
         event_series = shot_df[cols["stat1"]].astype(str).str.lower()
@@ -610,7 +613,7 @@ with tab2:
         efficiency_summary["Shot Efficiency"] = (
             efficiency_summary["Scores"] / efficiency_summary["Shots"]
         ).fillna(0)
-        
+
         summary["match_label"] = summary[cols["match_no"]].astype(str).map(
             lambda x: next((label for label, num in match_labels.items() if num == x), x)
         )
@@ -633,7 +636,7 @@ with tab2:
             x=efficiency_summary["match_label"],
             y=efficiency_summary["Shot Efficiency"] * summary["count"].max(),
             mode="lines+markers+text",
-            text=[f"{round(v*100)}%" for v in efficiency_summary["Shot Efficiency"]],
+            text=[f"{round(v * 100)}%" for v in efficiency_summary["Shot Efficiency"]],
             textposition="top center",
             name="Shot Efficiency",
             showlegend=False
@@ -641,3 +644,5 @@ with tab2:
         fig_summary.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_summary, use_container_width=True)
 
+with tab3:
+    st.info("Non-scoring analysis charts will go here.")
