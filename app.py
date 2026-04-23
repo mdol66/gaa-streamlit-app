@@ -949,6 +949,7 @@ with tab2:
     
             st.markdown("### Player scoring breakdown")
 
+            player_summary["Player"] = player_summary["Player"].fillna("Not Allocated")
             player_summary_display = player_summary.astype(str)
 
             st.table(player_summary_display)
