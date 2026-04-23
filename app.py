@@ -634,17 +634,7 @@ with tab2:
                 )
             ]
         )
-        fig_opp.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            shapes=[
-                dict(
-                    type="rect",
-                    xref="paper", yref="paper",
-                    x0=0, y0=0, x1=1, y1=1,
-                    line=dict(color="#333333", width=2)
-                )
-            ]
-        )
+
 
         st.plotly_chart(fig_ball, use_container_width=True)
 
@@ -668,6 +658,17 @@ with tab2:
                 "Scores": "#90EE90",
                 "Misses": "#FF3B30"
             }
+        )
+        fig_opp.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            shapes=[
+                dict(
+                    type="rect",
+                    xref="paper", yref="paper",
+                    x0=0, y0=0, x1=1, y1=1,
+                    line=dict(color="#333333", width=2)
+                )
+            ]
         )
 
         opp_eff = overall_summary.loc[
