@@ -552,26 +552,41 @@ with tab2:
         "2 pointer from free", "goal", "goal from penalty",
         "goal from free"
     ]
-    # --- Overall Score vs Miss ---
-    overall_df = plot_df.copy()
+        # --- Overall scoring summary data ---
+    scoring_df = df.copy()
 
-    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
+    scoring_df = scoring_df[scoring_df[cols["team"]].astype(str).str.lower().isin(
+        ["ballintubber"] + [
+            t.lower() for t in df[cols["team"]].dropna().astype(str).unique().tolist()
+            if t.lower() != "ballintubber" and t.lower() not in ["1st half", "2nd half"]
+        ]
+    )].copy()
+
+    scoring_df["__team_group__"] = scoring_df[cols["team"]].astype(str).str.lower().apply(
+        lambda x: "Ballintubber" if x == "ballintubber" else "Opposition"
+    )
+
+    event_series = scoring_df[cols["stat1"]].astype(str).str.lower()
 
     score_mask = event_series.isin(score_events)
     miss_mask = event_series.isin(miss_events)
+    shot_mask = score_mask | miss_mask
 
-    overall_summary = pd.DataFrame({
-        "Category": ["Scores", "Misses"],
-        "Count": [score_mask.sum(), miss_mask.sum()]
-    })
+    scoring_df = scoring_df[shot_mask].copy()
+    scoring_df["__is_score__"] = scoring_df[cols["stat1"]].astype(str).str.lower().isin(score_events)
+    scoring_df["__is_miss__"] = scoring_df[cols["stat1"]].astype(str).str.lower().isin(miss_events)
 
-    fig_overall = px.bar(
-        overall_summary,
-        x="Category",
-        y="Count",
-        text="Count",
-        title="Overall Scores vs Misses"
+    overall_summary = (
+        scoring_df.groupby("__team_group__")
+        .agg(
+            Shots=("__team_group__", "size"),
+            Scores=("__is_score__", "sum"),
+            Misses=("__is_miss__", "sum")
+        )
+        .reset_index()
     )
+
+    overall_summary["Efficiency"] = overall_summary["Scores"] / overall_summary["Shots"]
 
     st.plotly_chart(fig_overall, use_container_width=True)
     count_misses = is_in(event_series, miss_events).sum()
