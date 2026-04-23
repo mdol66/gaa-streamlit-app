@@ -932,15 +932,9 @@ with tab2:
     
             st.markdown("### Player scoring breakdown")
 
-            st.table(
-                player_summary.style
-                .hide(axis="index")
-                .set_properties(**{"text-align": "left"})
-                .set_table_styles([
-                    {"selector": "th", "props": [("text-align", "left")]},
-                    {"selector": "td", "props": [("text-align", "left")]}
-                ])
-            )
+            player_summary_display = player_summary.astype(str)
+
+            st.table(player_summary_display)
             
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
