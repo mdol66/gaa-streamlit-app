@@ -636,7 +636,7 @@ with tab2:
                 )
             ]
         )
-
+        fig_ball.update_layout(margin=dict(t=60))
         fig_ball.update_layout(yaxis=dict(range=[0, y_max]))
         fig_ball.update_layout(showlegend=False)
         st.plotly_chart(fig_ball, use_container_width=True)
@@ -673,6 +673,7 @@ with tab2:
                 )
             ]
         )
+        fig_opp.update_layout(margin=dict(t=60))
 
         opp_eff = overall_summary.loc[
             overall_summary["__team_group__"] == "Opposition", "Efficiency"
