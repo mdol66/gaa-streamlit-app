@@ -918,7 +918,16 @@ with tab2:
     
                 player_summary = player_summary.rename(columns={
                     "__player_clean__": "Player"
-                })
+                    })
+                # Drop columns where total = 0 (except key columns)
+                keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency", "Total"]
+    
+                non_zero_cols = [
+                    col for col in player_summary.columns
+                    if col in keep_cols or player_summary[col].sum() > 0
+                ]
+
+            player_summary = player_summary[non_zero_cols]
     
                 st.markdown("### Player scoring breakdown")
                 st.markdown("""
