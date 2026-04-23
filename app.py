@@ -895,37 +895,37 @@ with tab2:
             )
 
             if not player_summary.empty:
-
+                    
                 for col_name in shot_event_list:
                     if col_name not in player_summary.columns:
                         player_summary[col_name] = 0
 
-                player_summary["Shots"] = player_summary[shot_event_list].sum(axis=1)
-                player_summary["Scores"] = player_summary[score_events].sum(axis=1)
-
-                player_summary["Shot Efficiency"] = (
-                    player_summary["Scores"] / player_summary["Shots"].replace(0, pd.NA)
-                ).fillna(0)
-
-                player_summary["Shot Efficiency"] = (
-                    (player_summary["Shot Efficiency"] * 100).round(0).astype(int).astype(str) + "%"
-                )
-
-                player_summary = player_summary.sort_values(
-                    by=["Shots", "Scores"],
-                    ascending=[False, False]
-                )
-
-                player_summary = player_summary.rename(columns={
-                    "__player_clean__": "Player"
-                })
-
-                keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency"]
-
-                non_zero_cols = [
-                    col for col in player_summary.columns
-                    if col in keep_cols or player_summary[col].sum() > 0
-                ]
+                            player_summary["Shots"] = player_summary[shot_event_list].sum(axis=1)
+                            player_summary["Scores"] = player_summary[score_events].sum(axis=1)
+        
+                        player_summary["Shot Efficiency"] = (
+                            player_summary["Scores"] / player_summary["Shots"].replace(0, pd.NA)
+                        ).fillna(0)
+        
+                        player_summary["Shot Efficiency"] = (
+                            (player_summary["Shot Efficiency"] * 100).round(0).astype(int).astype(str) + "%"
+                        )
+        
+                        player_summary = player_summary.sort_values(
+                            by=["Shots", "Scores"],
+                            ascending=[False, False]
+                        )
+        
+                        player_summary = player_summary.rename(columns={
+                            "__player_clean__": "Player"
+                        })
+        
+                        keep_cols = ["Player", "Shots", "Scores", "Shot Efficiency"]
+        
+                        non_zero_cols = [
+                            col for col in player_summary.columns
+                            if col in keep_cols or player_summary[col].sum() > 0
+                        ]
 
                 player_summary = player_summary[non_zero_cols]
 
