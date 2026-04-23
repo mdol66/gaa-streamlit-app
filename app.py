@@ -553,7 +553,7 @@ with tab2:
         "goal from free"
     ]
         # --- Overall scoring summary data ---
-    scoring_df = df.copy()
+    scoring_df = plot_df.copy()
 
     scoring_df = scoring_df[scoring_df[cols["team"]].astype(str).str.lower().isin(
         ["ballintubber"] + [
