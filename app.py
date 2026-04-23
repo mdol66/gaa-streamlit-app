@@ -536,6 +536,31 @@ with tab2:
         return event_series.isin(values)
 
     st.subheader("Shots / Scores / Misses by Match")
+
+    # --- Overall Score vs Miss ---
+    overall_df = plot_df.copy()
+
+    event_series = overall_df[cols["stat1"]].astype(str).str.lower()
+
+    score_mask = event_series.isin(score_events)
+    miss_mask = event_series.isin(miss_events)
+
+    overall_summary = pd.DataFrame({
+        "Category": ["Scores", "Misses"],
+        "Count": [score_mask.sum(), miss_mask.sum()]
+    })
+
+    fig_overall = px.bar(
+        overall_summary,
+        x="Category",
+        y="Count",
+        text="Count",
+        title="Overall Scores vs Misses"
+    )
+
+    st.plotly_chart(fig_overall, use_container_width=True)
+
+    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
     event_series = plot_df[cols["stat1"]].astype(str).str.lower()
 
     miss_events = [
