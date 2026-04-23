@@ -360,6 +360,9 @@ if cols["team"]:
     team_choices = st.sidebar.multiselect("Team", teams)
     if team_choices:
         plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
+        
+mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
+st.session_state["mode"] = mode
 
 if cols["player"]:
     plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
@@ -403,8 +406,7 @@ if cols["half"]:
     if half_choice != "All":
         plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
 
-mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
-st.session_state["mode"] = mode
+
 shot_type_filter = "All"
 
 if mode == "Shots" and cols["stat1"] and cols["stat2"]:
