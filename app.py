@@ -537,10 +537,25 @@ with tab2:
 
     st.subheader("Shots / Scores / Misses by Match")
 
+
+
+    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
+    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
+
+    miss_events = [
+        "wide", "wide from free", "short", "out for 45", "saved",
+        "short from free", "wide from 45", "off posts from 45", "short from 45", "off posts"
+    ]
+
+    score_events = [
+        "point", "point from free", "2 pointer", "point from 45",
+        "2 pointer from free", "goal", "goal from penalty",
+        "goal from free"
+    ]
     # --- Overall Score vs Miss ---
     overall_df = plot_df.copy()
 
-    event_series = overall_df[cols["stat1"]].astype(str).str.lower()
+    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
 
     score_mask = event_series.isin(score_events)
     miss_mask = event_series.isin(miss_events)
@@ -559,20 +574,6 @@ with tab2:
     )
 
     st.plotly_chart(fig_overall, use_container_width=True)
-
-    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
-    event_series = plot_df[cols["stat1"]].astype(str).str.lower()
-
-    miss_events = [
-        "wide", "wide from free", "short", "out for 45", "saved",
-        "short from free", "wide from 45", "off posts from 45", "short from 45", "off posts"
-    ]
-
-    score_events = [
-        "point", "point from free", "2 pointer", "point from 45",
-        "2 pointer from free", "goal", "goal from penalty",
-        "goal from free"
-    ]
     count_misses = is_in(event_series, miss_events).sum()
     count_scores = is_in(event_series, score_events).sum()
     count_score_attempts = count_misses + count_scores
