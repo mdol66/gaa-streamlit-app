@@ -921,7 +921,28 @@ with tab2:
                 })
     
                 st.markdown("### Player scoring breakdown")
+                st.markdown("""
+                <style>
+                div[data-testid="stDataFrame"] th {
+                    white-space: normal !important;
+                    line-height: 1.1;
+                    font-size: 12px;
+                }
+    
+                div[data-testid="stDataFrame"] td {
+                    white-space: normal !important;
+                    font-size: 12px;
+                }
+    
+                div[data-testid="stDataFrame"] table {
+                    table-layout: fixed;
+                    width: 100%;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+    
                 st.dataframe(player_summary, use_container_width=True, hide_index=True)
+
             
 with tab3:
     st.info("Non-scoring analysis charts will go here.")
