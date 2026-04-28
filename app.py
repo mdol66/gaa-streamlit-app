@@ -66,6 +66,23 @@ def build_pitch_shapes() -> list[dict]:
     cx = 50.0
 
     shapes.append(dict(type="rect", x0=x_left, y0=0, x1=x_right, y1=100, line=line))
+    # --- Channel lines ---
+    x_ch1 = x_left + (1/3) * (x_right - x_left)
+    x_ch2 = x_left + (2/3) * (x_right - x_left)
+
+    shapes.append(dict(
+        type="line",
+        x0=x_ch1, y0=0,
+        x1=x_ch1, y1=100,
+        line=dict(color="rgba(200,200,200,0.4)", width=2, dash="dash")
+    ))
+
+    shapes.append(dict(
+        type="line",
+        x0=x_ch2, y0=0,
+        x1=x_ch2, y1=100,
+        line=dict(color="rgba(200,200,200,0.4)", width=2, dash="dash")
+    ))
 
     for y in [y13, y20, y45, y100_45, y100_20, y100_13]:
         shapes.append(dict(type="line", x0=x_left, y0=y, x1=x_right, y1=y, line=line))
@@ -134,6 +151,23 @@ def add_pitch_labels(fig: go.Figure) -> None:
         showarrow=False,
         font=dict(size=24, color="rgba(0,0,0,0.42)"),
     )
+    # Channel labels
+    for x, label in [(19.33, "1"), (50, "2"), (80.67, "3")]:
+        fig.add_annotation(
+            x=x,
+            y=3,
+            text=label,
+            showarrow=False,
+            font=dict(size=22, color="rgba(220,220,220,0.45)"),
+        )
+
+        fig.add_annotation(
+            x=x,
+            y=97,
+            text=label,
+            showarrow=False,
+            font=dict(size=22, color="rgba(220,220,220,0.45)"),
+        )
 
 
 def make_pitch_figure(title: str = "Pitch Map") -> go.Figure:
