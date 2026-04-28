@@ -659,7 +659,7 @@ with tab1:
         channel_df["Channel"] = pd.cut(
             x_series,
             bins=[-0.01, 33.33, 66.66, 100.01],
-            labels=["1(L)", "2(M)", "3(R)"]
+            labels=["1", "2", "3"]
         )
 
         channel_df["Outcome"] = channel_df[cols["outcome"]].map(normalize_outcome)
