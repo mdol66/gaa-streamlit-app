@@ -1070,7 +1070,18 @@ with tab3:
             summary["Overall KO Index +/-"] = summary["Own KO Index +/-"] + summary["Opp KO Index +/-"]
 
             summary = summary.rename(columns={cols["team"]: "Opposition"})
-
+            
+            summary = summary[[
+                "Match",
+                "Own_KO_Won",
+                "Own_KO_Lost",
+                "Own KO Index +/-",
+                "Opp_KO_Won",
+                "Opp_KO_Lost",
+                "Opp KO Index +/-",
+                "Overall KO Index +/-"
+            ]]
+            
             st.table(summary)
         else:
             st.info("No kickout data for current filters.")
