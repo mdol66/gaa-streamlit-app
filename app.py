@@ -1051,7 +1051,7 @@ with tab3:
             ko_df["__is_lost__"] = ko_df["__stat1_lower__"].str.contains("lost", na=False)
 
             summary = (
-                ko_df.groupby(cols["team"])
+                ko_df.groupby(cols["match_no"])
                 .agg(
                     Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                     Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
