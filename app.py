@@ -582,6 +582,35 @@ with tab1:
             .value_counts()
             .reset_index()
         )
+        # --- Channel breakdown (1 = left, 3 = right) ---
+        st.markdown("### Channel breakdown")
+
+        channel_df = plot_df.copy()
+
+        # Only keep plotted points
+        channel_df = channel_df[
+            (channel_df["__x_plot__"].notna()) & (channel_df["__y_plot__"].notna())
+        ]
+
+        # Use original % positions for clean split
+        x_series = channel_df[cols["x"]]
+
+        channel_df["Channel"] = pd.cut(
+            x_series,
+            bins=[-0.01, 33.33, 66.66, 100.01],
+            labels=["1", "2", "3"]
+        )
+
+        channel_df["Outcome"] = channel_df[cols["outcome"]].map(normalize_outcome)
+
+        channel_table = (
+            channel_df.groupby(["Outcome", "Channel"])
+            .size()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+
+        st.table(channel_table)
         legend_counts.columns = ["category", "count"]
 
         palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
