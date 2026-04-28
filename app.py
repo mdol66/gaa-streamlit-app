@@ -610,7 +610,7 @@ with tab1:
                 unsafe_allow_html=True
             )
     # --- Channel breakdown (1 = left, 3 = right) ---
-        st.markdown("### Channel breakdown")
+        st.markdown("<h4 style='margin-bottom:4px;'>Channel breakdown</h4>", unsafe_allow_html=True)
 
         channel_df = plot_df.copy()
 
@@ -636,7 +636,22 @@ with tab1:
             .unstack(fill_value=0)
             .reset_index()
         )
+        st.markdown("""
+        <style>
+        /* Center align headers */
+        div[data-testid="stDataFrame"] [role="columnheader"] div {
+            justify-content: center !important;
+            text-align: center !important;
+        }
 
+        /* Center align values */
+        div[data-testid="stDataFrame"] [role="gridcell"] div {
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
         st.table(channel_table)
 
     with col2:
