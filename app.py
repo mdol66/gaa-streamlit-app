@@ -1036,8 +1036,6 @@ with tab2:
 with tab3:
     st.markdown("### Kickout Analysis")
 
-    st.info("Table will go here next.")
-
     if cols["stat1"] and cols["team"]:
         ko_df = plot_df.copy()
 
@@ -1060,7 +1058,13 @@ with tab3:
                 )
                 .reset_index()
             )
-
+    
+            summary["match_label"] = summary[cols["match_no"]].astype(str).map(
+                lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
+            )
+    
+            summary = summary.drop(columns=[cols["match_no"]])
+            summary = summary.rename(columns={"match_label": "Match"})  
             summary["Own KO Index +/-"] = summary["Own_KO_Won"] - summary["Own_KO_Lost"]
             summary["Opp KO Index +/-"] = summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
             summary["Overall KO Index +/-"] = summary["Own KO Index +/-"] + summary["Opp KO Index +/-"]
