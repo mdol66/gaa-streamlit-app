@@ -1123,7 +1123,10 @@ with tab3:
                 drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
                 player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
     
-                st.dataframe(player_table, use_container_width=True)
+                st.dataframe(
+                    player_table.style.set_properties(**{"text-align": "left"}),
+                    use_container_width=True
+                )
     
             else:
                 st.info("No non-scoring events for current filters.")
