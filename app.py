@@ -411,7 +411,7 @@ def build_player_scoring_table(
         .fillna("Not Allocated")
     )
 
-    return player_summary.astype(str)
+    return player_summary
 
 
 # st.title("Gaelic Football Pitch Maps")
