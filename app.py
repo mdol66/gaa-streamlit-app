@@ -1087,11 +1087,13 @@ with tab3:
             st.markdown("### Player Non-scoring Stats")
     
             non_score_df = plot_df.copy()
-    
+            non_score_df = non_score_df[
+            non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
+            ]
             non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
     
             # Exclude all shot-related events
-            exclude_events = score_events + miss_events
+            exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
             non_score_df = non_score_df[
                 ~non_score_df["__stat1_lower__"].isin(exclude_events)
             ]
@@ -1107,11 +1109,19 @@ with tab3:
                     .reset_index()
                 )
     
+                player_table = player_table[
+                    player_table["__player_clean__"].notna() &
+                    (player_table["__player_clean__"].astype(str).str.lower() != "nan")
+                ]
+
                 player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
     
                 player_table = player_table.sort_values(by="Total", ascending=False)
     
                 player_table = player_table.rename(columns={"__player_clean__": "Player"})
+                # Drop unwanted columns if present
+                drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
+                player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
     
                 st.table(player_table)
     
