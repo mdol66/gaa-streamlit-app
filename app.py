@@ -1083,5 +1083,40 @@ with tab3:
             ]]
             
             st.table(summary)
+            # --- Player Non-Scoring Stats ---
+            st.markdown("### Player Non-scoring Stats")
+    
+            non_score_df = plot_df.copy()
+    
+            non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
+    
+            # Exclude all shot-related events
+            exclude_events = score_events + miss_events
+            non_score_df = non_score_df[
+                ~non_score_df["__stat1_lower__"].isin(exclude_events)
+            ]
+    
+            if not non_score_df.empty:
+    
+                non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
+    
+                player_table = (
+                    non_score_df.groupby(["__player_clean__", "__stat1_lower__"])
+                    .size()
+                    .unstack(fill_value=0)
+                    .reset_index()
+                )
+    
+                player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
+    
+                player_table = player_table.sort_values(by="Total", ascending=False)
+    
+                player_table = player_table.rename(columns={"__player_clean__": "Player"})
+    
+                st.table(player_table)
+    
+            else:
+                st.info("No non-scoring events for current filters.")
+            
         else:
             st.info("No kickout data for current filters.")
