@@ -1029,7 +1029,7 @@ with tab2:
 
         if player_summary_display is not None and not player_summary_display.empty:
             st.markdown("### Player scoring breakdown")
-            st.table(player_summary_display)
+            st.dataframe(player_summary_display, use_container_width=True)
         else:
             st.info("No player scoring data for current filters.")
 
