@@ -415,7 +415,7 @@ def build_player_scoring_table(
 
 
 # st.title("Gaelic Football Pitch Maps")
-# st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
+st.caption("Note: CSV upload works best on laptop/desktop. Mobile and tablet upload may not work reliably.")
 
 uploaded = st.file_uploader("Upload GAAScores match events CSV", type=["csv"])
 if uploaded is None:
