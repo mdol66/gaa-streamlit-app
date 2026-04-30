@@ -688,7 +688,7 @@ with tab1:
         
         st.dataframe(
             channel_table,
-            use_container_width=false,
+            use_container_width=False,
             hide_index=True,
             column_config={
                 "Outcome": st.column_config.TextColumn(width="small"),
