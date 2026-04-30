@@ -688,13 +688,13 @@ with tab1:
         
         st.dataframe(
             channel_table,
-            use_container_width=True,
+            use_container_width=False,
             hide_index=True,
             column_config={
                 "Outcome": st.column_config.TextColumn(width="small"),
-                "1(L)": st.column_config.NumberColumn(width="small"),
-                "2(M)": st.column_config.NumberColumn(width="small"),
-                "3(R)": st.column_config.NumberColumn(width="small"),
+                "1(L)": st.column_config.NumberColumn(width=50),
+                "2(M)": st.column_config.NumberColumn(width=50),
+                "3(R)": st.column_config.NumberColumn(width=50),
             }
         )
 
