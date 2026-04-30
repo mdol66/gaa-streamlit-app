@@ -415,7 +415,7 @@ def build_player_scoring_table(
 
 
 # st.title("Gaelic Football Pitch Maps")
-st.caption("Note: CSV upload works best on laptop/desktop. Mobile and tablet upload may not work reliably.")
+# st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
 uploaded = st.file_uploader("Upload GAAScores match events CSV", type=["csv"])
 if uploaded is None:
@@ -605,7 +605,7 @@ with tab1:
             cols["player"]
         )
 
-    col1, col2 = st.columns([1, 6], vertical_alignment="center")
+    col1, col2 = st.columns([2, 5], vertical_alignment="center")
 
     with col1:
         st.markdown("### Legend")
@@ -686,7 +686,17 @@ with tab1:
         </style>
         """, unsafe_allow_html=True)
         
-        st.table(channel_table)
+        st.dataframe(
+            channel_table,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Outcome": st.column_config.TextColumn(width="small"),
+                "1(L)": st.column_config.NumberColumn(width="small"),
+                "2(M)": st.column_config.NumberColumn(width="small"),
+                "3(R)": st.column_config.NumberColumn(width="small"),
+            }
+        )
 
     with col2:
         st.plotly_chart(fig, use_container_width=False)
