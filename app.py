@@ -686,7 +686,16 @@ with tab1:
         </style>
         """, unsafe_allow_html=True)
         
-        st.table(channel_table)
+        st.dataframe(
+            channel_table,
+            use_container_width=True,
+            column_config={
+                "Outcome": st.column_config.TextColumn(width="small"),
+                "1(L)": st.column_config.NumberColumn(width="small"),
+                "2(M)": st.column_config.NumberColumn(width="small"),
+                "3(R)": st.column_config.NumberColumn(width="small"),
+            }
+        )
 
     with col2:
         st.plotly_chart(fig, use_container_width=False)
