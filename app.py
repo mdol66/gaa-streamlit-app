@@ -605,7 +605,7 @@ with tab1:
             cols["player"]
         )
 
-    col1, col2 = st.columns([1, 6], vertical_alignment="center")
+    col1, col2 = st.columns([2, 5], vertical_alignment="center")
 
     with col1:
         st.markdown("### Legend")
