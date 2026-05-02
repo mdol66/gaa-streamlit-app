@@ -560,6 +560,19 @@ outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outc
 outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
 if outcome_choice != "All":
     plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
+filters_applied = (
+    bool(locals().get("match_display_choices", [])) or
+    bool(locals().get("team_choices", [])) or
+    bool(locals().get("player_choices", [])) or
+    locals().get("half_choice", "All") != "All" or
+    mode != "All events" or
+    shot_type_filter != "All" or
+    outcome_choice != "All"
+)
+
+if not filters_applied:
+    st.info("Apply at least one filter to display events.")
+    st.stop()
 
 tab1, tab2, tab3 = st.tabs(["Pitch Map", "Scoring Analysis", "Non-Scoring Analysis"])
 
