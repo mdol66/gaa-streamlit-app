@@ -614,6 +614,7 @@ plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 # c2.metric("Plotted events", len(plot_df))
 
 with tab1:
+    st.warning("TEST - current edited code is running")
     fig = make_pitch_figure()
 
     if filters_applied:
