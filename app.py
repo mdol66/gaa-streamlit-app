@@ -565,7 +565,6 @@ filters_applied = (
     bool(locals().get("team_choices", [])) or
     bool(locals().get("player_choices", [])) or
     locals().get("half_choice", "All") != "All" or
-    mode != "All events" or
     shot_type_filter != "All" or
     outcome_choice != "All"
 )
@@ -607,7 +606,11 @@ plot_df.loc[
 
 with tab1:
     fig = make_pitch_figure()
-    if len(plot_df):
+
+    if not filters_applied:
+        st.info("Apply at least one filter to display events on the pitch map.")
+
+    elif len(plot_df):
         add_numbered_markers(
             fig,
             plot_df,
