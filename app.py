@@ -430,7 +430,8 @@ except UnicodeDecodeError:
 
 cols = infer_columns(df)
 plot_df = df.copy()
-plot_df["__plot_number__"] = build_display_number(plot_df, cols["number"])
+plot_df["__original_event_number__"] = build_display_number(plot_df, cols["number"])
+plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 
 if cols["outcome"] is None and cols["stat1"] is not None:
     plot_df["__plot_category__"] = plot_df[cols["stat1"]].astype(str)
