@@ -431,7 +431,7 @@ except UnicodeDecodeError:
 cols = infer_columns(df)
 plot_df = df.copy()
 plot_df["__original_event_number__"] = build_display_number(plot_df, cols["number"])
-plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
+
 
 if cols["outcome"] is None and cols["stat1"] is not None:
     plot_df["__plot_category__"] = plot_df[cols["stat1"]].astype(str)
@@ -599,8 +599,10 @@ plot_df["__y_plot__"] = plot_df[cols["y"]]
 plot_df.loc[
     (plot_df[cols["x"]] == -1) | (plot_df[cols["y"]] == -1),
     ["__x_plot__", "__y_plot__"]
+
 ] = pd.NA
 
+plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 # c1, c2 = st.columns(2)
 # c1.metric("Raw events", len(df))
 # c2.metric("Plotted events", len(plot_df))
