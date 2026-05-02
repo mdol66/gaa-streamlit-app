@@ -614,14 +614,9 @@ plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 # c2.metric("Plotted events", len(plot_df))
 
 with tab1:
-    st.warning("TEST - current edited code is running")
     fig = make_pitch_figure()
 
-    if filters_applied:
-        marker_df = plot_df.copy()
-    else:
-        marker_df = plot_df.iloc[0:0].copy()
-        st.info("Apply at least one filter to display events on the pitch map.")
+    marker_df = plot_df.copy()
 
     if len(marker_df):
         add_numbered_markers(
