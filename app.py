@@ -283,7 +283,7 @@ def add_numbered_markers(
                 mode="markers",
                 name=str(category),
                 marker=dict(
-                    size=20,
+                    size=12,
                     sizemode="diameter",
                     sizemin=6,
                     color=color,
@@ -729,12 +729,13 @@ with tab1:
         "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         unsafe_allow_html=True
     )
+    """
     st.subheader("Filtered events being plotted")
     st.markdown(
         "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         unsafe_allow_html=True
     )
-
+    
     show_cols = [
         c for c in [
             cols.get("number"),
@@ -747,11 +748,12 @@ with tab1:
             cols.get("match"),
         ] if c
     ]
-
+    
     if "__plot_number__" not in show_cols:
         show_cols = ["__plot_number__"] + show_cols
-
+    
     st.dataframe(plot_df[show_cols], use_container_width=True)
+    """
 
 with tab2:
     def is_in(event_series, values):
