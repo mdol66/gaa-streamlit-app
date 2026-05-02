@@ -298,7 +298,7 @@ def add_numbered_markers(
                 customdata=group[
                     [label_col] + ([player_col] if player_col and player_col in group.columns else [])
                 ].values,
-                hovertemplate="Event %{customdata[0]}<br>Player=%{customdata[1]}<extra></extra>"
+                hovertemplate="Player=%{customdata[1]}<extra></extra>"
                 if player_col and player_col in group.columns
                 else "#%{customdata[0]}<extra></extra>",
             )
