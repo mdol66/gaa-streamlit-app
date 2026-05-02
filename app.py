@@ -734,32 +734,6 @@ with tab1:
         unsafe_allow_html=True
     )
 
-"""
-    st.subheader("Filtered events being plotted")
-        st.markdown(
-            "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
-            unsafe_allow_html=True
-        )
-        
-        show_cols = [
-            c for c in [
-                cols.get("number"),
-                cols.get("match_no"),
-                cols.get("team"),
-                cols.get("player"),
-                cols.get("stat1"),
-                cols.get("stat2"),
-                cols.get("half"),
-                cols.get("match"),
-            ] if c
-        ]
-        
-        if "__plot_number__" not in show_cols:
-            show_cols = ["__plot_number__"] + show_cols
-        
-    st.dataframe(plot_df[show_cols], use_container_width=True)
-"""
-
 with tab2:
     def is_in(event_series, values):
         return event_series.isin(values)
