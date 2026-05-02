@@ -289,8 +289,12 @@ def add_numbered_markers(
                     color=color,
                     opacity=0.7,
                     line=dict(
-                        color=group[cols["stat2"]].apply(lambda x: "black" if pd.notna(x) and str(x).strip() != "" else "#FFFFFF"),
-                        width=group[cols["stat2"]].apply(lambda x: 2 if pd.notna(x) and str(x).strip() != "" else 0.5)
+                        color=group[cols["stat2"]].apply(
+                            lambda x: "#000000" if pd.notna(x) and str(x).strip() != "" else "#FFFFFF"
+                        ),
+                        width=group[cols["stat2"]].apply(
+                            lambda x: 2 if pd.notna(x) and str(x).strip() != "" else 2
+                        )
                     )
                 ),
                 hoverinfo="text",
@@ -300,7 +304,7 @@ def add_numbered_markers(
                 ].values,
                 hovertemplate="Player=%{customdata[1]}<extra></extra>"
                 if player_col and player_col in group.columns
-                else "#%{customdata[0]}<extra></extra>",
+                else "<extra></extra>",
             )
         )
 
