@@ -271,6 +271,8 @@ def add_numbered_markers(
 ) -> None:
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
+    df = df.reset_index(drop=True)
+    df[label_col] = range(1, len(df) + 1)
     df[category_col] = df[category_col].map(normalize_outcome)
 
     for category, group in df.groupby(category_col, dropna=False):
