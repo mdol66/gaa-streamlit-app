@@ -272,7 +272,7 @@ def add_numbered_markers(
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
     df = df.reset_index(drop=True)
-    df[label_col] = range(1, len(df) + 1)
+    df["__marker_label__"] = range(1, len(df) + 1)
     df[category_col] = df[category_col].map(normalize_outcome)
 
     for category, group in df.groupby(category_col, dropna=False):
@@ -283,7 +283,7 @@ def add_numbered_markers(
                 y=group[y_col],
                 mode="markers+text",
                 name=str(category),
-                text=group[label_col].astype(str),
+                text=group["__marker_label__"].astype(str),
                 textposition="middle center",
                 textfont=dict(color="white", size=10, family="Arial Black"),
                 marker=dict(size=20, color=color, line=dict(color="#E8E8E8", width=2)),
