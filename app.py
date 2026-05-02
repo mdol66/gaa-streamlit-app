@@ -571,10 +571,6 @@ filters_applied = (
     shot_type_filter != "All"
 )
 
-if not filters_applied:
-    st.info("Apply at least one filter to display events.")
-    st.stop()
-    
 plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 tab1, tab2, tab3 = st.tabs(["Pitch Map", "Scoring Analysis", "Non-Scoring Analysis"])
 
