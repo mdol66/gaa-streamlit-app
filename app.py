@@ -271,6 +271,7 @@ def add_numbered_markers(
 ) -> None:
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
+
     df[category_col] = df[category_col].map(normalize_outcome)
 
     for category, group in df.groupby(category_col, dropna=False):
@@ -279,18 +280,31 @@ def add_numbered_markers(
             go.Scatter(
                 x=group[x_col],
                 y=group[y_col],
-                mode="markers+text",
+                mode="markers",
                 name=str(category),
-                text=group[label_col].astype(str),
-                textposition="middle center",
-                textfont=dict(color="white", size=10, family="Arial Black"),
-                marker=dict(size=20, color=color, line=dict(color="#E8E8E8", width=2)),
+                marker=dict(
+                    size=13,
+                    sizemode="diameter",
+                    sizemin=6,
+                    color=color,
+                    opacity=0.7,
+                    line=dict(
+                        color=group[cols["stat2"]].apply(
+                            lambda x: "#000000" if pd.notna(x) and str(x).strip() != "" else "#FFFFFF"
+                        ),
+                        width=group[cols["stat2"]].apply(
+                            lambda x: 2 if pd.notna(x) and str(x).strip() != "" else 2
+                        )
+                    )
+                ),
+                hoverinfo="text",
+                hoverlabel=dict(font_size=14),
                 customdata=group[
                     [label_col] + ([player_col] if player_col and player_col in group.columns else [])
                 ].values,
-                hovertemplate="#%{customdata[0]}<br>Player=%{customdata[1]}<extra></extra>"
+                hovertemplate="Player=%{customdata[1]}<extra></extra>"
                 if player_col and player_col in group.columns
-                else "#%{customdata[0]}<extra></extra>",
+                else "<extra></extra>",
             )
         )
 
@@ -430,7 +444,8 @@ except UnicodeDecodeError:
 
 cols = infer_columns(df)
 plot_df = df.copy()
-plot_df["__plot_number__"] = build_display_number(plot_df, cols["number"])
+plot_df["__original_event_number__"] = build_display_number(plot_df, cols["number"])
+
 
 if cols["outcome"] is None and cols["stat1"] is not None:
     plot_df["__plot_category__"] = plot_df[cols["stat1"]].astype(str)
@@ -560,7 +575,15 @@ outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outc
 outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
 if outcome_choice != "All":
     plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
+filters_applied = (
+    len(match_display_choices) > 0 or
+    len(team_choices) > 0 or
+    len(player_choices) > 0 or
+    half_choice != "All" or
+    shot_type_filter != "All"
+)
 
+plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 tab1, tab2, tab3 = st.tabs(["Pitch Map", "Scoring Analysis", "Non-Scoring Analysis"])
 
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
@@ -586,18 +609,23 @@ plot_df["__y_plot__"] = plot_df[cols["y"]]
 plot_df.loc[
     (plot_df[cols["x"]] == -1) | (plot_df[cols["y"]] == -1),
     ["__x_plot__", "__y_plot__"]
+
 ] = pd.NA
 
+plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 # c1, c2 = st.columns(2)
 # c1.metric("Raw events", len(df))
 # c2.metric("Plotted events", len(plot_df))
 
 with tab1:
     fig = make_pitch_figure()
-    if len(plot_df):
+
+    marker_df = plot_df.copy()
+
+    if len(marker_df):
         add_numbered_markers(
             fig,
-            plot_df,
+            marker_df,
             "__x_plot__",
             "__y_plot__",
             "__plot_number__",
@@ -611,7 +639,7 @@ with tab1:
         st.markdown("### Legend")
 
         legend_counts = (
-            plot_df[cols["outcome"]]
+            marker_df[cols["outcome"]]
             .map(normalize_outcome)
             .value_counts()
             .reset_index()
@@ -701,33 +729,10 @@ with tab1:
     with col2:
         st.plotly_chart(fig, use_container_width=False)
 
-    st.markdown(
-        "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
-        unsafe_allow_html=True
-    )
-    st.subheader("Filtered events being plotted")
-    st.markdown(
-        "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
-        unsafe_allow_html=True
-    )
-
-    show_cols = [
-        c for c in [
-            cols.get("number"),
-            cols.get("match_no"),
-            cols.get("team"),
-            cols.get("player"),
-            cols.get("stat1"),
-            cols.get("stat2"),
-            cols.get("half"),
-            cols.get("match"),
-        ] if c
-    ]
-
-    if "__plot_number__" not in show_cols:
-        show_cols = ["__plot_number__"] + show_cols
-
-    st.dataframe(plot_df[show_cols], use_container_width=True)
+    #st.markdown(
+        #"<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
+        #unsafe_allow_html=True
+    #)
 
 with tab2:
     def is_in(event_series, values):
