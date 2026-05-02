@@ -561,12 +561,11 @@ outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
 if outcome_choice != "All":
     plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 filters_applied = (
-    bool(locals().get("match_display_choices", [])) or
-    bool(locals().get("team_choices", [])) or
-    bool(locals().get("player_choices", [])) or
-    locals().get("half_choice", "All") != "All" or
-    shot_type_filter != "All" or
-    outcome_choice != "All"
+    len(match_display_choices) > 0 or
+    len(team_choices) > 0 or
+    len(player_choices) > 0 or
+    half_choice != "All" or
+    shot_type_filter != "All"
 )
 
 if not filters_applied:
