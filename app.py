@@ -729,10 +729,10 @@ with tab1:
     with col2:
         st.plotly_chart(fig, use_container_width=False)
 
-    st.markdown(
-        "<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
-        unsafe_allow_html=True
-    )
+    #st.markdown(
+        #"<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
+        #unsafe_allow_html=True
+    #)
 
 with tab2:
     def is_in(event_series, values):
