@@ -294,7 +294,7 @@ def add_numbered_markers(
                     )
                 ),
                 hoverinfo="text",
-                hoverlabel=dict(font_size=14)
+                hoverlabel=dict(font_size=14),
                 customdata=group[
                     [label_col] + ([player_col] if player_col and player_col in group.columns else [])
                 ].values,
