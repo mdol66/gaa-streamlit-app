@@ -607,13 +607,16 @@ plot_df.loc[
 with tab1:
     fig = make_pitch_figure()
 
-    if not filters_applied:
+    if filters_applied:
+        marker_df = plot_df.copy()
+    else:
+        marker_df = plot_df.iloc[0:0].copy()
         st.info("Apply at least one filter to display events on the pitch map.")
 
-    elif len(plot_df):
+    if len(marker_df):
         add_numbered_markers(
             fig,
-            plot_df,
+            marker_df,
             "__x_plot__",
             "__y_plot__",
             "__plot_number__",
@@ -627,7 +630,7 @@ with tab1:
         st.markdown("### Legend")
 
         legend_counts = (
-            plot_df[cols["outcome"]]
+            marker_df[cols["outcome"]]
             .map(normalize_outcome)
             .value_counts()
             .reset_index()
