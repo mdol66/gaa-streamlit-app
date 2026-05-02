@@ -271,8 +271,7 @@ def add_numbered_markers(
 ) -> None:
     palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
     df = df.copy()
-    df = df.reset_index(drop=True)
-    df["__marker_label__"] = range(1, len(df) + 1)
+
     df[category_col] = df[category_col].map(normalize_outcome)
 
     for category, group in df.groupby(category_col, dropna=False):
@@ -281,16 +280,25 @@ def add_numbered_markers(
             go.Scatter(
                 x=group[x_col],
                 y=group[y_col],
-                mode="markers+text",
+                mode="markers",
                 name=str(category),
-                text=group["__marker_label__"].astype(str),
-                textposition="middle center",
-                textfont=dict(color="white", size=10, family="Arial Black"),
-                marker=dict(size=20, color=color, line=dict(color="#E8E8E8", width=2)),
+                marker=dict(
+                    size=10,
+                    sizemode="diameter",
+                    sizemin=6,
+                    color=color,
+                    opacity=0.7,
+                    line=dict(
+                        color=group[cols["stat2"]].apply(lambda x: "black" if pd.notna(x) and str(x).strip() != "" else "#FFFFFF"),
+                        width=group[cols["stat2"]].apply(lambda x: 2 if pd.notna(x) and str(x).strip() != "" else 0.5)
+                    )
+                ),
+                hoverinfo="text",
+                hoverlabel=dict(font_size=14)
                 customdata=group[
                     [label_col] + ([player_col] if player_col and player_col in group.columns else [])
                 ].values,
-                hovertemplate="#%{customdata[0]}<br>Player=%{customdata[1]}<extra></extra>"
+                hovertemplate="Event %{customdata[0]}<br>Player=%{customdata[1]}<extra></extra>"
                 if player_col and player_col in group.columns
                 else "#%{customdata[0]}<extra></extra>",
             )
