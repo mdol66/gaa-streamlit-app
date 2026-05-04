@@ -724,7 +724,13 @@ with tab1:
         """, unsafe_allow_html=True)
         
         st.dataframe(
-            channel_table,
+            channel_table.style.apply(
+                lambda row: [
+                    "font-weight: bold" if row["Outcome"] == "Total" else ""
+                    for _ in row
+                ],
+                axis=1
+            ),
             use_container_width=False,
             hide_index=True,
             column_config={
