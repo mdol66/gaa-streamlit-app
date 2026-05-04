@@ -431,9 +431,23 @@ def build_player_scoring_table(
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
+st.markdown("## Gaelic Football Match Analysis App")
+
+st.markdown("""
+Upload your GAAScores match events CSV to generate:
+
+- Pitch maps by event type
+- Shot and scoring analysis
+- Kickout and turnover analysis
+- Player breakdown tables
+
+The app works best with CSV exports from GAAScores / Scores Stats Plus style match data.
+""")
+
 uploaded = st.file_uploader("Upload GAAScores match events CSV", type=["csv"])
+
 if uploaded is None:
-    st.warning("Please upload a match CSV file to view the analysis.")
+    st.info("Upload a CSV file to begin.")
     st.stop()
 
 try:
