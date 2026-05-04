@@ -9,11 +9,26 @@ import streamlit as st
 st.set_page_config(page_title="Gaelic Football Pitch Maps", layout="wide")
 
 st.markdown("""
-    <style>
-        section[data-testid="stSidebar"] {
-            width: 20% !important;
-        }
-    </style>
+<style>
+/* Reduce spacing between sidebar elements */
+section[data-testid="stSidebar"] .block-container {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+/* Reduce space between widgets */
+section[data-testid="stSidebar"] .stRadio,
+section[data-testid="stSidebar"] .stSelectbox,
+section[data-testid="stSidebar"] .stMultiSelect {
+    margin-bottom: 0.3rem;
+}
+
+/* Tighten markdown spacing */
+section[data-testid="stSidebar"] h3 {
+    margin-bottom: 0.2rem;
+    margin-top: 0.6rem;
+}
+</style>
 """, unsafe_allow_html=True)
 
 
