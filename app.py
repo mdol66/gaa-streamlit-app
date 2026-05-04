@@ -9,11 +9,32 @@ import streamlit as st
 st.set_page_config(page_title="Gaelic Football Pitch Maps", layout="wide")
 
 st.markdown("""
-    <style>
-        section[data-testid="stSidebar"] {
-            width: 20% !important;
-        }
-    </style>
+<style>
+/* Tighten sidebar vertical spacing */
+section[data-testid="stSidebar"] .block-container {
+    padding-top: 0.5rem !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    gap: 0.35rem !important;
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.15rem !important;
+}
+
+section[data-testid="stSidebar"] hr {
+    margin-top: 0.35rem !important;
+    margin-bottom: 0.35rem !important;
+}
+
+section[data-testid="stSidebar"] label {
+    margin-bottom: 0.1rem !important;
+}
+</style>
 """, unsafe_allow_html=True)
 
 
@@ -432,8 +453,22 @@ def build_player_scoring_table(
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
 uploaded = st.file_uploader("Upload GAAScores match events CSV", type=["csv"])
+
 if uploaded is None:
-    st.warning("Please upload a match CSV file to view the analysis.")
+    st.markdown("## Gaelic Football Match Analysis App")
+
+    st.markdown("""
+    Upload your GAAScores match events CSV to generate:
+
+    - Pitch maps by event type
+    - Shot and scoring analysis
+    - Kickout and turnover analysis
+    - Player breakdown tables
+
+    The app works best with CSV exports from GAAScores / Scores Stats Plus style match data.
+    """)
+
+    st.info("Upload a CSV file to begin.")
     st.stop()
 
 try:
@@ -458,6 +493,7 @@ elif cols["outcome"] is None:
     cols["outcome"] = "__plot_category__"
 
 st.sidebar.header("Filters")
+st.sidebar.markdown("### Match Filters")
 
 if cols["match_no"] and cols["team"]:
     match_info = (
@@ -489,6 +525,8 @@ if cols["team"]:
     if team_choices:
         plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
 
+st.sidebar.markdown("---")
+st.sidebar.markdown("### Map Options")
 mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
 st.session_state["mode"] = mode
 
@@ -698,6 +736,15 @@ with tab1:
             .unstack(fill_value=0)
             .reset_index()
         )
+
+        # Add totals row
+        totals = channel_table.select_dtypes(include='number').sum()
+        totals["Outcome"] = "Total"
+
+        channel_table = pd.concat(
+            [channel_table, pd.DataFrame([totals])],
+            ignore_index=True
+        )
         st.markdown("""
         <style>
         /* Center align headers */
@@ -715,14 +762,20 @@ with tab1:
         """, unsafe_allow_html=True)
         
         st.dataframe(
-            channel_table,
+            channel_table.style.apply(
+                lambda row: [
+                    "font-weight: bold" if row["Outcome"] == "Total" else ""
+                    for _ in row
+                ],
+                axis=1
+            ),
             use_container_width=False,
             hide_index=True,
             column_config={
                 "Outcome": st.column_config.TextColumn(width="small"),
-                "1(L)": st.column_config.NumberColumn(width=50),
-                "2(M)": st.column_config.NumberColumn(width=50),
-                "3(R)": st.column_config.NumberColumn(width=50),
+                "1": st.column_config.NumberColumn(width=50),
+                "2": st.column_config.NumberColumn(width=50),
+                "3": st.column_config.NumberColumn(width=50),
             }
         )
 
