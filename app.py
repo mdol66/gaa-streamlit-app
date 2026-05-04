@@ -472,6 +472,7 @@ elif cols["outcome"] is None:
     cols["outcome"] = "__plot_category__"
 
 st.sidebar.header("Filters")
+st.sidebar.markdown("### Match Filters")
 
 if cols["match_no"] and cols["team"]:
     match_info = (
@@ -503,6 +504,8 @@ if cols["team"]:
     if team_choices:
         plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
 
+st.sidebar.markdown("---")
+st.sidebar.markdown("### Map Options")
 mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
 st.session_state["mode"] = mode
 
