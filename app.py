@@ -10,23 +10,29 @@ st.set_page_config(page_title="Gaelic Football Pitch Maps", layout="wide")
 
 st.markdown("""
 <style>
-/* Reduce spacing between sidebar elements */
+/* Tighten sidebar vertical spacing */
 section[data-testid="stSidebar"] .block-container {
-    padding-top: 1rem;
-    padding-bottom: 0.5rem;
+    padding-top: 0.5rem !important;
 }
 
-/* Reduce space between widgets */
-section[data-testid="stSidebar"] .stRadio,
-section[data-testid="stSidebar"] .stSelectbox,
-section[data-testid="stSidebar"] .stMultiSelect {
-    margin-bottom: 0.3rem;
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    gap: 0.35rem !important;
 }
 
-/* Tighten markdown spacing */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
-    margin-bottom: 0.2rem;
-    margin-top: 0.6rem;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.15rem !important;
+}
+
+section[data-testid="stSidebar"] hr {
+    margin-top: 0.35rem !important;
+    margin-bottom: 0.35rem !important;
+}
+
+section[data-testid="stSidebar"] label {
+    margin-bottom: 0.1rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
