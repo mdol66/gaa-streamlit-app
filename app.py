@@ -698,6 +698,15 @@ with tab1:
             .unstack(fill_value=0)
             .reset_index()
         )
+
+        # Add totals row
+        totals = channel_table.select_dtypes(include='number').sum()
+        totals["Outcome"] = "Total"
+
+        channel_table = pd.concat(
+            [channel_table, pd.DataFrame([totals])],
+            ignore_index=True
+        )
         st.markdown("""
         <style>
         /* Center align headers */
