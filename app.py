@@ -447,6 +447,19 @@ The app works best with CSV exports from GAAScores / Scores Stats Plus style mat
 uploaded = st.file_uploader("Upload GAAScores match events CSV", type=["csv"])
 
 if uploaded is None:
+    st.markdown("## Gaelic Football Match Analysis App")
+
+    st.markdown("""
+    Upload your GAAScores match events CSV to generate:
+
+    - Pitch maps by event type
+    - Shot and scoring analysis
+    - Kickout and turnover analysis
+    - Player breakdown tables
+
+    The app works best with CSV exports from GAAScores / Scores Stats Plus style match data.
+    """)
+
     st.info("Upload a CSV file to begin.")
     st.stop()
 
