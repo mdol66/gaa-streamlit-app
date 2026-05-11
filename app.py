@@ -660,6 +660,11 @@ plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 # c1.metric("Raw events", len(df))
 # c2.metric("Plotted events", len(plot_df))
 
+with tab0:
+    st.markdown("## Match Dashboard")
+
+    st.info("Match dashboard layout will be built here.")
+    
 with tab1:
     fig = make_pitch_figure()
 
