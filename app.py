@@ -735,6 +735,7 @@ with tab0:
         f"{opp_goals}-{opp_points}"
     )
     st.markdown(f"### {selected_match_text}")
+    st.markdown(f"#### Score: {scoreline_text}")
 
     st.markdown("---")
     left_col, mid_col, right_col = st.columns([1, 1, 1])
