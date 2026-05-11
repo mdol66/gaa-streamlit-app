@@ -663,7 +663,36 @@ plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 with tab0:
     st.markdown("## Match Dashboard")
 
-    st.info("Match dashboard layout will be built here.")
+    dashboard_df = plot_df.copy()
+
+    selected_match_text = "Selected Match"
+    if cols["match_no"] and cols["team"] and not dashboard_df.empty:
+        match_nos = dashboard_df[cols["match_no"]].dropna().astype(str).unique().tolist()
+
+        if len(match_nos) == 1:
+            match_no = match_nos[0]
+
+            teams_for_match = (
+                dashboard_df[dashboard_df[cols["match_no"]].astype(str) == match_no][cols["team"]]
+                .dropna()
+                .astype(str)
+                .unique()
+                .tolist()
+            )
+
+            opposition = [
+                t for t in teams_for_match
+                if t.lower() != "ballintubber" and t.lower() not in ["1st half", "2nd half"]
+            ]
+
+            opp_name = opposition[0] if opposition else "Opposition"
+            selected_match_text = f"BALLINTUBBER v {opp_name.upper()}"
+        else:
+            selected_match_text = "MULTIPLE MATCHES SELECTED"
+
+    st.markdown(f"### {selected_match_text}")
+
+    st.markdown("---")
     
 with tab1:
     fig = make_pitch_figure()
