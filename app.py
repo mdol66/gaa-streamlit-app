@@ -689,7 +689,51 @@ with tab0:
             selected_match_text = f"BALLINTUBBER v {opp_name.upper()}"
         else:
             selected_match_text = "MULTIPLE MATCHES SELECTED"
+    bt_goals = 0
+    bt_points = 0
+    opp_goals = 0
+    opp_points = 0
 
+    if (
+        cols["team"]
+        and cols["stat1"]
+        and not dashboard_df.empty
+    ):
+
+        score_series = dashboard_df[cols["stat1"]].astype(str).str.lower()
+        team_series = dashboard_df[cols["team"]].astype(str).str.lower()
+
+        bt_df = dashboard_df[
+            team_series == "ballintubber"
+        ].copy()
+
+        opp_df = dashboard_df[
+            (team_series != "ballintubber")
+            & (~team_series.isin(["1st half", "2nd half"]))
+        ].copy()
+
+        bt_events = bt_df[cols["stat1"]].astype(str).str.lower()
+        opp_events = opp_df[cols["stat1"]].astype(str).str.lower()
+
+        bt_goals = bt_events.str.contains("goal", na=False).sum()
+
+        bt_points = (
+            bt_events.str.contains("point", na=False).sum()
+            + bt_events.str.contains("2 pointer", na=False).sum()
+        )
+
+        opp_goals = opp_events.str.contains("goal", na=False).sum()
+
+        opp_points = (
+            opp_events.str.contains("point", na=False).sum()
+            + opp_events.str.contains("2 pointer", na=False).sum()
+        )
+
+    scoreline_text = (
+        f"{bt_goals}-{bt_points} "
+        f"v "
+        f"{opp_goals}-{opp_points}"
+    )
     st.markdown(f"### {selected_match_text}")
 
     st.markdown("---")
