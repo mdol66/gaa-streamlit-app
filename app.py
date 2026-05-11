@@ -798,7 +798,7 @@ with tab0:
 
                     opp_won = (
                         (~ko_df["__is_ball__"])
-                        & ko_df["__is_won__"]
+                        & ko_df["__is_lost__"]
                     ).sum()
 
                     opp_retention = (
@@ -813,7 +813,9 @@ with tab0:
 
                     st.markdown("---")
 
-                    st.markdown("**Opposition**")
+                    opp_display_name = opp_name if "opp_name" in locals() else "Opposition"
+
+                    st.markdown(f"**{opp_display_name}**")
                     st.write(f"Total: {opp_total}")
                     st.write(f"Won: {opp_won}")
                     st.write(f"Retention: {opp_retention:.0%}")
