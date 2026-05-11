@@ -696,16 +696,19 @@ with tab0:
     left_col, mid_col, right_col = st.columns([1, 1, 1])
 
     with left_col:
-        st.markdown("### Kickouts")
-        st.info("Kickout metrics coming here")
+        with st.container(border=True):
+            st.markdown("### Kickouts")
+            st.info("Kickout metrics coming here")
 
     with mid_col:
-        st.markdown("### General Play")
-        st.info("General play metrics coming here")
+        with st.container(border=True):
+            st.markdown("### General Play")
+            st.info("General play metrics coming here")
 
     with right_col:
-        st.markdown("### Scoring")
-        st.info("Scoring metrics coming here")
+        with st.container(border=True):
+            st.markdown("### Scoring")
+            st.info("Scoring metrics coming here")
     
 with tab1:
     fig = make_pitch_figure()
