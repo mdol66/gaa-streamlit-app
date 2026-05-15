@@ -1072,22 +1072,21 @@ with mid_col:
             opp_metrics = calc_team_metrics(opp_df)
 
             comparison_df = pd.DataFrame({
-                "Metric": [
-                    "TO Won",
-                    "TO Lost",
-                    "Net TO"
-                ],
                 "Ballintubber": [
                     bt_metrics["to_won"],
                     bt_metrics["to_lost"],
                     bt_metrics["net_to"]
+                ],
+                "Metric": [
+                    "TO Won",
+                    "TO Lost",
+                    "Net TO"
                 ],
                 opp_name if "opp_name" in locals() else "Opposition": [
                     opp_metrics["to_won"],
                     opp_metrics["to_lost"],
                     opp_metrics["net_to"]
                 ]
-            })
 
             st.table(comparison_df.set_index("Metric"))
 
