@@ -1014,7 +1014,11 @@ with left_col:
                     }
 
                 bt_metrics = calc_team_metrics(bt_df)
-                opp_metrics = calc_team_metrics(opp_df)
+                opp_metrics = {
+                    "to_won": bt_metrics["to_lost"],
+                    "to_lost": bt_metrics["to_won"],
+                    "net_to": bt_metrics["to_lost"] - bt_metrics["to_won"]
+                }
 
                 comparison_df = pd.DataFrame({
                     "Ballintubber": [
