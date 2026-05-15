@@ -784,9 +784,15 @@ with tab0:
                     )
 
                     bt_total = ko_df["__is_ball__"].sum()
+
                     bt_won = (
                         ko_df["__is_ball__"]
                         & ko_df["__is_won__"]
+                    ).sum()
+
+                    bt_lost = (
+                        ko_df["__is_ball__"]
+                        & ko_df["__is_lost__"]
                     ).sum()
 
                     bt_retention = (
@@ -796,6 +802,7 @@ with tab0:
 
                     opp_total = (~ko_df["__is_ball__"]).sum()
 
+                    # Opposition perspective is reversed from Ballintubber perspective
                     opp_won = (
                         (~ko_df["__is_ball__"])
                         & ko_df["__is_lost__"]
@@ -810,12 +817,11 @@ with tab0:
                         opp_won / opp_total
                         if opp_total > 0 else 0
                     )
-                    
-                    opp_index = opp_won - opp_lost
 
                     st.markdown("**Ballintubber**")
                     st.write(f"Total: {bt_total}")
                     st.write(f"Won: {bt_won}")
+                    st.write(f"Lost: {bt_lost}")
                     st.write(f"Retention: {bt_retention:.0%}")
 
                     st.markdown("---")
@@ -825,6 +831,7 @@ with tab0:
                     st.markdown(f"**{opp_display_name}**")
                     st.write(f"Total: {opp_total}")
                     st.write(f"Won: {opp_won}")
+                    st.write(f"Lost: {opp_lost}")
                     st.write(f"Retention: {opp_retention:.0%}")
 
                 else:
