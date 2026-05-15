@@ -72,8 +72,8 @@ button[data-baseweb="tab"] {
 
 /* Tighten bordered containers */
 div[data-testid="stContainer"] {
-    padding-top: 0.35rem !important;
-    padding-bottom: 0.35rem !important;
+    padding-top: 0rem !important;
+    padding-bottom: 0.25rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
