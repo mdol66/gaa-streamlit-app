@@ -1174,10 +1174,10 @@ with right_col:
                         f"{bt_retention:.0%}"
                     ],
                     "Metric": [
-                        "**Total**",
-                        "**Won**",
-                        "**Lost**",
-                        "**Retention**"
+                        "  Total",
+                        "  Won",
+                        "  Lost",
+                        "  Retention"
                     ],
                     opp_display_name: [
                         opp_total,
