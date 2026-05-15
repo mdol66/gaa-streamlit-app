@@ -1065,7 +1065,7 @@ with left_col:
                     "Metric": [
                         "TO Won",
                         "TO Lost",
-                        "Net TO"
+                        "Net TO",
                         "Frees Conceded",
                         "Yellow Cards",
                         "Black Cards",
