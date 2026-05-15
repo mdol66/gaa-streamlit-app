@@ -921,15 +921,24 @@ with left_col:
             kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
 
             with kpi_col1:
-                st.metric("Shots", bt_shots)
+                st.markdown(
+                    f"**Shots**  \n"
+                    f"BT: {bt_shots} | "
+                    f"{opp_name if 'opp_name' in locals() else 'Opp'}: {opp_shots}"
+                )
 
             with kpi_col2:
-                st.metric("Scores", bt_scores)
+                st.markdown(
+                    f"**Scores**  \n"
+                    f"BT: {bt_scores} | "
+                    f"{opp_name if 'opp_name' in locals() else 'Opp'}: {opp_scores}"
+                )
 
             with kpi_col3:
-                st.metric(
-                    "Shot Efficiency",
-                    f"{bt_eff:.0%}"
+                st.markdown(
+                    f"**Shot Efficiency**  \n"
+                    f"BT: {bt_eff:.0%} | "
+                    f"{opp_name if 'opp_name' in locals() else 'Opp'}: {opp_eff:.0%}"
                 )
 
             scoring_col1, scoring_col2 = st.columns(2)
