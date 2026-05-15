@@ -715,7 +715,19 @@ plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 with tab0:
     st.markdown("## Match Dashboard")
 
-    dashboard_df = plot_df.copy()
+    dashboard_df = df.copy()
+
+    if cols["match_no"] and match_display_choices:
+        selected_match_nos = [
+            match_labels[label]
+            for label in match_display_choices
+        ]
+
+        dashboard_df = dashboard_df[
+            dashboard_df[cols["match_no"]]
+            .astype(str)
+            .isin(selected_match_nos)
+        ].copy()
 
     selected_match_text = "Selected Match"
     if cols["match_no"] and cols["team"] and not dashboard_df.empty:
