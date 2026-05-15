@@ -1766,32 +1766,32 @@ with tab3:
             
             st.table(summary)
             # --- Player Non-Scoring Stats ---
-                        st.markdown("### Non-scoring Activity Heatmap")
+            st.markdown("### Non-scoring Activity Heatmap")
 
-                        heatmap_df = player_table.copy()
-            
-                        heatmap_numeric_cols = [
-                            c for c in heatmap_df.columns
-                            if c not in ["Player", "Total"]
-                        ]
-            
-                        if not heatmap_df.empty:
-                            fig_heat = px.imshow(
-                                heatmap_df[heatmap_numeric_cols].T,
-                                x=heatmap_df["Player"],
-                                y=heatmap_numeric_cols,
-                                text_auto=True,
-                                aspect="auto",
-                                title="Player Non-scoring Activity"
-                            )
-            
-                            fig_heat.update_layout(
-                                xaxis_title="Player",
-                                yaxis_title="Metric",
-                                height=450
-                            )
-            
-                            st.plotly_chart(fig_heat, use_container_width=True)
+            heatmap_df = player_table.copy()
+
+            heatmap_numeric_cols = [
+                c for c in heatmap_df.columns
+                if c not in ["Player", "Total"]
+            ]
+
+            if not heatmap_df.empty:
+                fig_heat = px.imshow(
+                    heatmap_df[heatmap_numeric_cols].T,
+                    x=heatmap_df["Player"],
+                    y=heatmap_numeric_cols,
+                    text_auto=True,
+                    aspect="auto",
+                    title="Player Non-scoring Activity"
+                )
+
+                fig_heat.update_layout(
+                    xaxis_title="Player",
+                    yaxis_title="Metric",
+                    height=450
+                )
+
+                st.plotly_chart(fig_heat, use_container_width=True)
             st.markdown("### Player Non-scoring Stats")
     
             non_score_df = plot_df.copy()
