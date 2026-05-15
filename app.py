@@ -879,6 +879,59 @@ with left_col:
             bt_scoring_table = build_scoring_breakdown(bt_scoring_df)
             opp_scoring_table = build_scoring_breakdown(opp_scoring_df)
 
+            def calc_summary_metrics(df):
+
+                stat_series = df["__stat1_lower__"]
+
+                score_events = [
+                    "point", "point from free", "2 pointer",
+                    "point from 45", "2 pointer from free",
+                    "goal", "goal from penalty", "goal from free"
+                ]
+
+                miss_events = [
+                    "wide", "wide from free", "short",
+                    "out for 45", "saved", "short from free",
+                    "wide from 45", "off posts"
+                ]
+
+                shots = stat_series.isin(
+                    score_events + miss_events
+                ).sum()
+
+                scores = stat_series.isin(
+                    score_events
+                ).sum()
+
+                efficiency = (
+                    scores / shots
+                    if shots > 0 else 0
+                )
+
+                return shots, scores, efficiency
+
+            bt_shots, bt_scores, bt_eff = calc_summary_metrics(
+                bt_scoring_df
+            )
+
+            opp_shots, opp_scores, opp_eff = calc_summary_metrics(
+                opp_scoring_df
+            )
+
+            kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+
+            with kpi_col1:
+                st.metric("Shots", bt_shots)
+
+            with kpi_col2:
+                st.metric("Scores", bt_scores)
+
+            with kpi_col3:
+                st.metric(
+                    "Shot Efficiency",
+                    f"{bt_eff:.0%}"
+                )
+
             scoring_col1, scoring_col2 = st.columns(2)
 
             with scoring_col1:
