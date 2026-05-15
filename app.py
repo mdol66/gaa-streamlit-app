@@ -937,25 +937,24 @@ with left_col:
                 
             kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
 
+            kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+
             with kpi_col1:
                 st.markdown(
                     f"**Shots**  \n"
-                    f"BT: {bt_shots} | "
-                    f"{opp_name if 'opp_name' in locals() else 'Opp'}: {opp_shots}"
+                    f"{bt_shots} | {opp_shots}"
                 )
 
             with kpi_col2:
                 st.markdown(
                     f"**Scores**  \n"
-                    f"BT: {bt_scores} | "
-                    f"{opp_name if 'opp_name' in locals() else 'Opp'}: {opp_scores}"
+                    f"{bt_scores} | {opp_scores}"
                 )
 
             with kpi_col3:
                 st.markdown(
                     f"**Shot Efficiency**  \n"
-                    f"BT: {bt_eff:.0%} | "
-                    f"{opp_name if 'opp_name' in locals() else 'Opp'}: {opp_eff:.0%}"
+                    f"{bt_eff:.0%} | {opp_eff:.0%}"
                 )
 
     with mid_col:
