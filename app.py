@@ -89,6 +89,29 @@ div[data-testid="stVerticalBlockBorderWrapper"] > div {
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+
+/* Force dataframe/table headers to align consistently */
+thead tr th {
+    vertical-align: middle !important;
+    text-align: center !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+/* Keep table body aligned nicely */
+tbody tr td {
+    vertical-align: middle !important;
+}
+
+/* Make metric column centred */
+td, th {
+    line-height: 1.2 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 def safe_col_lookup(df: pd.DataFrame, candidates: list[str]) -> Optional[str]:
     lower_map = {c.lower(): c for c in df.columns}
