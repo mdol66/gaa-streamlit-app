@@ -1735,24 +1735,22 @@ with tab3:
                 .agg(
                     Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                     Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Won=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Lost=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Won=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Lost=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                 )
                 .reset_index()
             )
-    
+
             summary["match_label"] = summary[cols["match_no"]].astype(str).map(
                 lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
             )
-    
+
             summary = summary.drop(columns=[cols["match_no"]])
-            summary = summary.rename(columns={"match_label": "Match"})  
+            summary = summary.rename(columns={"match_label": "Match"})
             summary["Own KO Index +/-"] = summary["Own_KO_Won"] - summary["Own_KO_Lost"]
             summary["Opp KO Index +/-"] = summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
             summary["Overall KO Index +/-"] = summary["Own KO Index +/-"] + summary["Opp KO Index +/-"]
 
-            summary = summary.rename(columns={cols["team"]: "Opposition"})
-            
             summary = summary[[
                 "Match",
                 "Own_KO_Won",
@@ -1763,96 +1761,91 @@ with tab3:
                 "Opp KO Index +/-",
                 "Overall KO Index +/-"
             ]]
-            
+
             st.table(summary)
-                  # --- Player Non-Scoring Heatmap ---
+        else:
+            st.info("No kickout data for current filters.")
+
+    st.markdown("### Player Non-scoring Stats")
+
+    non_score_df = plot_df.copy()
+    non_score_df = non_score_df[
+        non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
+    ]
+
+    non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
+    non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
+
+    exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
+    non_score_df = non_score_df[
+        ~non_score_df["__stat1_lower__"].isin(exclude_events)
+    ]
+
+    if not non_score_df.empty:
+        non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
+        non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
+
+        non_score_df.loc[
+            non_score_df["__stat2_lower__"].isin([
+                "yellow card",
+                "black card",
+                "red card"
+            ]),
+            "__event_for_table__"
+        ] = non_score_df["__stat2_lower__"]
+
+        player_table = (
+            non_score_df.groupby(["__player_clean__", "__event_for_table__"])
+            .size()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+
+        player_table = player_table[
+            player_table["__player_clean__"].notna()
+            & (player_table["__player_clean__"].astype(str).str.lower() != "nan")
+        ]
+
+        player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
+        player_table = player_table.sort_values(by="Total", ascending=False)
+        player_table = player_table.rename(columns={"__player_clean__": "Player"})
+
+        drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
+        player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
+
         st.markdown("### Non-scoring Activity Heatmap")
 
-        heatmap_df = player_table.copy()
-
         heatmap_numeric_cols = [
-            c for c in heatmap_df.columns
+            c for c in player_table.columns
             if c not in ["Player", "Total"]
         ]
 
-        if not heatmap_df.empty:
-            fig_heat = px.imshow(
-                heatmap_df[heatmap_numeric_cols].T,
-                x=heatmap_df["Player"],
-                y=heatmap_numeric_cols,
-                text_auto=True,
-                aspect="auto",
-                title="Player Non-scoring Activity"
-            )
+        fig_heat = px.imshow(
+            player_table[heatmap_numeric_cols].T,
+            x=player_table["Player"],
+            y=heatmap_numeric_cols,
+            text_auto=True,
+            aspect="auto",
+            title="Player Non-scoring Activity"
+        )
 
-            fig_heat.update_layout(
-                xaxis_title="Player",
-                yaxis_title="Metric",
-                height=450
-            )
+        fig_heat.update_layout(
+            xaxis_title="Player",
+            yaxis_title="Metric",
+            height=450
+        )
 
-            st.plotly_chart(
-                fig_heat,
-                use_container_width=True
-            )
+        st.plotly_chart(
+            fig_heat,
+            use_container_width=True
+        )
 
-        st.markdown("### Player Non-scoring Stats")
-       
-        non_score_df = plot_df.copy()
-        non_score_df = non_score_df[
-        non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
-        ]
-        non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
-        non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
-    
-            # Exclude all shot-related events
-            exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
-            non_score_df = non_score_df[
-                ~non_score_df["__stat1_lower__"].isin(exclude_events)
-            ]
-    
-            if not non_score_df.empty:
-    
-                non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
-                non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
+        st.dataframe(
+            player_table.style.set_properties(**{"text-align": "left"}),
+            use_container_width=True
+        )
 
-                non_score_df.loc[
-                    non_score_df["__stat2_lower__"].isin([
-                        "yellow card",
-                        "black card",
-                        "red card"
-                    ]),
-                    "__event_for_table__"
-                ] = non_score_df["__stat2_lower__"]
-    
-                player_table = (
-                    non_score_df.groupby(["__player_clean__", "__event_for_table__"])
-                    .size()
-                    .unstack(fill_value=0)
-                    .reset_index()
-                )
-    
-                player_table = player_table[
-                    player_table["__player_clean__"].notna() &
-                    (player_table["__player_clean__"].astype(str).str.lower() != "nan")
-                ]
-
-                player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
-    
-                player_table = player_table.sort_values(by="Total", ascending=False)
-    
-                player_table = player_table.rename(columns={"__player_clean__": "Player"})
-                # Drop unwanted columns if present
-                drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
-                player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
-    
-                st.dataframe(
-                    player_table.style.set_properties(**{"text-align": "left"}),
-                    use_container_width=True
-                )
-    
-            else:
-                st.info("No non-scoring events for current filters.")
-            
+    else:
+        st.info("No non-scoring events for current filters.")
         else:
             st.info("No kickout data for current filters.")
