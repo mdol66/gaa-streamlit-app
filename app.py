@@ -879,25 +879,27 @@ if cols["team"] and cols["stat1"] and cols["stat2"]:
             })
 
         return pd.DataFrame(rows)
-            bt_table = build_scoring_rows(bt_scoring_df)
-            opp_table = build_scoring_rows(opp_scoring_df)
-            score_col1, score_col2 = st.columns(2)
-    
-            with score_col1:
-                st.markdown("**Ballintubber**")
-                st.dataframe(
-                    bt_table,
-                    hide_index=True,
-                    use_container_width=True
-                )
-        
-            with score_col2:
-                st.markdown(f"**{opp_name}**")
-                st.dataframe(
-                    opp_table,
-                    hide_index=True,
-                    use_container_width=True
-                )
+        bt_table = build_scoring_rows(bt_scoring_df)
+        opp_table = build_scoring_rows(opp_scoring_df)
+
+        score_col1, score_col2 = st.columns(2)
+
+        with score_col1:
+            st.markdown("**Ballintubber**")
+            st.dataframe(
+                bt_table,
+                hide_index=True,
+                use_container_width=True
+            )
+
+        with score_col2:
+            st.markdown(f"**{opp_name}**")
+            st.dataframe(
+                opp_table,
+                hide_index=True,
+                use_container_width=True
+            )
+
     
 with mid_col:
     with st.container(border=True):
