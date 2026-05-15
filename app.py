@@ -1254,22 +1254,29 @@ with tab0:
                     )
     
                     kickout_table = pd.DataFrame({
+                    kickout_table = pd.DataFrame({
                         "Ballintubber": [
                             bt_total,
                             bt_won,
                             bt_lost,
+                            bt_short,
+                            bt_long,
                             f"{bt_retention:.0%}"
                         ],
                         "Metric": [
                             "  Total",
                             "  Won",
                             "  Lost",
+                            "  Short",
+                            "  Long",
                             "  Retention"
                         ],
                         opp_display_name: [
                             opp_total,
                             opp_won,
                             opp_lost,
+                            opp_short,
+                            opp_long,
                             f"{opp_retention:.0%}"
                         ]
                     })
