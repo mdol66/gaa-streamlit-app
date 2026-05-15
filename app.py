@@ -1218,7 +1218,15 @@ with tab0:
                     ).sum()
     
                     opp_lost = opp_total - opp_won
-    
+                    opp_short = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("short")
+                    ).sum()
+
+                    opp_long = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("long")
+                    ).sum()
                     opp_retention = (
                         opp_won / opp_total
                         if opp_total > 0 else 0
