@@ -803,7 +803,27 @@ with left_col:
             unsafe_allow_html=True
         )
 
-        st.info("Scoring section rebuilding")
+scoring_df = dashboard_df.copy()
+
+if cols["team"] and cols["stat1"] and cols["stat2"]:
+
+    scoring_df["__team_lower__"] = (
+        scoring_df[cols["team"]]
+        .astype(str)
+        .str.lower()
+    )
+
+    scoring_df["__stat1_lower__"] = (
+        scoring_df[cols["stat1"]]
+        .astype(str)
+        .str.lower()
+    )
+
+    scoring_df["__stat2_lower__"] = (
+        scoring_df[cols["stat2"]]
+        .astype(str)
+        .str.lower()
+    )
 
 with mid_col:
     with st.container(border=True):
