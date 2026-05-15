@@ -802,105 +802,77 @@ with left_col:
             """,
             unsafe_allow_html=True
         )
-        
-        scoring_panel_df = dashboard_df.copy()
 
-        if cols["team"] and cols["stat1"] and cols["stat2"]:
+        st.info("Scoring section rebuilding")
 
-            scoring_panel_df["__team_lower__"] = (
-                scoring_panel_df[cols["team"]]
+with mid_col:
+    with st.container(border=True):
+
+        st.markdown(
+            """
+            <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                <h3 style="margin:0;">General Play</h3>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        gp_df = dashboard_df.copy()
+
+        if cols["team"] and cols["stat1"]:
+
+            gp_df["__team_lower__"] = (
+                gp_df[cols["team"]]
                 .astype(str)
                 .str.lower()
             )
 
-            scoring_panel_df["__stat1_lower__"] = (
-                scoring_panel_df[cols["stat1"]]
+            gp_df["__stat1_lower__"] = (
+                gp_df[cols["stat1"]]
                 .astype(str)
                 .str.lower()
             )
 
-            scoring_panel_df["__is_placed__"] = (
-                scoring_panel_df[cols["stat2"]]
-                .fillna("")
-                .astype(str)
-                .str.strip() != ""
-            )
+            score_events = [
+                "point", "point from free", "2 pointer",
+                "point from 45", "2 pointer from free",
+                "goal", "goal from penalty", "goal from free"
+            ]
 
-            bt_scoring_df = scoring_panel_df[
-                scoring_panel_df["__team_lower__"]
-                == "ballintubber"
+            miss_events = [
+                "wide", "wide from free", "short",
+                "out for 45", "saved", "short from free",
+                "wide from 45", "off posts from 45",
+                "short from 45", "off posts"
+            ]
+
+            turnover_won_events = [
+                "turnover won"
+            ]
+
+            turnover_lost_events = [
+                "turnover lost"
+            ]
+
+            bt_df = gp_df[
+                gp_df["__team_lower__"] == "ballintubber"
             ].copy()
 
-            opp_scoring_df = scoring_panel_df[
-                (scoring_panel_df["__team_lower__"] != "ballintubber")
-                & (~scoring_panel_df["__team_lower__"].isin(["1st half", "2nd half"]))
+            opp_df = gp_df[
+                (gp_df["__team_lower__"] != "ballintubber")
+                & (~gp_df["__team_lower__"].isin(["1st half", "2nd half"]))
             ].copy()
 
-            scoring_categories = {
-                "Goals": ["goal", "goal from penalty", "goal from free"],
-                "2 Pointers": ["2 pointer", "2 pointer from free"],
-                "Points": ["point", "point from free", "point from 45"],
-                "Wides": ["wide", "wide from free", "wide from 45"],
-                "Out for 45": ["out for 45"],
-                "Off Posts": ["off posts", "off post"],
-                "Saved": ["saved"],
-                "Saved out for 45": ["saved out for 45"],
-                "Short": ["short", "short from free", "short from 45"]
-            }
-            def build_scoring_breakdown(df):
-
-                rows = []
+            def calc_team_metrics(df):
 
                 stat_series = df["__stat1_lower__"]
 
-                for label, events in scoring_categories.items():
-
-                    total = stat_series.isin(events).sum()
-
-                    from_play = (
-                        stat_series.isin(events)
-                        & (~df["__is_placed__"])
-                    ).sum()
-
-                    from_placed = (
-                        stat_series.isin(events)
-                        & (df["__is_placed__"])
-                    ).sum()
-
-                    rows.append({
-                        "Metric": label,
-                        "Total": total,
-                        "Play": from_play,
-                        "Placed": from_placed
-                    })
-
-                return pd.DataFrame(rows)
-
-            bt_scoring_table = build_scoring_breakdown(bt_scoring_df)
-            opp_scoring_table = build_scoring_breakdown(opp_scoring_df)
-
-            def calc_summary_metrics(df):
-
-                stat_series = df["__stat1_lower__"]
-
-                score_events = [
-                    "point", "point from free", "2 pointer",
-                    "point from 45", "2 pointer from free",
-                    "goal", "goal from penalty", "goal from free"
-                ]
-
-                miss_events = [
-                    "wide", "wide from free", "short",
-                    "out for 45", "saved", "short from free",
-                    "wide from 45", "off posts"
-                ]
-
-                shots = stat_series.isin(
-                    score_events + miss_events
+                shots = (
+                    stat_series.isin(score_events + miss_events)
                 ).sum()
 
-                scores = stat_series.isin(
-                    score_events
+                scores = (
+                    stat_series.isin(score_events)
                 ).sum()
 
                 efficiency = (
@@ -908,204 +880,65 @@ with left_col:
                     if shots > 0 else 0
                 )
 
-                return shots, scores, efficiency
+                if (
+                    df["__team_lower__"]
+                    .eq("ballintubber")
+                    .all()
+                ):
 
-            bt_shots, bt_scores, bt_eff = calc_summary_metrics(
-                bt_scoring_df
-            )
+                    to_won = (
+                        stat_series.isin(turnover_won_events)
+                    ).sum()
 
-            opp_shots, opp_scores, opp_eff = calc_summary_metrics(
-                opp_scoring_df
-            )
+                    to_lost = (
+                        stat_series.isin(turnover_lost_events)
+                    ).sum()
 
-            opp_display_name = (
-                opp_name
-                if "opp_name" in locals()
-                else "Opposition"
-            )
+                else:
+                    # Mirror Ballintubber perspective
+                    bt_stat_series = bt_df["__stat1_lower__"]
 
-            combined_scoring_table = pd.DataFrame({
-                "Ballintubber Total": bt_scoring_table["Total"],
-                "Ballintubber Play": bt_scoring_table["Play"],
-                "Ballintubber Placed": bt_scoring_table["Placed"],
-                "Metric": bt_scoring_table["Metric"],
-                f"{opp_display_name} Total": opp_scoring_table["Total"],
-                f"{opp_display_name} Play": opp_scoring_table["Play"],
-                f"{opp_display_name} Placed": opp_scoring_table["Placed"],
-            })
+                    to_won = (
+                        bt_stat_series.isin(turnover_lost_events)
+                    ).sum()
 
-            st.dataframe(
-                combined_scoring_table,
-                hide_index=True,
-                use_container_width=True
-            )
+                    to_lost = (
+                        bt_stat_series.isin(turnover_won_events)
+                    ).sum()
 
-            scoring_summary_table = pd.DataFrame({
-                "Ballintubber": [
-                    bt_shots,
-                    bt_scores,
-                    f"{bt_eff:.0%}"
-                ],
+                net_to = to_won - to_lost
+
+                return {
+                    "shots": shots,
+                    "scores": scores,
+                    "efficiency": efficiency,
+                    "to_won": to_won,
+                    "to_lost": to_lost,
+                    "net_to": net_to
+                }
+
+            bt_metrics = calc_team_metrics(bt_df)
+            opp_metrics = calc_team_metrics(opp_df)
+
+            comparison_df = pd.DataFrame({
                 "Metric": [
-                    "Total Shots",
-                    "Scores",
-                    "Shot Efficiency"
+                    "TO Won",
+                    "TO Lost",
+                    "Net TO"
                 ],
-                opp_display_name: [
-                    opp_shots,
-                    opp_scores,
-                    f"{opp_eff:.0%}"
+                "Ballintubber": [
+                    bt_metrics["to_won"],
+                    bt_metrics["to_lost"],
+                    bt_metrics["net_to"]
+                ],
+                opp_name if "opp_name" in locals() else "Opposition": [
+                    opp_metrics["to_won"],
+                    opp_metrics["to_lost"],
+                    opp_metrics["net_to"]
                 ]
             })
 
-            st.dataframe(
-                scoring_summary_table,
-                hide_index=True,
-                use_container_width=True
-            )
-                
-            st.markdown("---")
-
-            st.markdown(
-                f"**TOTAL SHOTS:** {bt_shots} ({opp_name if 'opp_name' in locals() else 'Opp'}: {opp_shots})  \n"
-                f"**SCORES:** {bt_scores} ({opp_name if 'opp_name' in locals() else 'Opp'}: {opp_scores})  \n"
-                f"**SHOT EFFICIENCY:** {bt_eff:.0%} ({opp_name if 'opp_name' in locals() else 'Opp'}: {opp_eff:.0%})"
-            )
-
-    with mid_col:
-        with st.container(border=True):
-
-            st.markdown(
-                """
-                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
-                    <h3 style="margin:0;">General Play</h3>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-            gp_df = dashboard_df.copy()
-
-            if cols["team"] and cols["stat1"]:
-
-                gp_df["__team_lower__"] = (
-                    gp_df[cols["team"]]
-                    .astype(str)
-                    .str.lower()
-                )
-
-                gp_df["__stat1_lower__"] = (
-                    gp_df[cols["stat1"]]
-                    .astype(str)
-                    .str.lower()
-                )
-
-                score_events = [
-                    "point", "point from free", "2 pointer",
-                    "point from 45", "2 pointer from free",
-                    "goal", "goal from penalty", "goal from free"
-                ]
-
-                miss_events = [
-                    "wide", "wide from free", "short",
-                    "out for 45", "saved", "short from free",
-                    "wide from 45", "off posts from 45",
-                    "short from 45", "off posts"
-                ]
-
-                turnover_won_events = [
-                    "turnover won"
-                ]
-
-                turnover_lost_events = [
-                    "turnover lost"
-                ]
-
-                bt_df = gp_df[
-                    gp_df["__team_lower__"] == "ballintubber"
-                ].copy()
-
-                opp_df = gp_df[
-                    (gp_df["__team_lower__"] != "ballintubber")
-                    & (~gp_df["__team_lower__"].isin(["1st half", "2nd half"]))
-                ].copy()
-
-                def calc_team_metrics(df):
-
-                    stat_series = df["__stat1_lower__"]
-
-                    shots = (
-                        stat_series.isin(score_events + miss_events)
-                    ).sum()
-
-                    scores = (
-                        stat_series.isin(score_events)
-                    ).sum()
-
-                    efficiency = (
-                        scores / shots
-                        if shots > 0 else 0
-                    )
-
-                    if (
-                        df["__team_lower__"]
-                        .eq("ballintubber")
-                        .all()
-                    ):
-
-                        to_won = (
-                            stat_series.isin(turnover_won_events)
-                        ).sum()
-
-                        to_lost = (
-                            stat_series.isin(turnover_lost_events)
-                        ).sum()
-
-                    else:
-                        # Mirror Ballintubber perspective
-                        bt_stat_series = bt_df["__stat1_lower__"]
-
-                        to_won = (
-                            bt_stat_series.isin(turnover_lost_events)
-                        ).sum()
-
-                        to_lost = (
-                            bt_stat_series.isin(turnover_won_events)
-                        ).sum()
-
-                    net_to = to_won - to_lost
-
-                    return {
-                        "shots": shots,
-                        "scores": scores,
-                        "efficiency": efficiency,
-                        "to_won": to_won,
-                        "to_lost": to_lost,
-                        "net_to": net_to
-                    }
-
-                bt_metrics = calc_team_metrics(bt_df)
-                opp_metrics = calc_team_metrics(opp_df)
-
-                comparison_df = pd.DataFrame({
-                    "Metric": [
-                        "TO Won",
-                        "TO Lost",
-                        "Net TO"
-                    ],
-                    "Ballintubber": [
-                        bt_metrics["to_won"],
-                        bt_metrics["to_lost"],
-                        bt_metrics["net_to"]
-                    ],
-                    opp_name if "opp_name" in locals() else "Opposition": [
-                        opp_metrics["to_won"],
-                        opp_metrics["to_lost"],
-                        opp_metrics["net_to"]
-                    ]
-                })
-
-                st.table(comparison_df.set_index("Metric"))
+            st.table(comparison_df.set_index("Metric"))
 
 with right_col:
     with st.container(border=True):
