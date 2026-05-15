@@ -951,7 +951,8 @@ with left_col:
             st.dataframe(
                 scoring_table,
                 hide_index=True,
-                use_container_width=True
+                use_container_width=True,
+                height=620
             )
 
     
