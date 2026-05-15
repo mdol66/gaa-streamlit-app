@@ -1253,8 +1253,7 @@ with tab0:
                         if opp_total > 0 else 0
                     )
     
-                    kickout_table = pd.DataFrame({
-                    kickout_table = pd.DataFrame({
+                     kickout_table = pd.DataFrame({
                         "Ballintubber": [
                             bt_total,
                             bt_won,
