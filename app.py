@@ -900,8 +900,126 @@ with tab0:
 
     with mid_col:
         with st.container(border=True):
+
             st.markdown("### General Play")
-            st.info("General play metrics coming here")
+
+            gp_df = dashboard_df.copy()
+
+            if cols["team"] and cols["stat1"]:
+
+                gp_df["__team_lower__"] = (
+                    gp_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                )
+
+                gp_df["__stat1_lower__"] = (
+                    gp_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
+
+                score_events = [
+                    "point", "point from free", "2 pointer",
+                    "point from 45", "2 pointer from free",
+                    "goal", "goal from penalty", "goal from free"
+                ]
+
+                miss_events = [
+                    "wide", "wide from free", "short",
+                    "out for 45", "saved", "short from free",
+                    "wide from 45", "off posts from 45",
+                    "short from 45", "off posts"
+                ]
+
+                turnover_won_events = [
+                    "turnover won"
+                ]
+
+                turnover_lost_events = [
+                    "turnover lost"
+                ]
+
+                bt_df = gp_df[
+                    gp_df["__team_lower__"] == "ballintubber"
+                ].copy()
+
+                opp_df = gp_df[
+                    (gp_df["__team_lower__"] != "ballintubber")
+                    & (~gp_df["__team_lower__"].isin(["1st half", "2nd half"]))
+                ].copy()
+
+                def calc_team_metrics(df):
+
+                    stat_series = df["__stat1_lower__"]
+
+                    shots = (
+                        stat_series.isin(score_events + miss_events)
+                    ).sum()
+
+                    scores = (
+                        stat_series.isin(score_events)
+                    ).sum()
+
+                    efficiency = (
+                        scores / shots
+                        if shots > 0 else 0
+                    )
+
+                    to_won = (
+                        stat_series.isin(turnover_won_events)
+                    ).sum()
+
+                    to_lost = (
+                        stat_series.isin(turnover_lost_events)
+                    ).sum()
+
+                    net_to = to_won - to_lost
+
+                    return {
+                        "shots": shots,
+                        "scores": scores,
+                        "efficiency": efficiency,
+                        "to_won": to_won,
+                        "to_lost": to_lost,
+                        "net_to": net_to
+                    }
+
+                bt_metrics = calc_team_metrics(bt_df)
+                opp_metrics = calc_team_metrics(opp_df)
+
+                comparison_df = pd.DataFrame({
+                    "Metric": [
+                        "Shots",
+                        "Scores",
+                        "Efficiency",
+                        "TO Won",
+                        "TO Lost",
+                        "Net TO"
+                    ],
+                    "Ballintubber": [
+                        bt_metrics["shots"],
+                        bt_metrics["scores"],
+                        f"{bt_metrics['efficiency']:.0%}",
+                        bt_metrics["to_won"],
+                        bt_metrics["to_lost"],
+                        bt_metrics["net_to"]
+                    ],
+                    opp_name if "opp_name" in locals() else "Opposition": [
+                        opp_metrics["shots"],
+                        opp_metrics["scores"],
+                        f"{opp_metrics['efficiency']:.0%}",
+                        opp_metrics["to_won"],
+                        opp_metrics["to_lost"],
+                        opp_metrics["net_to"]
+                    ]
+                })
+
+                st.dataframe(
+                    comparison_df,
+                    hide_index=True,
+                    use_container_width=True
+                )
 
     with right_col:
         with st.container(border=True):
