@@ -1088,7 +1088,13 @@ with mid_col:
                     opp_metrics["net_to"]
                 ]
 
-            st.table(comparison_df.set_index("Metric"))
+            st.dataframe(
+                comparison_df[
+                    ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
+                ],
+                hide_index=True,
+                use_container_width=True
+            )
 
 with right_col:
     with st.container(border=True):
