@@ -1056,7 +1056,7 @@ with left_col:
                     "Ballintubber": [
                         bt_metrics["to_won"],
                         bt_metrics["to_lost"],
-                        bt_metrics["net_to"]
+                        bt_metrics["net_to"],
                         bt_metrics["frees_conceded"],
                         bt_metrics["yellow_cards"],
                         bt_metrics["black_cards"],
