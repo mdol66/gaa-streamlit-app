@@ -1720,19 +1720,35 @@ with tab2:
 
             fig_score_heat = px.imshow(
                 scoring_heatmap_df[heatmap_cols]
-                .div(scoring_heatmap_df[heatmap_cols].max(axis=0).replace(0, 1), axis=1)
+                .div(
+                    scoring_heatmap_df[heatmap_cols]
+                    .max(axis=0)
+                    .replace(0, 1),
+                    axis=1
+                )
                 .T,
                 x=scoring_heatmap_df["Player"],
                 y=heatmap_cols,
-                text_auto=True,
+                text_auto=False,
                 aspect="auto",
                 title="Player Scoring Activity"
             )
 
+            fig_score_heat.update_traces(
+                text=scoring_heatmap_df[heatmap_cols].T,
+                texttemplate="%{text}",
+                hovertemplate=(
+                    "Player=%{x}"
+                    "<br>Metric=%{y}"
+                    "<br>Value=%{text}"
+                    "<extra></extra>"
+                )
+            )
+
             fig_score_heat.update_layout(
+                height=450,
                 xaxis_title="Player",
-                yaxis_title="Metric",
-                height=450
+                yaxis_title="Metric"
             )
 
             st.plotly_chart(
