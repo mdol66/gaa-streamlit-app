@@ -1021,23 +1021,23 @@ with left_col:
                         ),
     
                         "yellow_cards": (
-                            team_df[cols["stat1"]]
+                            team_df[cols["stat2"]]
                             .astype(str)
                             .str.lower()
                             .eq("yellow card")
                             .sum()
                         ),
-    
+        
                         "black_cards": (
-                            team_df[cols["stat1"]]
-                            .astype(str)
-                            .str.lower()
-                            .eq("black card")
-                            .sum()
-                        ),
+                        team_df[cols["stat2"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("black card")
+                        .sum()
+                    ),
     
                         "red_cards": (
-                            team_df[cols["stat1"]]
+                            team_df[cols["stat2"]]
                             .astype(str)
                             .str.lower()
                             .eq("red card")
