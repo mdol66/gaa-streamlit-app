@@ -1098,6 +1098,53 @@ with tab0:
                     "Saved out for 45": ["saved out for 45"],
                     "Short": ["short", "short from free", "short from 45"]
                 }
+                def build_scoring_breakdown(df):
+
+                    rows = []
+
+                    stat_series = df["__stat1_lower__"]
+
+                    for label, events in scoring_categories.items():
+
+                        total = stat_series.isin(events).sum()
+
+                        from_play = (
+                            stat_series.isin(events)
+                            & (~df["__is_placed__"])
+                        ).sum()
+
+                        from_placed = (
+                            stat_series.isin(events)
+                            & (df["__is_placed__"])
+                        ).sum()
+
+                        rows.append({
+                            "Metric": label,
+                            "Total": total,
+                            "Play": from_play,
+                            "Placed": from_placed
+                        })
+
+                    return pd.DataFrame(rows)
+
+                bt_scoring_table = build_scoring_breakdown(bt_scoring_df)
+                opp_scoring_table = build_scoring_breakdown(opp_scoring_df)
+
+                scoring_col1, scoring_col2 = st.columns(2)
+
+                with scoring_col1:
+                    st.markdown("**Ballintubber**")
+                    st.table(bt_scoring_table.set_index("Metric"))
+
+                with scoring_col2:
+                    opp_display_name = (
+                        opp_name
+                        if "opp_name" in locals()
+                        else "Opposition"
+                    )
+
+                    st.markdown(f"**{opp_display_name}**")
+                    st.table(opp_scoring_table.set_index("Metric"))
    
 with tab1:
     fig = make_pitch_figure()
