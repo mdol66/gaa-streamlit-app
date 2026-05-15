@@ -562,7 +562,13 @@ if cols["match_no"] and cols["team"]:
         opp_text = opposition[0] if opposition else "Unknown"
         match_labels[f"{match_no} v {opp_text}"] = match_no
 
-    match_display_choices = st.sidebar.multiselect("Match Number", list(match_labels.keys()))
+    default_match = list(match_labels.keys())[-1]
+    
+    match_display_choices = st.sidebar.multiselect(
+        "Match Number",
+        list(match_labels.keys()),
+        default=[default_match]
+    )
 
     if match_display_choices:
         selected_match_nos = [match_labels[label] for label in match_display_choices]
