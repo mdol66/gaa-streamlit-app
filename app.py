@@ -1057,16 +1057,28 @@ with left_col:
                         bt_metrics["to_won"],
                         bt_metrics["to_lost"],
                         bt_metrics["net_to"]
+                        bt_metrics["frees_conceded"],
+                        bt_metrics["yellow_cards"],
+                        bt_metrics["black_cards"],
+                        bt_metrics["red_cards"]
                     ],
                     "Metric": [
                         "TO Won",
                         "TO Lost",
                         "Net TO"
+                        "Frees Conceded",
+                        "Yellow Cards",
+                        "Black Cards",
+                        "Red Cards"
                     ],
                     opp_name if "opp_name" in locals() else "Opposition": [
                         opp_metrics["to_won"],
                         opp_metrics["to_lost"],
                         opp_metrics["net_to"]
+                        opp_metrics["frees_conceded"],
+                        opp_metrics["yellow_cards"],
+                        opp_metrics["black_cards"],
+                        opp_metrics["red_cards"]
                     ]
                 })
                 comparison_df["Ballintubber"] = comparison_df["Ballintubber"].astype(str)
