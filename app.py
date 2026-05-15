@@ -935,25 +935,13 @@ with left_col:
                 st.markdown(f"**{opp_display_name}**")
                 st.table(opp_scoring_table.set_index("Metric"))
                 
-            kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+            st.markdown("---")
 
-            with kpi_col1:
-                st.markdown(
-                    f"**Shots**  \n"
-                    f"BT: {bt_shots} | {opp_name if "opp_name" in locals() else "Opp"}: {opp_shots}"
-                )
-
-            with kpi_col2:
-                st.markdown(
-                    f"**Scores**  \n"
-                    f"BT: {bt_scores} | {opp_name if "opp_name" in locals() else "Opp"}: {opp_scores}"
-                )
-
-            with kpi_col3:
-                st.markdown(
-                    f"**Shot Efficiency**  \n"
-                    f"BT: {bt_eff:.0%} | {opp_name if "opp_name" in locals() else "Opp"}: {opp_eff:.0%}"
-                )
+            st.markdown(
+                f"**TOTAL SHOTS:** {bt_shots} ({opp_name if 'opp_name' in locals() else 'Opp'}: {opp_shots})  \n"
+                f"**SCORES:** {bt_scores} ({opp_name if 'opp_name' in locals() else 'Opp'}: {opp_scores})  \n"
+                f"**SHOT EFFICIENCY:** {bt_eff:.0%} ({opp_name if 'opp_name' in locals() else 'Opp'}: {opp_eff:.0%})"
+            )
 
     with mid_col:
         with st.container(border=True):
