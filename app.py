@@ -789,7 +789,7 @@ with tab0:
     st.markdown(f"#### Score: {scoreline_text}")
 
     st.markdown("---")
-    left_col, mid_col, right_col = st.columns([1, 1, 1])
+left_col, mid_col, right_col = st.columns([0.8, 1.0, 1.35])
 
     with left_col:
         with st.container(border=True):
@@ -797,106 +797,103 @@ with tab0:
             st.markdown(
                 """
                 <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
-                    <h3 style="margin:0;">Kickouts</h3>
+                    <h3 style="margin:0;">Scoring</h3>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
+            
+            scoring_panel_df = dashboard_df.copy()
 
-            ko_df = dashboard_df.copy()
+            if cols["team"] and cols["stat1"] and cols["stat2"]:
 
-            if cols["stat1"] and cols["team"]:
-
-                ko_df["__stat1_lower__"] = (
-                    ko_df[cols["stat1"]]
+                scoring_panel_df["__team_lower__"] = (
+                    scoring_panel_df[cols["team"]]
                     .astype(str)
                     .str.lower()
                 )
 
-                ko_df = ko_df[
-                    ko_df["__stat1_lower__"]
-                    .str.contains("kick ?out", na=False)
-                ]
+                scoring_panel_df["__stat1_lower__"] = (
+                    scoring_panel_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
 
-                if not ko_df.empty:
+                scoring_panel_df["__is_placed__"] = (
+                    scoring_panel_df[cols["stat2"]]
+                    .fillna("")
+                    .astype(str)
+                    .str.strip() != ""
+                )
 
-                    ko_df["__team_lower__"] = (
-                        ko_df[cols["team"]]
-                        .astype(str)
-                        .str.lower()
+                bt_scoring_df = scoring_panel_df[
+                    scoring_panel_df["__team_lower__"]
+                    == "ballintubber"
+                ].copy()
+
+                opp_scoring_df = scoring_panel_df[
+                    (scoring_panel_df["__team_lower__"] != "ballintubber")
+                    & (~scoring_panel_df["__team_lower__"].isin(["1st half", "2nd half"]))
+                ].copy()
+
+                scoring_categories = {
+                    "Goals": ["goal", "goal from penalty", "goal from free"],
+                    "2 Pointers": ["2 pointer", "2 pointer from free"],
+                    "Points": ["point", "point from free", "point from 45"],
+                    "Wides": ["wide", "wide from free", "wide from 45"],
+                    "Out for 45": ["out for 45"],
+                    "Off Posts": ["off posts", "off post"],
+                    "Saved": ["saved"],
+                    "Saved out for 45": ["saved out for 45"],
+                    "Short": ["short", "short from free", "short from 45"]
+                }
+                def build_scoring_breakdown(df):
+
+                    rows = []
+
+                    stat_series = df["__stat1_lower__"]
+
+                    for label, events in scoring_categories.items():
+
+                        total = stat_series.isin(events).sum()
+
+                        from_play = (
+                            stat_series.isin(events)
+                            & (~df["__is_placed__"])
+                        ).sum()
+
+                        from_placed = (
+                            stat_series.isin(events)
+                            & (df["__is_placed__"])
+                        ).sum()
+
+                        rows.append({
+                            "Metric": label,
+                            "Total": total,
+                            "Play": from_play,
+                            "Placed": from_placed
+                        })
+
+                    return pd.DataFrame(rows)
+
+                bt_scoring_table = build_scoring_breakdown(bt_scoring_df)
+                opp_scoring_table = build_scoring_breakdown(opp_scoring_df)
+
+                scoring_col1, scoring_col2 = st.columns(2)
+
+                with scoring_col1:
+                    st.markdown("**Ballintubber**")
+                    st.table(bt_scoring_table.set_index("Metric"))
+
+                with scoring_col2:
+                    opp_display_name = (
+                        opp_name
+                        if "opp_name" in locals()
+                        else "Opposition"
                     )
 
-                    ko_df["__is_ball__"] = (
-                        ko_df["__team_lower__"]
-                        == "ballintubber"
-                    )
-
-                    ko_df["__is_won__"] = (
-                        ko_df["__stat1_lower__"]
-                        .str.contains("won", na=False)
-                    )
-
-                    ko_df["__is_lost__"] = (
-                        ko_df["__stat1_lower__"]
-                        .str.contains("lost", na=False)
-                    )
-
-                    bt_total = ko_df["__is_ball__"].sum()
-
-                    bt_won = (
-                        ko_df["__is_ball__"]
-                        & ko_df["__is_won__"]
-                    ).sum()
-
-                    bt_lost = (
-                        ko_df["__is_ball__"]
-                        & ko_df["__is_lost__"]
-                    ).sum()
-
-                    bt_retention = (
-                        bt_won / bt_total
-                        if bt_total > 0 else 0
-                    )
-
-                    opp_total = (~ko_df["__is_ball__"]).sum()
-
-                    opp_won = (
-                        (~ko_df["__is_ball__"])
-                        & ko_df["__is_won__"]
-                    ).sum()
-
-                    opp_lost = (
-                        (~ko_df["__is_ball__"])
-                        & ko_df["__is_lost__"]
-                    ).sum()
-
-                    opp_retention = (
-                        opp_won / opp_total
-                        if opp_total > 0 else 0
-                    )
-
-                    st.markdown(f"""
-                    **Ballintubber**  
-                    Total: {bt_total}  
-                    Won: {bt_won}  
-                    Lost: {bt_lost}  
-                    Retention: {bt_retention:.0%}
-                    """)
-
-                    st.markdown("---")
-
-                    opp_display_name = opp_name if "opp_name" in locals() else "Opposition"
-
-                    st.markdown(f"""
-                    **{opp_display_name}**  
-                    Total: {opp_total}  
-                    Won: {opp_won}  
-                    Lost: {opp_lost}  
-                    Retention: {opp_retention:.0%}
-                    """)
-
-                else:
-                    st.info("No kickout data")
+                    st.markdown(f"**{opp_display_name}**")
+                    st.table(opp_scoring_table.set_index("Metric"))
 
     with mid_col:
         with st.container(border=True):
@@ -1048,103 +1045,107 @@ with tab0:
             st.markdown(
                 """
                 <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
-                    <h3 style="margin:0;">Scoring</h3>
+                    <h3 style="margin:0;">Kickouts</h3>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
-            
-            scoring_panel_df = dashboard_df.copy()
 
-            if cols["team"] and cols["stat1"] and cols["stat2"]:
+            ko_df = dashboard_df.copy()
 
-                scoring_panel_df["__team_lower__"] = (
-                    scoring_panel_df[cols["team"]]
+            if cols["stat1"] and cols["team"]:
+
+                ko_df["__stat1_lower__"] = (
+                    ko_df[cols["stat1"]]
                     .astype(str)
                     .str.lower()
                 )
 
-                scoring_panel_df["__stat1_lower__"] = (
-                    scoring_panel_df[cols["stat1"]]
-                    .astype(str)
-                    .str.lower()
-                )
+                ko_df = ko_df[
+                    ko_df["__stat1_lower__"]
+                    .str.contains("kick ?out", na=False)
+                ]
 
-                scoring_panel_df["__is_placed__"] = (
-                    scoring_panel_df[cols["stat2"]]
-                    .fillna("")
-                    .astype(str)
-                    .str.strip() != ""
-                )
+                if not ko_df.empty:
 
-                bt_scoring_df = scoring_panel_df[
-                    scoring_panel_df["__team_lower__"]
-                    == "ballintubber"
-                ].copy()
-
-                opp_scoring_df = scoring_panel_df[
-                    (scoring_panel_df["__team_lower__"] != "ballintubber")
-                    & (~scoring_panel_df["__team_lower__"].isin(["1st half", "2nd half"]))
-                ].copy()
-
-                scoring_categories = {
-                    "Goals": ["goal", "goal from penalty", "goal from free"],
-                    "2 Pointers": ["2 pointer", "2 pointer from free"],
-                    "Points": ["point", "point from free", "point from 45"],
-                    "Wides": ["wide", "wide from free", "wide from 45"],
-                    "Out for 45": ["out for 45"],
-                    "Off Posts": ["off posts", "off post"],
-                    "Saved": ["saved"],
-                    "Saved out for 45": ["saved out for 45"],
-                    "Short": ["short", "short from free", "short from 45"]
-                }
-                def build_scoring_breakdown(df):
-
-                    rows = []
-
-                    stat_series = df["__stat1_lower__"]
-
-                    for label, events in scoring_categories.items():
-
-                        total = stat_series.isin(events).sum()
-
-                        from_play = (
-                            stat_series.isin(events)
-                            & (~df["__is_placed__"])
-                        ).sum()
-
-                        from_placed = (
-                            stat_series.isin(events)
-                            & (df["__is_placed__"])
-                        ).sum()
-
-                        rows.append({
-                            "Metric": label,
-                            "Total": total,
-                            "Play": from_play,
-                            "Placed": from_placed
-                        })
-
-                    return pd.DataFrame(rows)
-
-                bt_scoring_table = build_scoring_breakdown(bt_scoring_df)
-                opp_scoring_table = build_scoring_breakdown(opp_scoring_df)
-
-                scoring_col1, scoring_col2 = st.columns(2)
-
-                with scoring_col1:
-                    st.markdown("**Ballintubber**")
-                    st.table(bt_scoring_table.set_index("Metric"))
-
-                with scoring_col2:
-                    opp_display_name = (
-                        opp_name
-                        if "opp_name" in locals()
-                        else "Opposition"
+                    ko_df["__team_lower__"] = (
+                        ko_df[cols["team"]]
+                        .astype(str)
+                        .str.lower()
                     )
 
-                    st.markdown(f"**{opp_display_name}**")
-                    st.table(opp_scoring_table.set_index("Metric"))
+                    ko_df["__is_ball__"] = (
+                        ko_df["__team_lower__"]
+                        == "ballintubber"
+                    )
+
+                    ko_df["__is_won__"] = (
+                        ko_df["__stat1_lower__"]
+                        .str.contains("won", na=False)
+                    )
+
+                    ko_df["__is_lost__"] = (
+                        ko_df["__stat1_lower__"]
+                        .str.contains("lost", na=False)
+                    )
+
+                    bt_total = ko_df["__is_ball__"].sum()
+
+                    bt_won = (
+                        ko_df["__is_ball__"]
+                        & ko_df["__is_won__"]
+                    ).sum()
+
+                    bt_lost = (
+                        ko_df["__is_ball__"]
+                        & ko_df["__is_lost__"]
+                    ).sum()
+
+                    bt_retention = (
+                        bt_won / bt_total
+                        if bt_total > 0 else 0
+                    )
+
+                    opp_total = (~ko_df["__is_ball__"]).sum()
+
+                    opp_won = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df["__is_won__"]
+                    ).sum()
+
+                    opp_lost = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df["__is_lost__"]
+                    ).sum()
+
+                    opp_retention = (
+                        opp_won / opp_total
+                        if opp_total > 0 else 0
+                    )
+
+                    st.markdown(f"""
+                    **Ballintubber**  
+                    Total: {bt_total}  
+                    Won: {bt_won}  
+                    Lost: {bt_lost}  
+                    Retention: {bt_retention:.0%}
+                    """)
+
+                    st.markdown("---")
+
+                    opp_display_name = opp_name if "opp_name" in locals() else "Opposition"
+
+                    st.markdown(f"""
+                    **{opp_display_name}**  
+                    Total: {opp_total}  
+                    Won: {opp_won}  
+                    Lost: {opp_lost}  
+                    Retention: {opp_retention:.0%}
+                    """)
+
+                else:
+                    st.info("No kickout data")
+
    
 with tab1:
     fig = make_pitch_figure()
