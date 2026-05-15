@@ -34,6 +34,47 @@ section[data-testid="stSidebar"] hr {
 section[data-testid="stSidebar"] label {
     margin-bottom: 0.1rem !important;
 }
+/* Tighten overall page spacing */
+.block-container {
+    padding-top: 0.6rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
+/* Reduce spacing between elements globally */
+div[data-testid="stVerticalBlock"] {
+    gap: 0.35rem !important;
+}
+
+/* Tighten headings */
+h1, h2, h3, h4 {
+    margin-top: 0rem !important;
+    margin-bottom: 0.2rem !important;
+    padding-bottom: 0rem !important;
+}
+
+/* Reduce markdown paragraph spacing */
+p {
+    margin-top: 0rem !important;
+    margin-bottom: 0.15rem !important;
+}
+
+/* Reduce divider spacing */
+hr {
+    margin-top: 0.3rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+/* Reduce tab spacing */
+button[data-baseweb="tab"] {
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+}
+
+/* Tighten bordered containers */
+div[data-testid="stContainer"] {
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
