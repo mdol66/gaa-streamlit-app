@@ -47,8 +47,8 @@ div[data-testid="stVerticalBlock"] {
 
 /* Tighten headings */
 h1, h2, h3, h4 {
-    margin-top: 0rem !important;
-    margin-bottom: 0.2rem !important;
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.45rem !important;
     padding-bottom: 0rem !important;
 }
 
