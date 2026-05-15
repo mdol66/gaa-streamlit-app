@@ -1735,6 +1735,7 @@ with tab3:
             non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
             ]
             non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
+            non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
     
             # Exclude all shot-related events
             exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
@@ -1745,9 +1746,19 @@ with tab3:
             if not non_score_df.empty:
     
                 non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
+                non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
+
+                non_score_df.loc[
+                    non_score_df["__stat2_lower__"].isin([
+                        "yellow card",
+                        "black card",
+                        "red card"
+                    ]),
+                    "__event_for_table__"
+                ] = non_score_df["__stat2_lower__"]
     
                 player_table = (
-                    non_score_df.groupby(["__player_clean__", "__stat1_lower__"])
+                    non_score_df.groupby(["__player_clean__", "__event_for_table__"])
                     .size()
                     .unstack(fill_value=0)
                     .reset_index()
