@@ -1087,6 +1087,7 @@ with mid_col:
                     opp_metrics["to_lost"],
                     opp_metrics["net_to"]
                 ]
+                })
 
                 st.dataframe(
                     comparison_df[
