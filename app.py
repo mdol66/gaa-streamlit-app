@@ -817,21 +817,25 @@ with tab0:
                         if opp_total > 0 else 0
                     )
 
-                    st.markdown("**Ballintubber**")
-                    st.write(f"Total: {bt_total}")
-                    st.write(f"Won: {bt_won}")
-                    st.write(f"Lost: {bt_lost}")
-                    st.write(f"Retention: {bt_retention:.0%}")
+                    st.markdown(f"""
+                    **Ballintubber**  
+                    Total: {bt_total}  
+                    Won: {bt_won}  
+                    Lost: {bt_lost}  
+                    Retention: {bt_retention:.0%}
+                    """)
 
                     st.markdown("---")
 
                     opp_display_name = opp_name if "opp_name" in locals() else "Opposition"
 
-                    st.markdown(f"**{opp_display_name}**")
-                    st.write(f"Total: {opp_total}")
-                    st.write(f"Won: {opp_won}")
-                    st.write(f"Lost: {opp_lost}")
-                    st.write(f"Retention: {opp_retention:.0%}")
+                    st.markdown(f"""
+                    **{opp_display_name}**  
+                    Total: {opp_total}  
+                    Won: {opp_won}  
+                    Lost: {opp_lost}  
+                    Retention: {opp_retention:.0%}
+                    """)
 
                 else:
                     st.info("No kickout data")
