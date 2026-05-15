@@ -802,15 +802,14 @@ with tab0:
 
                     opp_total = (~ko_df["__is_ball__"]).sum()
 
-                    # Opposition perspective is reversed from Ballintubber perspective
                     opp_won = (
                         (~ko_df["__is_ball__"])
-                        & ko_df["__is_lost__"]
+                        & ko_df["__is_won__"]
                     ).sum()
 
                     opp_lost = (
                         (~ko_df["__is_ball__"])
-                        & ko_df["__is_won__"]
+                        & ko_df["__is_lost__"]
                     ).sum()
 
                     opp_retention = (
