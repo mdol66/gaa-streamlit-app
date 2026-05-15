@@ -1078,112 +1078,103 @@ with left_col:
 
                 st.table(comparison_df.set_index("Metric"))
 
-    with right_col:
-        with st.container(border=True):
+with right_col:
+    with st.container(border=True):
 
-            st.markdown(
-                """
-                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
-                    <h3 style="margin:0;">Kickouts</h3>
-                </div>
-                """,
-                unsafe_allow_html=True
+        st.markdown("### Kickouts")
+
+        ko_df = dashboard_df.copy()
+
+        if cols["stat1"] and cols["team"]:
+
+            ko_df["__stat1_lower__"] = (
+                ko_df[cols["stat1"]]
+                .astype(str)
+                .str.lower()
             )
 
-            ko_df = dashboard_df.copy()
+            ko_df = ko_df[
+                ko_df["__stat1_lower__"]
+                .str.contains("kick ?out", na=False)
+            ]
 
-            if cols["stat1"] and cols["team"]:
+            if not ko_df.empty:
 
-                ko_df["__stat1_lower__"] = (
-                    ko_df[cols["stat1"]]
+                ko_df["__team_lower__"] = (
+                    ko_df[cols["team"]]
                     .astype(str)
                     .str.lower()
                 )
 
-                ko_df = ko_df[
+                ko_df["__is_ball__"] = (
+                    ko_df["__team_lower__"] == "ballintubber"
+                )
+
+                ko_df["__is_won__"] = (
                     ko_df["__stat1_lower__"]
-                    .str.contains("kick ?out", na=False)
-                ]
+                    .str.contains("won", na=False)
+                )
 
-                if not ko_df.empty:
+                ko_df["__is_lost__"] = (
+                    ko_df["__stat1_lower__"]
+                    .str.contains("lost", na=False)
+                )
 
-                    ko_df["__team_lower__"] = (
-                        ko_df[cols["team"]]
-                        .astype(str)
-                        .str.lower()
-                    )
+                bt_total = ko_df["__is_ball__"].sum()
+                bt_won = (
+                    ko_df["__is_ball__"]
+                    & ko_df["__is_won__"]
+                ).sum()
+                bt_lost = bt_total - bt_won
+                bt_retention = (
+                    bt_won / bt_total
+                    if bt_total > 0 else 0
+                )
 
-                    ko_df["__is_ball__"] = (
-                        ko_df["__team_lower__"]
-                        == "ballintubber"
-                    )
+                opp_total = (~ko_df["__is_ball__"]).sum()
 
-                    ko_df["__is_won__"] = (
-                        ko_df["__stat1_lower__"]
-                        .str.contains("won", na=False)
-                    )
+                opp_won = (
+                    (~ko_df["__is_ball__"])
+                    & ko_df["__is_lost__"]
+                ).sum()
 
-                    ko_df["__is_lost__"] = (
-                        ko_df["__stat1_lower__"]
-                        .str.contains("lost", na=False)
-                    )
+                opp_lost = opp_total - opp_won
 
-                    bt_total = ko_df["__is_ball__"].sum()
+                opp_retention = (
+                    opp_won / opp_total
+                    if opp_total > 0 else 0
+                )
 
-                    bt_won = (
-                        ko_df["__is_ball__"]
-                        & ko_df["__is_won__"]
-                    ).sum()
+                opp_display_name = (
+                    opp_name if "opp_name" in locals()
+                    else "Opposition"
+                )
 
-                    bt_lost = (
-                        ko_df["__is_ball__"]
-                        & ko_df["__is_lost__"]
-                    ).sum()
+                kickout_table = pd.DataFrame({
+                    "Metric": [
+                        "Total",
+                        "Won",
+                        "Lost",
+                        "Retention"
+                    ],
+                    "Ballintubber": [
+                        bt_total,
+                        bt_won,
+                        bt_lost,
+                        f"{bt_retention:.0%}"
+                    ],
+                    opp_display_name: [
+                        opp_total,
+                        opp_won,
+                        opp_lost,
+                        f"{opp_retention:.0%}"
+                    ]
+                })
 
-                    bt_retention = (
-                        bt_won / bt_total
-                        if bt_total > 0 else 0
-                    )
+                st.table(kickout_table)
 
-                    opp_total = (~ko_df["__is_ball__"]).sum()
-
-                    opp_won = (
-                        (~ko_df["__is_ball__"])
-                        & ko_df["__is_won__"]
-                    ).sum()
-
-                    opp_lost = (
-                        (~ko_df["__is_ball__"])
-                        & ko_df["__is_lost__"]
-                    ).sum()
-
-                    opp_retention = (
-                        opp_won / opp_total
-                        if opp_total > 0 else 0
-                    )
-
-                    st.markdown(f"""
-                    **Ballintubber**  
-                    Total: {bt_total}  
-                    Won: {bt_won}  
-                    Lost: {bt_lost}  
-                    Retention: {bt_retention:.0%}
-                    """)
-
-                    st.markdown("---")
-
-                    opp_display_name = opp_name if "opp_name" in locals() else "Opposition"
-
-                    st.markdown(f"""
-                    **{opp_display_name}**  
-                    Total: {opp_total}  
-                    Won: {opp_won}  
-                    Lost: {opp_lost}  
-                    Retention: {opp_retention:.0%}
-                    """)
-
-                else:
-                    st.info("No kickout data")
+            else:
+                st.info("No kickout data")
 
    
 with tab1:
