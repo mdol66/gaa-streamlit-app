@@ -833,6 +833,72 @@ if cols["team"] and cols["stat1"] and cols["stat2"]:
         & (~scoring_df["__team_lower__"].isin(["1st half", "2nd half"]))
     ].copy()
 
+    scoring_metrics = [
+        ("Goals", "goal"),
+        ("2 Pointers", "2 pointer"),
+        ("Points", "point"),
+        ("Wides", "wide"),
+        ("Out for 45", "out for 45"),
+        ("Off Posts", "off posts"),
+        ("Saved", "saved"),
+        ("Saved out for 45", "saved out for 45"),
+        ("Short", "short"),
+    ]
+    def build_scoring_rows(team_df):
+        rows = []
+
+        for label, stat in scoring_metrics:
+
+            total = (
+                team_df["__stat1_lower__"]
+                .eq(stat)
+                .sum()
+            )
+
+            play = (
+                (team_df["__stat1_lower__"] == stat)
+                & (
+                    team_df["__stat2_lower__"]
+                    .isin(["from play", "play"])
+                )
+            ).sum()
+
+            placed = (
+                (team_df["__stat1_lower__"] == stat)
+                & (
+                    team_df["__stat2_lower__"]
+                    .isin(["from placed", "placed"])
+                )
+            ).sum()
+
+            rows.append({
+                "Metric": label,
+                "Total": total,
+                "Play": play,
+                "Placed": placed
+            })
+
+        return pd.DataFrame(rows)
+        bt_table = build_scoring_rows(bt_scoring_df)
+        opp_table = build_scoring_rows(opp_scoring_df)
+        score_col1, score_col2 = st.columns(2)
+
+        with score_col1:
+            st.markdown("**Ballintubber**")
+            st.dataframe(
+                bt_table,
+                hide_index=True,
+                use_container_width=True
+            )
+    
+        with score_col2:
+            st.markdown(f"**{opp_name}**")
+            st.dataframe(
+                opp_table,
+                hide_index=True,
+                use_container_width=True
+            )
+    
 with mid_col:
     with st.container(border=True):
 
