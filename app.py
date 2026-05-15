@@ -75,6 +75,16 @@ div[data-testid="stContainer"] {
     padding-top: 0rem !important;
     padding-bottom: 0.25rem !important;
 }
+
+/* Tighten bordered dashboard cards */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    padding-top: 0.15rem !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"] > div {
+    padding-top: 0.15rem !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
