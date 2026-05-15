@@ -1179,7 +1179,6 @@ with right_col:
                         "**Lost**",
                         "**Retention**"
                     ],
-                    ],
                     opp_display_name: [
                         opp_total,
                         opp_won,
