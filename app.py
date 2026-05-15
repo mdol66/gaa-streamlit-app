@@ -1772,10 +1772,15 @@ with tab3:
                 "Overall KO Index +/-"
             ]]
 
-            st.caption(
-                "Note: Kickout Index is shown from Ballintubber's perspective. "
-                "Positive values are favourable to Ballintubber, negative values are unfavourable. "
-                "Opposition kickout values are therefore reversed for interpretation."
+            st.markdown(
+                """
+                <div style="font-size:12px; margin-top:4px; margin-bottom:12px; color:grey;">
+                    <b>Note:</b> Kickout Index is shown from Ballintubber's perspective.
+                    Positive values are favourable to Ballintubber, negative values are unfavourable.
+                    Opposition kickout values are therefore reversed for interpretation.
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
             st.dataframe(
