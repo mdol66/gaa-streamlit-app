@@ -1012,25 +1012,16 @@ with left_col:
 
                 comparison_df = pd.DataFrame({
                     "Metric": [
-                        "Shots",
-                        "Scores",
-                        "Efficiency",
                         "TO Won",
                         "TO Lost",
                         "Net TO"
                     ],
                     "Ballintubber": [
-                        bt_metrics["shots"],
-                        bt_metrics["scores"],
-                        f"{bt_metrics['efficiency']:.0%}",
                         bt_metrics["to_won"],
                         bt_metrics["to_lost"],
                         bt_metrics["net_to"]
                     ],
                     opp_name if "opp_name" in locals() else "Opposition": [
-                        opp_metrics["shots"],
-                        opp_metrics["scores"],
-                        f"{opp_metrics['efficiency']:.0%}",
                         opp_metrics["to_won"],
                         opp_metrics["to_lost"],
                         opp_metrics["net_to"]
