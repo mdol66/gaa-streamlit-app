@@ -789,7 +789,7 @@ with tab0:
     st.markdown(f"#### Score: {scoreline_text}")
 
     st.markdown("---")
-left_col, mid_col, right_col = st.columns([0.8, 1.0, 1.35])
+left_col, mid_col, right_col = st.columns([1.2, 1.0, 0.9])
 
 with left_col:
     with st.container(border=True):
