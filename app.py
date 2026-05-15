@@ -15,6 +15,7 @@ section[data-testid="stSidebar"] .block-container {
     padding-top: 0.5rem !important;
 }
 
+
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     gap: 0.35rem !important;
 }
@@ -34,9 +35,83 @@ section[data-testid="stSidebar"] hr {
 section[data-testid="stSidebar"] label {
     margin-bottom: 0.1rem !important;
 }
+/* Tighten overall page spacing */
+.block-container {
+    padding-top: 0.6rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
+/* Reduce spacing between elements globally */
+div[data-testid="stVerticalBlock"] {
+    gap: 0.35rem !important;
+}
+
+/* Tighten headings */
+h1, h2, h3, h4 {
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.45rem !important;
+    padding-bottom: 0rem !important;
+}
+
+/* Reduce markdown paragraph spacing */
+p {
+    margin-top: 0rem !important;
+    margin-bottom: 0.15rem !important;
+}
+
+/* Reduce divider spacing */
+hr {
+    margin-top: 0.3rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+/* Reduce tab spacing */
+button[data-baseweb="tab"] {
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+}
+
+/* Tighten bordered containers */
+div[data-testid="stContainer"] {
+    padding-top: 0rem !important;
+    padding-bottom: 0.25rem !important;
+}
+
+/* Tighten bordered dashboard cards */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    padding-top: 0.15rem !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"] > div {
+    padding-top: 0.15rem !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+<style>
+
+/* Force dataframe/table headers to align consistently */
+thead tr th {
+    vertical-align: middle !important;
+    text-align: center !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+/* Keep table body aligned nicely */
+tbody tr td {
+    vertical-align: middle !important;
+}
+
+/* Make metric column centred */
+td, th {
+    line-height: 1.2 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 def safe_col_lookup(df: pd.DataFrame, candidates: list[str]) -> Optional[str]:
     lower_map = {c.lower(): c for c in df.columns}
@@ -478,6 +553,8 @@ except UnicodeDecodeError:
     df = pd.read_csv(uploaded, encoding="latin1")
 
 cols = infer_columns(df)
+
+plot_df = df.copy()
 plot_df = df.copy()
 plot_df["__original_event_number__"] = build_display_number(plot_df, cols["number"])
 
@@ -510,7 +587,13 @@ if cols["match_no"] and cols["team"]:
         opp_text = opposition[0] if opposition else "Unknown"
         match_labels[f"{match_no} v {opp_text}"] = match_no
 
-    match_display_choices = st.sidebar.multiselect("Match Number", list(match_labels.keys()))
+    default_match = list(match_labels.keys())[-1]
+    
+    match_display_choices = st.sidebar.multiselect(
+        "Match Number",
+        list(match_labels.keys()),
+        default=[default_match]
+    )
 
     if match_display_choices:
         selected_match_nos = [match_labels[label] for label in match_display_choices]
@@ -622,7 +705,12 @@ filters_applied = (
 )
 
 plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
-tab1, tab2, tab3 = st.tabs(["Pitch Map", "Scoring Analysis", "Non-Scoring Analysis"])
+tab0, tab1, tab2, tab3 = st.tabs([
+    "Match Dashboard",
+    "Pitch Map",
+    "Scoring Analysis",
+    "Non-Scoring Analysis"
+])
 
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
 plot_df[cols["y"]] = pd.to_numeric(plot_df[cols["y"]], errors="coerce").fillna(-1)
@@ -655,6 +743,613 @@ plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
 # c1.metric("Raw events", len(df))
 # c2.metric("Plotted events", len(plot_df))
 
+with tab0:
+    st.markdown("## Match Dashboard")
+
+    dashboard_df = df.copy()
+
+    if cols["match_no"] and match_display_choices:
+        selected_match_nos = [
+            match_labels[label]
+            for label in match_display_choices
+        ]
+
+        dashboard_df = dashboard_df[
+            dashboard_df[cols["match_no"]]
+            .astype(str)
+            .isin(selected_match_nos)
+        ].copy()
+
+    selected_match_text = "Selected Match"
+    if cols["match_no"] and cols["team"] and not dashboard_df.empty:
+        match_nos = dashboard_df[cols["match_no"]].dropna().astype(str).unique().tolist()
+
+        if len(match_nos) == 1:
+            match_no = match_nos[0]
+
+            teams_for_match = (
+                dashboard_df[dashboard_df[cols["match_no"]].astype(str) == match_no][cols["team"]]
+                .dropna()
+                .astype(str)
+                .unique()
+                .tolist()
+            )
+
+            opposition = [
+                t for t in teams_for_match
+                if t.lower() != "ballintubber" and t.lower() not in ["1st half", "2nd half"]
+            ]
+
+            opp_name = opposition[0] if opposition else "Opposition"
+            selected_match_text = f"BALLINTUBBER v {opp_name.upper()}"
+        else:
+            selected_match_text = "MULTIPLE MATCHES SELECTED"
+    bt_goals = 0
+    bt_points = 0
+    opp_goals = 0
+    opp_points = 0
+
+    if (
+        cols["team"]
+        and cols["stat1"]
+        and not dashboard_df.empty
+    ):
+
+        score_series = dashboard_df[cols["stat1"]].astype(str).str.lower()
+        team_series = dashboard_df[cols["team"]].astype(str).str.lower()
+
+        bt_df = dashboard_df[
+            team_series == "ballintubber"
+        ].copy()
+
+        opp_df = dashboard_df[
+            (team_series != "ballintubber")
+            & (~team_series.isin(["1st half", "2nd half"]))
+        ].copy()
+
+        bt_events = bt_df[cols["stat1"]].astype(str).str.lower()
+        opp_events = opp_df[cols["stat1"]].astype(str).str.lower()
+
+        bt_goals = bt_events.str.contains("goal", na=False).sum()
+
+        bt_points = (
+            bt_events.str.contains("point", na=False).sum()
+            + bt_events.str.contains("2 pointer", na=False).sum()
+        )
+
+        opp_goals = opp_events.str.contains("goal", na=False).sum()
+
+        opp_points = (
+            opp_events.str.contains("point", na=False).sum()
+            + opp_events.str.contains("2 pointer", na=False).sum()
+        )
+
+    scoreline_text = (
+        f"{bt_goals}-{bt_points} "
+        f"v "
+        f"{opp_goals}-{opp_points}"
+    )
+    st.markdown(f"### {selected_match_text}")
+    st.markdown(f"#### Score: {scoreline_text}")
+
+    st.markdown("---")
+    left_col, mid_col, right_col = st.columns([1.2, 1.0, 0.9])
+
+    with left_col:
+        with st.container(border=True):
+    
+            st.markdown("### Scoring")
+    
+            scoring_df = dashboard_df.copy()
+    
+            if cols["team"] and cols["stat1"] and cols["stat2"]:
+    
+                scoring_df["__team_lower__"] = (
+                    scoring_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                )
+    
+                scoring_df["__stat1_lower__"] = (
+                    scoring_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
+    
+                scoring_df["__is_placed__"] = (
+                    scoring_df[cols["stat2"]]
+                    .fillna("")
+                    .astype(str)
+                    .str.strip() != ""
+                )
+    
+                bt_scoring_df = scoring_df[
+                    scoring_df["__team_lower__"] == "ballintubber"
+                ].copy()
+    
+                opp_scoring_df = scoring_df[
+                    (scoring_df["__team_lower__"] != "ballintubber")
+                    & (~scoring_df["__team_lower__"].isin(["1st half", "2nd half"]))
+                ].copy()
+    
+                scoring_metrics = [
+                    ("Goals", "goal"),
+                    ("2 Pointers", "2 pointer"),
+                    ("Points", "point"),
+                    ("Wides", "wide"),
+                    ("Out for 45", "out for 45"),
+                    ("Off Posts", "off posts"),
+                    ("Saved", "saved"),
+                    ("Saved out for 45", "saved out for 45"),
+                    ("Short", "short")
+                ]
+    
+                score_events = ["goal", "2 pointer", "point"]
+    
+                shot_events = [
+                    "goal", "2 pointer", "point",
+                    "wide", "out for 45", "off posts",
+                    "saved", "saved out for 45", "short"
+                ]
+    
+                def count_event(df, event_name):
+                    return (
+                        df["__stat1_lower__"]
+                        .eq(event_name)
+                        .sum()
+                    )
+    
+                def count_events(df, event_list):
+                    return (
+                        df["__stat1_lower__"]
+                        .isin(event_list)
+                        .sum()
+                    )
+    
+                def count_from_play(df, event_list):
+                    return (
+                        df["__stat1_lower__"].isin(event_list)
+                        & (~df["__is_placed__"])
+                    ).sum()
+    
+                def count_from_placed(df, event_list):
+                    return (
+                        df["__stat1_lower__"].isin(event_list)
+                        & (df["__is_placed__"])
+                    ).sum()
+    
+                rows = []
+    
+                for label, event_name in scoring_metrics:
+                    opp_display_name = (
+                        opp_name if "opp_name" in locals()
+                        else "Opposition"
+                    )
+                    
+                    rows.append({
+                        "Ballintubber": count_event(bt_scoring_df, event_name),
+                        "Metric": label,
+                        opp_display_name: count_event(opp_scoring_df, event_name)
+                    })
+    
+                bt_total_shots = count_events(bt_scoring_df, shot_events)
+                opp_total_shots = count_events(opp_scoring_df, shot_events)
+    
+                bt_scores = count_events(bt_scoring_df, score_events)
+                opp_scores = count_events(opp_scoring_df, score_events)
+    
+                bt_scores_play = count_from_play(bt_scoring_df, score_events)
+                opp_scores_play = count_from_play(opp_scoring_df, score_events)
+    
+                bt_scores_placed = count_from_placed(bt_scoring_df, score_events)
+                opp_scores_placed = count_from_placed(opp_scoring_df, score_events)
+    
+                bt_shots_play = count_from_play(bt_scoring_df, shot_events)
+                opp_shots_play = count_from_play(opp_scoring_df, shot_events)
+    
+                bt_shots_placed = count_from_placed(bt_scoring_df, shot_events)
+                opp_shots_placed = count_from_placed(opp_scoring_df, shot_events)
+    
+                rows.extend([
+                    {
+                        "Ballintubber": bt_total_shots,
+                        "Metric": "Total Shots",
+                        opp_display_name: opp_total_shots
+                    },
+                    {
+                        "Ballintubber": bt_scores,
+                        "Metric": "Scores",
+                        opp_display_name: opp_scores
+                    },
+                    {
+                        "Ballintubber": bt_shots_play,
+                        "Metric": "Shots from Play",
+                        opp_display_name: opp_shots_play
+                    },
+                    {
+                        "Ballintubber": bt_scores_play,
+                        "Metric": "Scores from Play",
+                        opp_display_name: opp_scores_play
+                    },
+                    {
+                        "Ballintubber": (
+                            f"{bt_scores_play / bt_shots_play:.0%}"
+                            if bt_shots_play > 0 else "0%"
+                        ),
+                        "Metric": "Shot Efficiency from Play",
+                        opp_display_name: (
+                            f"{opp_scores_play / opp_shots_play:.0%}"
+                            if opp_shots_play > 0 else "0%"
+                        )
+                    },
+                    {
+                        "Ballintubber": bt_shots_placed,
+                        "Metric": "Shots from Placed",
+                        opp_display_name: opp_shots_placed
+                    },
+                    {
+                        "Ballintubber": bt_scores_placed,
+                        "Metric": "Scores from Placed",
+                        opp_display_name: opp_scores_placed
+                    },
+                    {
+                        "Ballintubber": (
+                            f"{bt_scores_placed / bt_shots_placed:.0%}"
+                            if bt_shots_placed > 0 else "0%"
+                        ),
+                        "Metric": "Shot Efficiency from Placed",
+                        opp_display_name: (
+                            f"{opp_scores_placed / opp_shots_placed:.0%}"
+                            if opp_shots_placed > 0 else "0%"
+                        )
+                    }
+                ])
+    
+                scoring_table = pd.DataFrame(rows)
+    
+                st.dataframe(
+                    scoring_table,
+                    hide_index=True,
+                    use_container_width=True,
+                    height=620
+                )
+    
+        
+    with mid_col:
+        with st.container(border=True):
+
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">General Play</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            gp_df = dashboard_df.copy()
+
+            if cols["team"] and cols["stat1"]:
+
+                gp_df["__team_lower__"] = (
+                    gp_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                )
+
+                bt_df = gp_df[
+                    gp_df["__team_lower__"] == "ballintubber"
+                ].copy()
+
+                opp_df = gp_df[
+                    (gp_df["__team_lower__"] != "ballintubber")
+                    & (~gp_df["__team_lower__"].isin(["1st half", "2nd half"]))
+                ].copy()
+
+                def calc_team_metrics(team_df):
+                    to_won = (
+                        team_df[cols["stat1"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("turnover won")
+                        .sum()
+                    )
+
+                    to_lost = (
+                        team_df[cols["stat1"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("turnover lost")
+                        .sum()
+                    )
+
+                    net_to = to_won - to_lost
+
+                    return {
+                        "to_won": to_won,
+                        "to_lost": to_lost,
+                        "net_to": net_to,
+    
+                        "frees_conceded": (
+                            team_df[cols["stat1"]]
+                            .astype(str)
+                            .str.lower()
+                            .eq("free conceded")
+                            .sum()
+                        ),
+    
+                        "yellow_cards": (
+                            team_df[cols["stat2"]]
+                            .astype(str)
+                            .str.lower()
+                            .eq("yellow card")
+                            .sum()
+                        ),
+        
+                        "black_cards": (
+                        team_df[cols["stat2"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("black card")
+                        .sum()
+                    ),
+    
+                        "red_cards": (
+                            team_df[cols["stat2"]]
+                            .astype(str)
+                            .str.lower()
+                            .eq("red card")
+                            .sum()
+                        )
+                    }
+
+                bt_metrics = calc_team_metrics(bt_df)
+                opp_metrics = calc_team_metrics(opp_df)
+
+                opp_metrics["to_won"] = bt_metrics["to_lost"]
+                opp_metrics["to_lost"] = bt_metrics["to_won"]
+                opp_metrics["net_to"] = bt_metrics["to_lost"] - bt_metrics["to_won"]
+
+                comparison_df = pd.DataFrame({
+                    "Ballintubber": [
+                        bt_metrics["to_won"],
+                        bt_metrics["to_lost"],
+                        bt_metrics["net_to"],
+                        bt_metrics["frees_conceded"],
+                        bt_metrics["yellow_cards"],
+                        bt_metrics["black_cards"],
+                        bt_metrics["red_cards"]
+                    ],
+                    "Metric": [
+                        "TO Won",
+                        "TO Lost",
+                        "Net TO",
+                        "Frees Conceded",
+                        "Yellow Cards",
+                        "Black Cards",
+                        "Red Cards"
+                    ],
+                    opp_name if "opp_name" in locals() else "Opposition": [
+                        opp_metrics["to_won"],
+                        opp_metrics["to_lost"],
+                        opp_metrics["net_to"],
+                        opp_metrics["frees_conceded"],
+                        opp_metrics["yellow_cards"],
+                        opp_metrics["black_cards"],
+                        opp_metrics["red_cards"]
+                    ]
+                })
+                comparison_df["Ballintubber"] = comparison_df["Ballintubber"].astype(str)
+                comparison_df[opp_name if "opp_name" in locals() else "Opposition"] = (
+                    comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
+                )
+
+                st.table(
+                    comparison_df[
+                        ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
+                    ]
+                )
+    
+    with right_col:
+        with st.container(border=True):
+    
+            st.markdown("### Kickouts")
+    
+            ko_df = dashboard_df.copy()
+    
+            if cols["stat1"] and cols["team"]:
+    
+                ko_df["__stat1_lower__"] = (
+                    ko_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
+    
+                ko_df = ko_df[
+                    ko_df["__stat1_lower__"]
+                    .str.contains("kick ?out", na=False)
+                ]
+    
+                if not ko_df.empty:
+    
+                    ko_df["__team_lower__"] = (
+                        ko_df[cols["team"]]
+                        .astype(str)
+                        .str.lower()
+                    )
+    
+                    ko_df["__is_ball__"] = (
+                        ko_df["__team_lower__"] == "ballintubber"
+                    )
+    
+                    ko_df["__is_won__"] = (
+                        ko_df["__stat1_lower__"]
+                        .str.contains("won", na=False)
+                    )
+    
+                    ko_df["__is_lost__"] = (
+                        ko_df["__stat1_lower__"]
+                        .str.contains("lost", na=False)
+                    )
+    
+                    bt_total = ko_df["__is_ball__"].sum()
+                    bt_won = (
+                        ko_df["__is_ball__"]
+                        & ko_df["__is_won__"]
+                    ).sum()
+                    bt_lost = bt_total - bt_won
+                    bt_short = (
+                        ko_df["__is_ball__"]
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 0)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 35)
+                    ).sum()
+
+                    bt_long = bt_total - bt_short
+
+                    bt_long = (
+                        ko_df["__is_ball__"]
+                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("long")
+                    ).sum()
+                    bt_retention = (
+                        bt_won / bt_total
+                        if bt_total > 0 else 0
+                    )
+    
+                    opp_total = (~ko_df["__is_ball__"]).sum()
+    
+                    opp_won = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df["__is_lost__"]
+                    ).sum()
+    
+                    opp_lost = opp_total - opp_won
+                    opp_short = (
+                        (~ko_df["__is_ball__"])
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 65)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 100)
+                    ).sum()
+
+                    opp_long = opp_total - opp_short
+
+                    opp_long = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("long")
+                    ).sum()
+                    opp_retention = (
+                        opp_won / opp_total
+                        if opp_total > 0 else 0
+                    )
+    
+                    opp_display_name = (
+                        opp_name if "opp_name" in locals()
+                        else "Opposition"
+                    )
+    
+                    # Opposition kickouts are already recorded from the opposition perspective
+                    opp_won = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df["__is_won__"]
+                    ).sum()
+
+                    opp_lost = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df["__is_lost__"]
+                    ).sum()
+
+                    opp_retention = (
+                        opp_won / opp_total
+                        if opp_total > 0 else 0
+                    )
+
+                    y_vals = pd.to_numeric(ko_df[cols["y"]], errors="coerce")
+
+                    bt_short_mask = (
+                        ko_df["__is_ball__"]
+                        & (y_vals >= 0)
+                        & (y_vals <= 35)
+                    )
+
+                    bt_long_mask = (
+                        ko_df["__is_ball__"]
+                        & (y_vals > 35)
+                        & (y_vals <= 100)
+                    )
+
+                    opp_short_mask = (
+                        (~ko_df["__is_ball__"])
+                        & (y_vals >= 65)
+                        & (y_vals <= 100)
+                    )
+
+                    opp_long_mask = (
+                        (~ko_df["__is_ball__"])
+                        & (y_vals >= 0)
+                        & (y_vals < 65)
+                    )
+
+                    bt_short = bt_short_mask.sum()
+                    bt_long = bt_long_mask.sum()
+                    opp_short = opp_short_mask.sum()
+                    opp_long = opp_long_mask.sum()
+
+                    bt_short_won = (
+                        bt_short_mask
+                        & ko_df["__is_won__"]
+                    ).sum()
+
+                    bt_long_won = (
+                        bt_long_mask
+                        & ko_df["__is_won__"]
+                    ).sum()
+
+                    opp_short_won = (
+                        opp_short_mask
+                        & ko_df["__is_won__"]
+                    ).sum()
+
+                    opp_long_won = (
+                        opp_long_mask
+                        & ko_df["__is_won__"]
+                    ).sum()
+
+                    kickout_table = pd.DataFrame({
+                        "Ballintubber": [
+                            bt_total,
+                            bt_won,
+                            bt_lost,
+                            f"{bt_short_won} from {bt_short}",
+                            f"{bt_long_won} from {bt_long}",
+                            f"{bt_retention:.0%}"
+                        ],
+                        "Metric": [
+                            "  Total",
+                            "  Won",
+                            "  Lost",
+                            "  Short",
+                            "  Long",
+                            "  Retention"
+                        ],
+                        opp_display_name: [
+                            opp_total,
+                            opp_won,
+                            opp_lost,
+                            f"{opp_short_won} from {opp_short}",
+                            f"{opp_long_won} from {opp_long}",
+                            f"{opp_retention:.0%}"
+                        ]
+                    })
+
+                    st.dataframe(
+                        kickout_table[
+                            ["Ballintubber", "Metric", opp_display_name]
+                        ],
+                        hide_index=True,
+                        use_container_width=True
+                    )
+                else:
+                    st.info("No kickout data")
+
+   
 with tab1:
     fig = make_pitch_figure()
 
@@ -1097,6 +1792,50 @@ with tab2:
 
         if player_summary_display is not None and not player_summary_display.empty:
             st.markdown("### Player scoring breakdown")
+            scoring_heatmap_df = player_summary_display.copy()
+
+            heatmap_cols = [
+                c for c in scoring_heatmap_df.columns
+                if c not in ["Player", "Shot Efficiency"]
+            ]
+
+            fig_score_heat = px.imshow(
+                scoring_heatmap_df[heatmap_cols]
+                .div(
+                    scoring_heatmap_df[heatmap_cols]
+                    .max(axis=0)
+                    .replace(0, 1),
+                    axis=1
+                )
+                .T,
+                x=scoring_heatmap_df["Player"],
+                y=heatmap_cols,
+                text_auto=False,
+                aspect="auto",
+                title="Player Scoring Activity"
+            )
+
+            fig_score_heat.update_traces(
+                text=scoring_heatmap_df[heatmap_cols].T,
+                texttemplate="%{text}",
+                hovertemplate=(
+                    "Player=%{x}"
+                    "<br>Metric=%{y}"
+                    "<br>Value=%{text}"
+                    "<extra></extra>"
+                )
+            )
+
+            fig_score_heat.update_layout(
+                height=450,
+                xaxis_title="Player",
+                yaxis_title="Metric"
+            )
+
+            st.plotly_chart(
+                fig_score_heat,
+                use_container_width=True
+            )
             st.dataframe(player_summary_display, use_container_width=True)
         else:
             st.info("No player scoring data for current filters.")
@@ -1121,24 +1860,32 @@ with tab3:
                 .agg(
                     Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                     Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Won=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Lost=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Won=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Lost=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                 )
                 .reset_index()
             )
-    
+
             summary["match_label"] = summary[cols["match_no"]].astype(str).map(
                 lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
             )
-    
-            summary = summary.drop(columns=[cols["match_no"]])
-            summary = summary.rename(columns={"match_label": "Match"})  
-            summary["Own KO Index +/-"] = summary["Own_KO_Won"] - summary["Own_KO_Lost"]
-            summary["Opp KO Index +/-"] = summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
-            summary["Overall KO Index +/-"] = summary["Own KO Index +/-"] + summary["Opp KO Index +/-"]
 
-            summary = summary.rename(columns={cols["team"]: "Opposition"})
+            summary = summary.drop(columns=[cols["match_no"]])
+            summary = summary.rename(columns={"match_label": "Match"})
+            summary["Own KO Index +/-"] = (
+                summary["Own_KO_Won"] - summary["Own_KO_Lost"]
+            )
             
+            # Reverse opposition perspective for this table only
+            summary["Opp KO Index +/-"] = (
+                summary["Opp_KO_Lost"] - summary["Opp_KO_Won"]
+            )
+            
+            summary["Overall KO Index +/-"] = (
+                summary["Own KO Index +/-"]
+                + summary["Opp KO Index +/-"]
+            )
+
             summary = summary[[
                 "Match",
                 "Own_KO_Won",
@@ -1149,55 +1896,100 @@ with tab3:
                 "Opp KO Index +/-",
                 "Overall KO Index +/-"
             ]]
-            
-            st.table(summary)
-            # --- Player Non-Scoring Stats ---
-            st.markdown("### Player Non-scoring Stats")
-    
-            non_score_df = plot_df.copy()
-            non_score_df = non_score_df[
-            non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
-            ]
-            non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
-    
-            # Exclude all shot-related events
-            exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
-            non_score_df = non_score_df[
-                ~non_score_df["__stat1_lower__"].isin(exclude_events)
-            ]
-    
-            if not non_score_df.empty:
-    
-                non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
-    
-                player_table = (
-                    non_score_df.groupby(["__player_clean__", "__stat1_lower__"])
-                    .size()
-                    .unstack(fill_value=0)
-                    .reset_index()
-                )
-    
-                player_table = player_table[
-                    player_table["__player_clean__"].notna() &
-                    (player_table["__player_clean__"].astype(str).str.lower() != "nan")
-                ]
 
-                player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
-    
-                player_table = player_table.sort_values(by="Total", ascending=False)
-    
-                player_table = player_table.rename(columns={"__player_clean__": "Player"})
-                # Drop unwanted columns if present
-                drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
-                player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
-    
-                st.dataframe(
-                    player_table.style.set_properties(**{"text-align": "left"}),
-                    use_container_width=True
-                )
-    
-            else:
-                st.info("No non-scoring events for current filters.")
-            
+            st.markdown(
+                """
+                <div style="font-size:12px; margin-top:4px; margin-bottom:12px; color:grey;">
+                    <b>Note:</b> Kickout Index is shown from Ballintubber's perspective.
+                    Positive values are favourable to Ballintubber, negative values are unfavourable.
+                    Opposition kickout values are therefore reversed for interpretation.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            st.dataframe(
+                summary.style.set_properties(**{
+                    "font-size": "13px"
+                }),
+                hide_index=True,
+                use_container_width=True
+            )
         else:
             st.info("No kickout data for current filters.")
+
+    non_score_df = plot_df.copy()
+    non_score_df = non_score_df[
+        non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
+    ]
+
+    non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
+    non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
+
+    exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
+    non_score_df = non_score_df[
+        ~non_score_df["__stat1_lower__"].isin(exclude_events)
+    ]
+
+    if not non_score_df.empty:
+        non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
+        non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
+
+        non_score_df.loc[
+            non_score_df["__stat2_lower__"].isin([
+                "yellow card",
+                "black card",
+                "red card"
+            ]),
+            "__event_for_table__"
+        ] = non_score_df["__stat2_lower__"]
+
+        player_table = (
+            non_score_df.groupby(["__player_clean__", "__event_for_table__"])
+            .size()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+
+        player_table = player_table[
+            player_table["__player_clean__"].notna()
+            & (player_table["__player_clean__"].astype(str).str.lower() != "nan")
+        ]
+
+        player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
+        player_table = player_table.sort_values(by="Total", ascending=False)
+        player_table = player_table.rename(columns={"__player_clean__": "Player"})
+
+        drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
+        player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
+
+        heatmap_numeric_cols = [
+            c for c in player_table.columns
+            if c not in ["Player", "Total"]
+        ]
+
+        fig_heat = px.imshow(
+            player_table[heatmap_numeric_cols].T,
+            x=player_table["Player"],
+            y=heatmap_numeric_cols,
+            text_auto=True,
+            aspect="auto",
+            title="Player Non-scoring Activity"
+        )
+
+        fig_heat.update_layout(
+            xaxis_title="Player",
+            yaxis_title="Metric",
+            height=450
+        )
+
+        st.plotly_chart(
+            fig_heat,
+            use_container_width=True
+        )
+
+        st.dataframe(
+            player_table.style.set_properties(**{"text-align": "left"}),
+            use_container_width=True
+        )
+
