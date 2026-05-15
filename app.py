@@ -1199,7 +1199,7 @@ with tab0:
                     bt_short = (
                         ko_df["__is_ball__"]
                         & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 0)
-                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 32)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 35)
                     ).sum()
 
                     bt_long = bt_total - bt_short
@@ -1223,7 +1223,7 @@ with tab0:
                     opp_lost = opp_total - opp_won
                     opp_short = (
                         (~ko_df["__is_ball__"])
-                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 68)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 65)
                         & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 100)
                     ).sum()
 
@@ -1264,25 +1264,25 @@ with tab0:
                     bt_short_mask = (
                         ko_df["__is_ball__"]
                         & (y_vals >= 0)
-                        & (y_vals <= 32)
+                        & (y_vals <= 35)
                     )
 
                     bt_long_mask = (
                         ko_df["__is_ball__"]
-                        & (y_vals > 32)
+                        & (y_vals > 35)
                         & (y_vals <= 100)
                     )
 
                     opp_short_mask = (
                         (~ko_df["__is_ball__"])
-                        & (y_vals >= 68)
+                        & (y_vals >= 65)
                         & (y_vals <= 100)
                     )
 
                     opp_long_mask = (
                         (~ko_df["__is_ball__"])
                         & (y_vals >= 0)
-                        & (y_vals < 68)
+                        & (y_vals < 65)
                     )
 
                     bt_short = bt_short_mask.sum()
