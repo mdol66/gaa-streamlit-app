@@ -1198,8 +1198,11 @@ with tab0:
                     bt_lost = bt_total - bt_won
                     bt_short = (
                         ko_df["__is_ball__"]
-                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("short")
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 0)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 32)
                     ).sum()
+
+                    bt_long = bt_total - bt_short
 
                     bt_long = (
                         ko_df["__is_ball__"]
@@ -1220,8 +1223,11 @@ with tab0:
                     opp_lost = opp_total - opp_won
                     opp_short = (
                         (~ko_df["__is_ball__"])
-                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("short")
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 68)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 100)
                     ).sum()
+
+                    opp_long = opp_total - opp_short
 
                     opp_long = (
                         (~ko_df["__is_ball__"])
@@ -1253,13 +1259,31 @@ with tab0:
                         if opp_total > 0 else 0
                     )
 
+                    bt_short_won = (
+                        ko_df["__is_ball__"]
+                        & ko_df["__is_won__"]
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 0)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 32)
+                    ).sum()
+
+                    bt_long_won = bt_won - bt_short_won
+
+                    opp_short_won = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df["__is_won__"]
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 68)
+                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 100)
+                    ).sum()
+
+                    opp_long_won = opp_won - opp_short_won
+
                     kickout_table = pd.DataFrame({
                         "Ballintubber": [
                             bt_total,
                             bt_won,
                             bt_lost,
-                            bt_short,
-                            bt_long,
+                            f"{bt_short_won} from {bt_short}",
+                            f"{bt_long_won} from {bt_long}",
                             f"{bt_retention:.0%}"
                         ],
                         "Metric": [
@@ -1274,8 +1298,8 @@ with tab0:
                             opp_total,
                             opp_won,
                             opp_lost,
-                            opp_short,
-                            opp_long,
+                            f"{opp_short_won} from {opp_short}",
+                            f"{opp_long_won} from {opp_long}",
                             f"{opp_retention:.0%}"
                         ]
                     })
