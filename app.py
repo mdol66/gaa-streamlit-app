@@ -1054,7 +1054,50 @@ with tab0:
                 unsafe_allow_html=True
             )
             
-            st.info("Scoring breakdown will be added here next.")
+            scoring_panel_df = dashboard_df.copy()
+
+            if cols["team"] and cols["stat1"] and cols["stat2"]:
+
+                scoring_panel_df["__team_lower__"] = (
+                    scoring_panel_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                )
+
+                scoring_panel_df["__stat1_lower__"] = (
+                    scoring_panel_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
+
+                scoring_panel_df["__is_placed__"] = (
+                    scoring_panel_df[cols["stat2"]]
+                    .fillna("")
+                    .astype(str)
+                    .str.strip() != ""
+                )
+
+                bt_scoring_df = scoring_panel_df[
+                    scoring_panel_df["__team_lower__"]
+                    == "ballintubber"
+                ].copy()
+
+                opp_scoring_df = scoring_panel_df[
+                    (scoring_panel_df["__team_lower__"] != "ballintubber")
+                    & (~scoring_panel_df["__team_lower__"].isin(["1st half", "2nd half"]))
+                ].copy()
+
+                scoring_categories = {
+                    "Goals": ["goal", "goal from penalty", "goal from free"],
+                    "2 Pointers": ["2 pointer", "2 pointer from free"],
+                    "Points": ["point", "point from free", "point from 45"],
+                    "Wides": ["wide", "wide from free", "wide from 45"],
+                    "Out for 45": ["out for 45"],
+                    "Off Posts": ["off posts", "off post"],
+                    "Saved": ["saved"],
+                    "Saved out for 45": ["saved out for 45"],
+                    "Short": ["short", "short from free", "short from 45"]
+                }
    
 with tab1:
     fig = make_pitch_figure()
