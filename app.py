@@ -1711,6 +1711,32 @@ with tab2:
 
         if player_summary_display is not None and not player_summary_display.empty:
             st.markdown("### Player scoring breakdown")
+            scoring_heatmap_df = player_summary_display.copy()
+
+            heatmap_cols = [
+                c for c in scoring_heatmap_df.columns
+                if c not in ["Player", "Shot Efficiency"]
+            ]
+
+            fig_score_heat = px.imshow(
+                scoring_heatmap_df[heatmap_cols].T,
+                x=scoring_heatmap_df["Player"],
+                y=heatmap_cols,
+                text_auto=True,
+                aspect="auto",
+                title="Player Scoring Activity"
+            )
+
+            fig_score_heat.update_layout(
+                xaxis_title="Player",
+                yaxis_title="Metric",
+                height=450
+            )
+
+            st.plotly_chart(
+                fig_score_heat,
+                use_container_width=True
+            )
             st.dataframe(player_summary_display, use_container_width=True)
         else:
             st.info("No player scoring data for current filters.")
