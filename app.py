@@ -1719,7 +1719,9 @@ with tab2:
             ]
 
             fig_score_heat = px.imshow(
-                scoring_heatmap_df[heatmap_cols].T,
+                scoring_heatmap_df[heatmap_cols]
+                .div(scoring_heatmap_df[heatmap_cols].max(axis=0).replace(0, 1), axis=1)
+                .T,
                 x=scoring_heatmap_df["Player"],
                 y=heatmap_cols,
                 text_auto=True,
