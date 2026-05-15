@@ -801,10 +801,17 @@ with tab0:
                         & ko_df["__is_lost__"]
                     ).sum()
 
+                    opp_lost = (
+                        (~ko_df["__is_ball__"])
+                        & ko_df["__is_won__"]
+                    ).sum()
+
                     opp_retention = (
                         opp_won / opp_total
                         if opp_total > 0 else 0
                     )
+                    
+                    opp_index = opp_won - opp_lost
 
                     st.markdown("**Ballintubber**")
                     st.write(f"Total: {bt_total}")
