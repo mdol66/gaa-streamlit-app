@@ -896,10 +896,15 @@ with tab0:
                 rows = []
     
                 for label, event_name in scoring_metrics:
+                    opp_display_name = (
+                        opp_name if "opp_name" in locals()
+                        else "Opposition"
+                    )
+                    
                     rows.append({
                         "Ballintubber": count_event(bt_scoring_df, event_name),
                         "Metric": label,
-                        opp_name if "opp_name" in locals() else "Opposition": count_event(opp_scoring_df, event_name)
+                        opp_display_name: count_event(opp_scoring_df, event_name)
                     })
     
                 bt_total_shots = count_events(bt_scoring_df, shot_events)
@@ -924,22 +929,22 @@ with tab0:
                     {
                         "Ballintubber": bt_total_shots,
                         "Metric": "Total Shots",
-                        opp_name: opp_total_shots
+                        opp_display_name: opp_total_shots
                     },
                     {
                         "Ballintubber": bt_scores,
                         "Metric": "Scores",
-                        opp_name: opp_scores
+                        opp_display_name: opp_scores
                     },
                     {
                         "Ballintubber": bt_scores_play,
                         "Metric": "Scores from Play",
-                        opp_name: opp_scores_play
+                        opp_display_name: opp_scores_play
                     },
                     {
                         "Ballintubber": bt_scores_placed,
                         "Metric": "Scores from Placed",
-                        opp_name: opp_scores_placed
+                        opp_display_name: opp_scores_placed
                     },
                     {
                         "Ballintubber": (
@@ -947,7 +952,7 @@ with tab0:
                             if bt_shots_play > 0 else "0%"
                         ),
                         "Metric": "Shot Efficiency from Play",
-                        opp_name: (
+                        opp_display_name: (
                             f"{opp_scores_play / opp_shots_play:.0%}"
                             if opp_shots_play > 0 else "0%"
                         )
@@ -958,7 +963,7 @@ with tab0:
                             if bt_shots_placed > 0 else "0%"
                         ),
                         "Metric": "Shot Efficiency from Placed",
-                        opp_name: (
+                        opp_display_name: (
                             f"{opp_scores_placed / opp_shots_placed:.0%}"
                             if opp_shots_placed > 0 else "0%"
                         )
