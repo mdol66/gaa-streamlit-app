@@ -1074,7 +1074,7 @@ with left_col:
                     opp_name if "opp_name" in locals() else "Opposition": [
                         opp_metrics["to_won"],
                         opp_metrics["to_lost"],
-                        opp_metrics["net_to"]
+                        opp_metrics["net_to"],
                         opp_metrics["frees_conceded"],
                         opp_metrics["yellow_cards"],
                         opp_metrics["black_cards"],
