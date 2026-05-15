@@ -1150,18 +1150,34 @@ with right_col:
                     else "Opposition"
                 )
 
+                # Opposition kickouts are already recorded from the opposition perspective
+                opp_won = (
+                    (~ko_df["__is_ball__"])
+                    & ko_df["__is_won__"]
+                ).sum()
+
+                opp_lost = (
+                    (~ko_df["__is_ball__"])
+                    & ko_df["__is_lost__"]
+                ).sum()
+
+                opp_retention = (
+                    opp_won / opp_total
+                    if opp_total > 0 else 0
+                )
+
                 kickout_table = pd.DataFrame({
-                    "Metric": [
-                        "Total",
-                        "Won",
-                        "Lost",
-                        "Retention"
-                    ],
                     "Ballintubber": [
                         bt_total,
                         bt_won,
                         bt_lost,
                         f"{bt_retention:.0%}"
+                    ],
+                    "Metric": [
+                        "Total",
+                        "Won",
+                        "Lost",
+                        "Retention"
                     ],
                     opp_display_name: [
                         opp_total,
@@ -1171,7 +1187,7 @@ with right_col:
                     ]
                 })
 
-                st.table(kickout_table)
+                st.table(kickout_table.set_index("Metric"))
 
             else:
                 st.info("No kickout data")
