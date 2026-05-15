@@ -918,6 +918,23 @@ with left_col:
                 opp_scoring_df
             )
 
+
+            scoring_col1, scoring_col2 = st.columns(2)
+
+            with scoring_col1:
+                st.markdown("**Ballintubber**")
+                st.table(bt_scoring_table.set_index("Metric"))
+
+            with scoring_col2:
+                opp_display_name = (
+                    opp_name
+                    if "opp_name" in locals()
+                    else "Opposition"
+                )
+
+                st.markdown(f"**{opp_display_name}**")
+                st.table(opp_scoring_table.set_index("Metric"))
+                
             kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
 
             with kpi_col1:
@@ -940,22 +957,6 @@ with left_col:
                     f"BT: {bt_eff:.0%} | "
                     f"{opp_name if 'opp_name' in locals() else 'Opp'}: {opp_eff:.0%}"
                 )
-
-            scoring_col1, scoring_col2 = st.columns(2)
-
-            with scoring_col1:
-                st.markdown("**Ballintubber**")
-                st.table(bt_scoring_table.set_index("Metric"))
-
-            with scoring_col2:
-                opp_display_name = (
-                    opp_name
-                    if "opp_name" in locals()
-                    else "Opposition"
-                )
-
-                st.markdown(f"**{opp_display_name}**")
-                st.table(opp_scoring_table.set_index("Metric"))
 
     with mid_col:
         with st.container(border=True):
