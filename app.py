@@ -15,6 +15,7 @@ section[data-testid="stSidebar"] .block-container {
     padding-top: 0.5rem !important;
 }
 
+
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     gap: 0.35rem !important;
 }
