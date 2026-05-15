@@ -785,7 +785,7 @@ with tab0:
         with st.container(border=True):
 
             st.markdown(
-                "<h3 style='margin-top:0.8rem; margin-bottom:0.35rem;'>Kickouts</h3>",
+                "<h3 style='margin-top:0rem; margin-bottom:0.55rem;'>Kickouts</h3>",
                 unsafe_allow_html=True
             )
 
