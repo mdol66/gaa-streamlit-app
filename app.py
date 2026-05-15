@@ -1845,5 +1845,3 @@ with tab3:
             use_container_width=True
         )
 
-        else:
-            st.info("No kickout data for current filters.")
