@@ -966,13 +966,31 @@ with tab0:
                         if shots > 0 else 0
                     )
 
-                    to_won = (
-                        stat_series.isin(turnover_won_events)
-                    ).sum()
+                    if (
+                        df["__team_lower__"]
+                        .eq("ballintubber")
+                        .all()
+                    ):
 
-                    to_lost = (
-                        stat_series.isin(turnover_lost_events)
-                    ).sum()
+                        to_won = (
+                            stat_series.isin(turnover_won_events)
+                        ).sum()
+
+                        to_lost = (
+                            stat_series.isin(turnover_lost_events)
+                        ).sum()
+
+                    else:
+                        # Mirror Ballintubber perspective
+                        bt_stat_series = bt_df["__stat1_lower__"]
+
+                        to_won = (
+                            bt_stat_series.isin(turnover_lost_events)
+                        ).sum()
+
+                        to_lost = (
+                            bt_stat_series.isin(turnover_won_events)
+                        ).sum()
 
                     net_to = to_won - to_lost
 
