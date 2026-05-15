@@ -937,14 +937,14 @@ with tab0:
                         opp_display_name: opp_scores
                     },
                     {
+                        "Ballintubber": bt_shots_play,
+                        "Metric": "Shots from Play",
+                        opp_display_name: opp_shots_play
+                    },
+                    {
                         "Ballintubber": bt_scores_play,
                         "Metric": "Scores from Play",
                         opp_display_name: opp_scores_play
-                    },
-                    {
-                        "Ballintubber": bt_scores_placed,
-                        "Metric": "Scores from Placed",
-                        opp_display_name: opp_scores_placed
                     },
                     {
                         "Ballintubber": (
@@ -956,6 +956,16 @@ with tab0:
                             f"{opp_scores_play / opp_shots_play:.0%}"
                             if opp_shots_play > 0 else "0%"
                         )
+                    },
+                    {
+                        "Ballintubber": bt_shots_placed,
+                        "Metric": "Shots from Placed",
+                        opp_display_name: opp_shots_placed
+                    },
+                    {
+                        "Ballintubber": bt_scores_placed,
+                        "Metric": "Scores from Placed",
+                        opp_display_name: opp_scores_placed
                     },
                     {
                         "Ballintubber": (
