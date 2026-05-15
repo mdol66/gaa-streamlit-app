@@ -824,6 +824,14 @@ if cols["team"] and cols["stat1"] and cols["stat2"]:
         .astype(str)
         .str.lower()
     )
+    bt_scoring_df = scoring_df[
+        scoring_df["__team_lower__"] == "ballintubber"
+    ].copy()
+
+    opp_scoring_df = scoring_df[
+        (scoring_df["__team_lower__"] != "ballintubber")
+        & (~scoring_df["__team_lower__"].isin(["1st half", "2nd half"]))
+    ].copy()
 
 with mid_col:
     with st.container(border=True):
