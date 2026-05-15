@@ -901,7 +901,14 @@ with tab0:
     with mid_col:
         with st.container(border=True):
 
-            st.markdown("### General Play")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">General Play</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
             gp_df = dashboard_df.copy()
 
@@ -1037,7 +1044,14 @@ with tab0:
 
     with right_col:
         with st.container(border=True):
-            st.markdown("### Scoring")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">Scoring</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
             st.info("Scoring metrics coming here")
     
 with tab1:
