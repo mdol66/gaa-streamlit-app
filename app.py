@@ -1090,11 +1090,11 @@ with mid_col:
                 ]
                 })
 
-            st.table(
-                comparison_df[
-                    ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
-                ]
-            )
+                st.table(
+                    comparison_df[
+                        ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
+                    ]
+                )
 
 with right_col:
     with st.container(border=True):
