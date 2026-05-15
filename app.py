@@ -1747,9 +1747,19 @@ with tab3:
 
             summary = summary.drop(columns=[cols["match_no"]])
             summary = summary.rename(columns={"match_label": "Match"})
-            summary["Own KO Index +/-"] = summary["Own_KO_Won"] - summary["Own_KO_Lost"]
-            summary["Opp KO Index +/-"] = summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
-            summary["Overall KO Index +/-"] = summary["Own KO Index +/-"] + summary["Opp KO Index +/-"]
+            summary["Own KO Index +/-"] = (
+                summary["Own_KO_Won"] - summary["Own_KO_Lost"]
+            )
+            
+            # Reverse opposition perspective for this table only
+            summary["Opp KO Index +/-"] = (
+                summary["Opp_KO_Lost"] - summary["Opp_KO_Won"]
+            )
+            
+            summary["Overall KO Index +/-"] = (
+                summary["Own KO Index +/-"]
+                + summary["Opp KO Index +/-"]
+            )
 
             summary = summary[[
                 "Match",
@@ -1762,7 +1772,19 @@ with tab3:
                 "Overall KO Index +/-"
             ]]
 
-            st.table(summary)
+            st.caption(
+                "Note: Kickout Index is shown from Ballintubber's perspective. "
+                "Positive values are favourable to Ballintubber, negative values are unfavourable. "
+                "Opposition kickout values are therefore reversed for interpretation."
+            )
+
+            st.dataframe(
+                summary.style.set_properties(**{
+                    "font-size": "13px"
+                }),
+                hide_index=True,
+                use_container_width=True
+            )
         else:
             st.info("No kickout data for current filters.")
 
