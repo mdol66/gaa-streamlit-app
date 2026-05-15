@@ -1033,11 +1033,7 @@ with tab0:
                     ]
                 })
 
-                st.dataframe(
-                    comparison_df,
-                    hide_index=True,
-                    use_container_width=True
-                )
+                st.table(comparison_df.set_index("Metric"))
 
     with right_col:
         with st.container(border=True):
