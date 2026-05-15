@@ -1259,23 +1259,56 @@ with tab0:
                         if opp_total > 0 else 0
                     )
 
-                    bt_short_won = (
+                    y_vals = pd.to_numeric(ko_df[cols["y"]], errors="coerce")
+
+                    bt_short_mask = (
                         ko_df["__is_ball__"]
+                        & (y_vals >= 0)
+                        & (y_vals <= 32)
+                    )
+
+                    bt_long_mask = (
+                        ko_df["__is_ball__"]
+                        & (y_vals > 32)
+                        & (y_vals <= 100)
+                    )
+
+                    opp_short_mask = (
+                        (~ko_df["__is_ball__"])
+                        & (y_vals >= 68)
+                        & (y_vals <= 100)
+                    )
+
+                    opp_long_mask = (
+                        (~ko_df["__is_ball__"])
+                        & (y_vals >= 0)
+                        & (y_vals < 68)
+                    )
+
+                    bt_short = bt_short_mask.sum()
+                    bt_long = bt_long_mask.sum()
+                    opp_short = opp_short_mask.sum()
+                    opp_long = opp_long_mask.sum()
+
+                    bt_short_won = (
+                        bt_short_mask
                         & ko_df["__is_won__"]
-                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 0)
-                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 32)
                     ).sum()
 
-                    bt_long_won = bt_won - bt_short_won
+                    bt_long_won = (
+                        bt_long_mask
+                        & ko_df["__is_won__"]
+                    ).sum()
 
                     opp_short_won = (
-                        (~ko_df["__is_ball__"])
+                        opp_short_mask
                         & ko_df["__is_won__"]
-                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") >= 68)
-                        & (pd.to_numeric(ko_df[cols["y"]], errors="coerce") <= 100)
                     ).sum()
 
-                    opp_long_won = opp_won - opp_short_won
+                    opp_long_won = (
+                        opp_long_mask
+                        & ko_df["__is_won__"]
+                    ).sum()
 
                     kickout_table = pd.DataFrame({
                         "Ballintubber": [
