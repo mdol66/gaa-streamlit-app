@@ -1037,6 +1037,10 @@ with left_col:
                         opp_metrics["net_to"]
                     ]
                 })
+                comparison_df["Ballintubber"] = comparison_df["Ballintubber"].astype(str)
+                comparison_df[opp_name if "opp_name" in locals() else "Opposition"] = (
+                    comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
+                )
 
                 st.table(
                     comparison_df[
