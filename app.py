@@ -1766,8 +1766,6 @@ with tab3:
         else:
             st.info("No kickout data for current filters.")
 
-    st.markdown("### Player Non-scoring Stats")
-
     non_score_df = plot_df.copy()
     non_score_df = non_score_df[
         non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
@@ -1812,8 +1810,6 @@ with tab3:
 
         drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
         player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
-
-        st.markdown("### Non-scoring Activity Heatmap")
 
         heatmap_numeric_cols = [
             c for c in player_table.columns
