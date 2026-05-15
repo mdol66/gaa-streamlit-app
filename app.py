@@ -794,14 +794,7 @@ left_col, mid_col, right_col = st.columns([1.2, 1.0, 0.9])
 with left_col:
     with st.container(border=True):
 
-        st.markdown(
-            """
-            <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
-                <h3 style="margin:0;">Scoring</h3>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.markdown("### Scoring")
 
         scoring_df = dashboard_df.copy()
 
@@ -819,10 +812,11 @@ with left_col:
                 .str.lower()
             )
 
-            scoring_df["__stat2_lower__"] = (
+            scoring_df["__is_placed__"] = (
                 scoring_df[cols["stat2"]]
+                .fillna("")
                 .astype(str)
-                .str.lower()
+                .str.strip() != ""
             )
 
             bt_scoring_df = scoring_df[
@@ -846,115 +840,116 @@ with left_col:
                 ("Short", "short")
             ]
 
-            def build_scoring_rows(team_df):
-                rows = []
+            score_events = ["goal", "2 pointer", "point"]
 
-                for label, stat in scoring_metrics:
+            shot_events = [
+                "goal", "2 pointer", "point",
+                "wide", "out for 45", "off posts",
+                "saved", "saved out for 45", "short"
+            ]
 
-                    total = (
-                        team_df["__stat1_lower__"]
-                        .eq(stat)
-                        .sum()
+            def count_event(df, event_name):
+                return (
+                    df["__stat1_lower__"]
+                    .eq(event_name)
+                    .sum()
+                )
+
+            def count_events(df, event_list):
+                return (
+                    df["__stat1_lower__"]
+                    .isin(event_list)
+                    .sum()
+                )
+
+            def count_from_play(df, event_list):
+                return (
+                    df["__stat1_lower__"].isin(event_list)
+                    & (~df["__is_placed__"])
+                ).sum()
+
+            def count_from_placed(df, event_list):
+                return (
+                    df["__stat1_lower__"].isin(event_list)
+                    & (df["__is_placed__"])
+                ).sum()
+
+            rows = []
+
+            for label, event_name in scoring_metrics:
+                rows.append({
+                    "Ballintubber": count_event(bt_scoring_df, event_name),
+                    "Metric": label,
+                    opp_name: count_event(opp_scoring_df, event_name)
+                })
+
+            bt_total_shots = count_events(bt_scoring_df, shot_events)
+            opp_total_shots = count_events(opp_scoring_df, shot_events)
+
+            bt_scores = count_events(bt_scoring_df, score_events)
+            opp_scores = count_events(opp_scoring_df, score_events)
+
+            bt_scores_play = count_from_play(bt_scoring_df, score_events)
+            opp_scores_play = count_from_play(opp_scoring_df, score_events)
+
+            bt_scores_placed = count_from_placed(bt_scoring_df, score_events)
+            opp_scores_placed = count_from_placed(opp_scoring_df, score_events)
+
+            bt_shots_play = count_from_play(bt_scoring_df, shot_events)
+            opp_shots_play = count_from_play(opp_scoring_df, shot_events)
+
+            bt_shots_placed = count_from_placed(bt_scoring_df, shot_events)
+            opp_shots_placed = count_from_placed(opp_scoring_df, shot_events)
+
+            rows.extend([
+                {
+                    "Ballintubber": bt_total_shots,
+                    "Metric": "Total Shots",
+                    opp_name: opp_total_shots
+                },
+                {
+                    "Ballintubber": bt_scores,
+                    "Metric": "Scores",
+                    opp_name: opp_scores
+                },
+                {
+                    "Ballintubber": bt_scores_play,
+                    "Metric": "Scores from Play",
+                    opp_name: opp_scores_play
+                },
+                {
+                    "Ballintubber": bt_scores_placed,
+                    "Metric": "Scores from Placed",
+                    opp_name: opp_scores_placed
+                },
+                {
+                    "Ballintubber": (
+                        f"{bt_scores_play / bt_shots_play:.0%}"
+                        if bt_shots_play > 0 else "0%"
+                    ),
+                    "Metric": "Shot Efficiency from Play",
+                    opp_name: (
+                        f"{opp_scores_play / opp_shots_play:.0%}"
+                        if opp_shots_play > 0 else "0%"
                     )
+                },
+                {
+                    "Ballintubber": (
+                        f"{bt_scores_placed / bt_shots_placed:.0%}"
+                        if bt_shots_placed > 0 else "0%"
+                    ),
+                    "Metric": "Shot Efficiency from Placed",
+                    opp_name: (
+                        f"{opp_scores_placed / opp_shots_placed:.0%}"
+                        if opp_shots_placed > 0 else "0%"
+                    )
+                }
+            ])
 
-                    play = (
-                        (team_df["__stat1_lower__"] == stat)
-                        & (
-                            team_df["__stat2_lower__"]
-                            .isin(["from play", "play"])
-                        )
-                    ).sum()
-
-                    placed = (
-                        (team_df["__stat1_lower__"] == stat)
-                        & (
-                            team_df["__stat2_lower__"]
-                            .isin(["from placed", "placed"])
-                        )
-                    ).sum()
-
-                    rows.append({
-                        "Ballintubber": total if team_df.equals(bt_scoring_df) else "",
-                        "Total": total,
-                        "Play": play,
-                        "Placed": placed,
-                        "Metric": label,
-                    })
-
-                return pd.DataFrame(rows)
-
-            bt_table = build_scoring_rows(bt_scoring_df)
-            opp_table = build_scoring_rows(opp_scoring_df)
-
-            combined_table = pd.DataFrame({
-                "Ballintubber": bt_table["Total"],
-                "BT Play": bt_table["Play"],
-                "BT Placed": bt_table["Placed"],
-                "Metric": bt_table["Metric"],
-                f"{opp_name}": opp_table["Total"],
-                "Opp Play": opp_table["Play"],
-                "Opp Placed": opp_table["Placed"],
-            })
+            scoring_table = pd.DataFrame(rows)
 
             st.dataframe(
-                combined_table,
-                hide_index=True,
-                use_container_width=True
-            )
-
-            bt_shots = len(bt_scoring_df[
-                bt_scoring_df["__stat1_lower__"].isin([
-                    "goal", "2 pointer", "point",
-                    "wide", "out for 45",
-                    "off posts", "saved",
-                    "saved out for 45", "short"
-                ])
-            ])
-
-            opp_shots = len(opp_scoring_df[
-                opp_scoring_df["__stat1_lower__"].isin([
-                    "goal", "2 pointer", "point",
-                    "wide", "out for 45",
-                    "off posts", "saved",
-                    "saved out for 45", "short"
-                ])
-            ])
-
-            bt_scores = len(bt_scoring_df[
-                bt_scoring_df["__stat1_lower__"].isin([
-                    "goal", "2 pointer", "point"
-                ])
-            ])
-
-            opp_scores = len(opp_scoring_df[
-                opp_scoring_df["__stat1_lower__"].isin([
-                    "goal", "2 pointer", "point"
-                ])
-            ])
-
-            bt_eff = bt_scores / bt_shots if bt_shots > 0 else 0
-            opp_eff = opp_scores / opp_shots if opp_shots > 0 else 0
-
-            summary_df = pd.DataFrame({
-                "Ballintubber": [
-                    bt_shots,
-                    bt_scores,
-                    f"{bt_eff:.0%}"
-                ],
-                "Metric": [
-                    "Total Shots",
-                    "Scores",
-                    "Shot Efficiency"
-                ],
-                f"{opp_name}": [
-                    opp_shots,
-                    opp_scores,
-                    f"{opp_eff:.0%}"
-                ]
-            })
-
-            st.dataframe(
-                summary_df,
+                scoring_table,
                 hide_index=True,
                 use_container_width=True
             )
