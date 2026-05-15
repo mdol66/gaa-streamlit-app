@@ -1044,6 +1044,7 @@ with tab0:
 
     with right_col:
         with st.container(border=True):
+
             st.markdown(
                 """
                 <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
@@ -1052,7 +1053,75 @@ with tab0:
                 """,
                 unsafe_allow_html=True
             )
-            st.info("Scoring metrics coming here")
+
+            scoring_panel_df = dashboard_df.copy()
+
+            if cols["team"] and cols["stat1"] and cols["stat2"]:
+
+                scoring_panel_df["__team_lower__"] = scoring_panel_df[cols["team"]].astype(str).str.lower()
+                scoring_panel_df["__stat1_lower__"] = scoring_panel_df[cols["stat1"]].astype(str).str.lower()
+                scoring_panel_df["__is_placed__"] = scoring_panel_df[cols["stat2"]].fillna("").astype(str).str.strip() != ""
+
+                bt_scoring_df = scoring_panel_df[scoring_panel_df["__team_lower__"] == "ballintubber"].copy()
+
+                opp_scoring_df = scoring_panel_df[
+                    (scoring_panel_df["__team_lower__"] != "ballintubber")
+                    & (~scoring_panel_df["__team_lower__"].isin(["1st half", "2nd half"]))
+                ].copy()
+
+                def calc_scoring_metrics(df):
+                    stat_series = df["__stat1_lower__"]
+
+                    scores_mask = stat_series.isin(score_events)
+                    shots_mask = stat_series.isin(score_events + miss_events)
+
+                    scores = scores_mask.sum()
+                    from_play = (scores_mask & ~df["__is_placed__"]).sum()
+                    placed = (scores_mask & df["__is_placed__"]).sum()
+                    goals = stat_series.str.contains("goal", na=False).sum()
+                    two_pointers = stat_series.str.contains("2 pointer", na=False).sum()
+                    conversion = scores / shots_mask.sum() if shots_mask.sum() > 0 else 0
+
+                    return {
+                        "scores": scores,
+                        "from_play": from_play,
+                        "placed": placed,
+                        "goals": goals,
+                        "two_pointers": two_pointers,
+                        "conversion": conversion
+                    }
+
+                bt_scoring = calc_scoring_metrics(bt_scoring_df)
+                opp_scoring = calc_scoring_metrics(opp_scoring_df)
+
+                scoring_table = pd.DataFrame({
+                    "Metric": [
+                        "Scores",
+                        "From Play",
+                        "Placed Ball",
+                        "Goals",
+                        "2 Pointers",
+                        "Conversion"
+                    ],
+                    "Ballintubber": [
+                        bt_scoring["scores"],
+                        bt_scoring["from_play"],
+                        bt_scoring["placed"],
+                        bt_scoring["goals"],
+                        bt_scoring["two_pointers"],
+                        f"{bt_scoring['conversion']:.0%}"
+                    ],
+                    opp_name if "opp_name" in locals() else "Opposition": [
+                        opp_scoring["scores"],
+                        opp_scoring["from_play"],
+                        opp_scoring["placed"],
+                        opp_scoring["goals"],
+                        opp_scoring["two_pointers"],
+                        f"{opp_scoring['conversion']:.0%}"
+                    ]
+                })
+
+                st.table(scoring_table.set_index("Metric"))
     
 with tab1:
     fig = make_pitch_figure()
