@@ -899,7 +899,7 @@ with tab0:
                     rows.append({
                         "Ballintubber": count_event(bt_scoring_df, event_name),
                         "Metric": label,
-                        opp_name: count_event(opp_scoring_df, event_name)
+                        opp_name if "opp_name" in locals() else "Opposition": count_event(opp_scoring_df, event_name)
                     })
     
                 bt_total_shots = count_events(bt_scoring_df, shot_events)
