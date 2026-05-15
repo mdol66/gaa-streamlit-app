@@ -784,7 +784,10 @@ with tab0:
     with left_col:
         with st.container(border=True):
 
-            st.markdown("### Kickouts")
+            st.markdown(
+                "<h3 style='margin-top:0.8rem; margin-bottom:0.35rem;'>Kickouts</h3>",
+                unsafe_allow_html=True
+            )
 
             ko_df = dashboard_df.copy()
 
