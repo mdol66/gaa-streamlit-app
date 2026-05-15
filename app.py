@@ -553,6 +553,10 @@ except UnicodeDecodeError:
     df = pd.read_csv(uploaded, encoding="latin1")
 
 cols = infer_columns(df)
+
+st.write(df[cols["stat2"]].dropna().value_counts())
+
+plot_df = df.copy()
 plot_df = df.copy()
 plot_df["__original_event_number__"] = build_display_number(plot_df, cols["number"])
 
