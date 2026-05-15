@@ -1007,11 +1007,43 @@ with left_col:
 
                     net_to = to_won - to_lost
 
-                    return {
-                        "to_won": to_won,
-                        "to_lost": to_lost,
-                        "net_to": net_to
-                    }
+                return {
+                    "to_won": to_won,
+                    "to_lost": to_lost,
+                    "net_to": net_to,
+
+                    "frees_conceded": (
+                        team_df[cols["stat1"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("free conceded")
+                        .sum()
+                    ),
+
+                    "yellow_cards": (
+                        team_df[cols["stat1"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("yellow card")
+                        .sum()
+                    ),
+
+                    "black_cards": (
+                        team_df[cols["stat1"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("black card")
+                        .sum()
+                    ),
+
+                    "red_cards": (
+                        team_df[cols["stat1"]]
+                        .astype(str)
+                        .str.lower()
+                        .eq("red card")
+                        .sum()
+                    )
+                }
 
                 bt_metrics = calc_team_metrics(bt_df)
                 opp_metrics = {
