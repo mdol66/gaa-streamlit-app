@@ -1174,10 +1174,11 @@ with right_col:
                         f"{bt_retention:.0%}"
                     ],
                     "Metric": [
-                        "Total",
-                        "Won",
-                        "Lost",
-                        "Retention"
+                        "**Total**",
+                        "**Won**",
+                        "**Lost**",
+                        "**Retention**"
+                    ],
                     ],
                     opp_display_name: [
                         opp_total,
@@ -1187,7 +1188,13 @@ with right_col:
                     ]
                 })
 
-                st.table(kickout_table.set_index("Metric"))
+                st.dataframe(
+                    kickout_table[
+                        ["Ballintubber", "Metric", opp_display_name]
+                    ],
+                    hide_index=True,
+                    use_container_width=True
+                )
 
             else:
                 st.info("No kickout data")
