@@ -1242,43 +1242,44 @@ with tab0:
                         (~ko_df["__is_ball__"])
                         & ko_df["__is_won__"]
                     ).sum()
-    
+
                     opp_lost = (
                         (~ko_df["__is_ball__"])
                         & ko_df["__is_lost__"]
                     ).sum()
-    
+
                     opp_retention = (
                         opp_won / opp_total
                         if opp_total > 0 else 0
                     )
-                   kickout_table = pd.DataFrame({
-                    "Ballintubber": [
-                        bt_total,
-                        bt_won,
-                        bt_lost,
-                        bt_short,
-                        bt_long,
-                        f"{bt_retention:.0%}"
-                    ],
-                    "Metric": [
-                        "  Total",
-                        "  Won",
-                        "  Lost",
-                        "  Short",
-                        "  Long",
-                        "  Retention"
-                    ],
-                    opp_display_name: [
-                        opp_total,
-                        opp_won,
-                        opp_lost,
-                        opp_short,
-                        opp_long,
-                        f"{opp_retention:.0%}"
-                    ]
-                }) 
-    
+
+                    kickout_table = pd.DataFrame({
+                        "Ballintubber": [
+                            bt_total,
+                            bt_won,
+                            bt_lost,
+                            bt_short,
+                            bt_long,
+                            f"{bt_retention:.0%}"
+                        ],
+                        "Metric": [
+                            "  Total",
+                            "  Won",
+                            "  Lost",
+                            "  Short",
+                            "  Long",
+                            "  Retention"
+                        ],
+                        opp_display_name: [
+                            opp_total,
+                            opp_won,
+                            opp_lost,
+                            opp_short,
+                            opp_long,
+                            f"{opp_retention:.0%}"
+                        ]
+                    })
+
                     st.dataframe(
                         kickout_table[
                             ["Ballintubber", "Metric", opp_display_name]
@@ -1286,7 +1287,6 @@ with tab0:
                         hide_index=True,
                         use_container_width=True
                     )
-    
                 else:
                     st.info("No kickout data")
 
