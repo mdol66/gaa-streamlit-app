@@ -1090,12 +1090,10 @@ with mid_col:
                 ]
                 })
 
-            st.dataframe(
+            st.table(
                 comparison_df[
                     ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
-                ],
-                hide_index=True,
-                use_container_width=True
+                ]
             )
 
 with right_col:
