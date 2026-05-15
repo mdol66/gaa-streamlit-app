@@ -1196,6 +1196,15 @@ with tab0:
                         & ko_df["__is_won__"]
                     ).sum()
                     bt_lost = bt_total - bt_won
+                    bt_short = (
+                        ko_df["__is_ball__"]
+                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("short")
+                    ).sum()
+
+                    bt_long = (
+                        ko_df["__is_ball__"]
+                        & ko_df[cols["stat2"]].astype(str).str.lower().eq("long")
+                    ).sum()
                     bt_retention = (
                         bt_won / bt_total
                         if bt_total > 0 else 0
