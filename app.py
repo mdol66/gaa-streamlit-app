@@ -919,21 +919,51 @@ with left_col:
             )
 
 
-            scoring_col1, scoring_col2 = st.columns(2)
-
-            with scoring_col1:
-                st.markdown("**Ballintubber**")
-                st.table(bt_scoring_table.set_index("Metric"))
-
-            with scoring_col2:
                 opp_display_name = (
                     opp_name
                     if "opp_name" in locals()
                     else "Opposition"
                 )
 
-                st.markdown(f"**{opp_display_name}**")
-                st.table(opp_scoring_table.set_index("Metric"))
+                combined_scoring_table = pd.DataFrame({
+                    "Ballintubber Total": bt_scoring_table["Total"],
+                    "Ballintubber Play": bt_scoring_table["Play"],
+                    "Ballintubber Placed": bt_scoring_table["Placed"],
+                    "Metric": bt_scoring_table["Metric"],
+                    f"{opp_display_name} Total": opp_scoring_table["Total"],
+                    f"{opp_display_name} Play": opp_scoring_table["Play"],
+                    f"{opp_display_name} Placed": opp_scoring_table["Placed"],
+                })
+
+                st.dataframe(
+                    combined_scoring_table,
+                    hide_index=True,
+                    use_container_width=True
+                )
+
+                scoring_summary_table = pd.DataFrame({
+                    "Ballintubber": [
+                        bt_shots,
+                        bt_scores,
+                        f"{bt_eff:.0%}"
+                    ],
+                    "Metric": [
+                        "Total Shots",
+                        "Scores",
+                        "Shot Efficiency"
+                    ],
+                    opp_display_name: [
+                        opp_shots,
+                        opp_scores,
+                        f"{opp_eff:.0%}"
+                    ]
+                })
+
+                st.dataframe(
+                    scoring_summary_table,
+                    hide_index=True,
+                    use_container_width=True
+                )
                 
             st.markdown("---")
 
