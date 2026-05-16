@@ -1483,8 +1483,8 @@ with tab0:
     
         fig_timeline_h1.update_layout(
             height=420,
-            paper_bgcolor="white",
-            plot_bgcolor="white",
+            paper_bgcolor="#F2F2F2",
+            plot_bgcolor="#F2F2F2",
             margin=dict(l=40, r=20, t=20, b=40),
             xaxis=dict(
                 range=[0, 30],
@@ -1523,8 +1523,8 @@ with tab0:
 
         fig_timeline_h2.update_layout(
             height=280,
-            paper_bgcolor="white",
-            plot_bgcolor="white",
+            paper_bgcolor="#F2F2F2",
+            plot_bgcolor="#F2F2F2",
             margin=dict(l=40, r=20, t=20, b=40),
             xaxis=dict(
                 range=[0, 30],
