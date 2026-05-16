@@ -415,6 +415,7 @@ def infer_columns(df: pd.DataFrame) -> dict[str, Optional[str]]:
         "outcome": first_existing(df, [["outcome"], ["result"], ["event_outcome"], ["shot_result"], ["status"]], required=False),
         "number": first_existing(df, [["event_no"], ["event_number"], ["number"], ["id"]], required=False),
         "half": first_existing(df, [["half"], ["period"]], required=False),
+        "time": first_existing(df, [["time"], ["match_time"], ["event_time"], ["timestamp"], ["minute"]], required=False),
         "match": first_existing(df, [["match"], ["match_name"], ["fixture"]], required=False),
         "match_no": first_existing(df, [["match_no"], ["match_number"], ["matchnum"], ["game_no"], ["game_number"]], required=False),
         "stat1": first_existing(df, [["Stat_1"], ["stat_1"], ["stat1"]], required=False),
@@ -553,6 +554,7 @@ except UnicodeDecodeError:
     df = pd.read_csv(uploaded, encoding="latin1")
 
 cols = infer_columns(df)
+st.write(df.columns.tolist())
 
 plot_df = df.copy()
 plot_df = df.copy()
