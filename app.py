@@ -1423,6 +1423,17 @@ with tab0:
             h1_scores["__score_event__"].isin(score_events)
         ]
     
+        h1_scores["marker_colour"] = h1_scores["__score_event__"].map({
+            "goal": "green",
+            "goal from penalty": "green",
+            "goal from free": "green",
+            "2 pointer": "orange",
+            "2 pointer from free": "orange",
+            "point": "white",
+            "point from free": "white",
+            "point from 45": "white"
+        })
+    
    
         bt_scores_h1 = h1_scores[
             h1_scores[cols["team"]]
