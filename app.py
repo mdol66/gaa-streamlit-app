@@ -1426,45 +1426,45 @@ with tab0:
                 key="timeline_first_half"
             )
     
-        with timeline_col2:
-    
-            st.markdown("#### Second Half")
-    
-            fig_timeline_h2 = go.Figure()
-    
-            fig_timeline_h2.update_layout(
-                height=280,
-                paper_bgcolor="white",
-                plot_bgcolor="white",
-                margin=dict(l=40, r=20, t=20, b=40),
-                xaxis=dict(
-                    range=[0, 30],
-                    tickmode="linear",
-                    tick0=0,
-                    dtick=5,
-                    title="Minutes"
-                ),
-                yaxis=dict(
-                    tickmode="array",
-                    tickvals=[1, 2, 3, 4, 5, 6],
-                    ticktext=[
-                        "BT Scores",
-                        "Opp Scores",
-                        "BT Kickouts",
-                        "Opp Kickouts",
-                        "BT Turnovers",
-                        "Opp Turnovers"
-                    ],
-                    range=[0.5, 6.5]
-                ),
-                showlegend=False
-            )
-    
-            st.plotly_chart(
-                fig_timeline_h2,
-                use_container_width=True,
-                key="timeline_second_half"
-             )
+    with timeline_col2:
+
+        st.markdown("#### Second Half")
+
+        fig_timeline_h2 = go.Figure()
+
+        fig_timeline_h2.update_layout(
+            height=280,
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+            margin=dict(l=40, r=20, t=20, b=40),
+            xaxis=dict(
+                range=[0, 30],
+                tickmode="linear",
+                tick0=0,
+                dtick=5,
+                title="Minutes"
+            ),
+            yaxis=dict(
+                tickmode="array",
+                tickvals=[1, 2, 3, 4, 5, 6],
+                ticktext=[
+                    "BT Scores",
+                    "Opp Scores",
+                    "BT Kickouts",
+                    "Opp Kickouts",
+                    "BT Turnovers",
+                    "Opp Turnovers"
+                ],
+                range=[0.5, 6.5]
+            ),
+            showlegend=False
+        )
+
+        st.plotly_chart(
+            fig_timeline_h2,
+            use_container_width=True,
+            key="timeline_second_half"
+         )
 
   
 with tab1:
