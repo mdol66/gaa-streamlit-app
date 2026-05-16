@@ -1395,7 +1395,7 @@ with tab0:
         h1_scores = timeline_df.copy()
     
         h1_scores = h1_scores[
-            h1_scores[cols["period"]]
+            h1_scores[cols["half"]]
             .astype(str)
             .str.contains("1", na=False)
         ].copy()
