@@ -1410,12 +1410,19 @@ with tab0:
             "2 pointer",
             "2 pointer from free"
         ]
-    
+        
+        h1_scores["__score_event__"] = (
+            h1_scores[cols["stat1"]]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
+        
         h1_scores = h1_scores[
-            h1_scores["__event_lower__"]
-            .isin(score_events)
+            h1_scores["__score_event__"].isin(score_events)
         ]
     
+   
         bt_scores_h1 = h1_scores[
             h1_scores[cols["team"]]
             .astype(str)
