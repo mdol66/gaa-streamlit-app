@@ -1443,7 +1443,11 @@ with tab0:
                 x=bt_scores_h1["__minute__"],
                 y=[1] * len(bt_scores_h1),
                 mode="markers",
-                marker=dict(size=9, color="red", symbol="circle"),
+                marker=dict(
+                    size=8,
+                    color=bt_scores_h1["marker_colour"],
+                    line=dict(color="#444444", width=1)
+                ),
                 name="BT Scores",
                 hovertext=bt_scores_h1[cols["player"]],
                 hoverinfo="text"
@@ -1455,7 +1459,11 @@ with tab0:
                 x=opp_scores_h1["__minute__"],
                 y=[2] * len(opp_scores_h1),
                 mode="markers",
-                marker=dict(size=9, color="green", symbol="circle"),
+                 marker=dict(
+                    size=8,
+                    color=opp_scores_h1["marker_colour"],
+                    line=dict(color="#444444", width=1)
+                ),
                 name="Opp Scores",
                 hovertext=opp_scores_h1[cols["player"]],
                 hoverinfo="text"
