@@ -1393,7 +1393,7 @@ with tab0:
             fig_timeline_h1 = go.Figure()
     
             fig_timeline_h1.update_layout(
-                height=280,
+                height=420,
                 paper_bgcolor="white",
                 plot_bgcolor="white",
                 margin=dict(l=40, r=20, t=20, b=40),
