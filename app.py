@@ -1381,10 +1381,10 @@ with tab0:
                     )
                 else:
                     st.info("No kickout data")
-        st.markdown("---")
-        st.markdown("### Match Timeline")
-    
-        timeline_col1, timeline_col2 = st.columns(2)
+    st.markdown("---")
+    st.markdown("### Match Timeline")
+
+    timeline_col1, timeline_col2 = st.columns(2)
     
         with timeline_col1:
     
