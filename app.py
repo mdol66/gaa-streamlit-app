@@ -1774,6 +1774,19 @@ with tab1:
         #"<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         #unsafe_allow_html=True
     #)
+st.markdown("#### Timeline score check")
+
+st.dataframe(
+    timeline_df[
+        timeline_df[cols["stat1"]]
+        .astype(str)
+        .str.lower()
+        .str.contains("goal|point|2 pointer", na=False)
+    ][
+        [cols["half"], cols["time"], cols["team"], cols["player"], cols["stat1"], cols["stat2"]]
+    ],
+    use_container_width=True
+)
 
 with tab2:
     def is_in(event_series, values):
