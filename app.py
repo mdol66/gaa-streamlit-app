@@ -763,22 +763,7 @@ with tab0:
     st.markdown("## Match Dashboard")
 
     dashboard_df = df.copy()
-    # --- Timeline prep ---
-    timeline_df = dashboard_df.copy()
-    
-    if cols.get("time"):
-        timeline_df["__minute__"] = (
-            timeline_df[cols["time"]]
-            .apply(parse_match_minute)
-        )
-    
-    if cols.get("stat1"):
-        timeline_df["__event_lower__"] = (
-            timeline_df[cols["stat1"]]
-            .astype(str)
-            .str.lower()
-        )
-    
+   
 
     if cols["match_no"] and match_display_choices:
         selected_match_nos = [
