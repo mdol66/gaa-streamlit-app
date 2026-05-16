@@ -1454,39 +1454,39 @@ with tab0:
             )
         )
     
-            fig_timeline_h1.update_layout(
-                height=420,
-                paper_bgcolor="white",
-                plot_bgcolor="white",
-                margin=dict(l=40, r=20, t=20, b=40),
-                xaxis=dict(
-                    range=[0, 30],
-                    tickmode="linear",
-                    tick0=0,
-                    dtick=5,
-                    title="Minutes"
-                ),
-                yaxis=dict(
-                    tickmode="array",
-                    tickvals=[1, 2, 3, 4, 5, 6],
-                    ticktext=[
-                        "BT Scores",
-                        "Opp Scores",
-                        "BT Kickouts",
-                        "Opp Kickouts",
-                        "BT Turnovers",
-                        "Opp Turnovers"
-                    ],
-                    range=[0.5, 6.5]
-                ),
-                showlegend=False
-            )
-    
-            st.plotly_chart(
-                fig_timeline_h1,
-                use_container_width=True,
-                key="timeline_first_half"
-            )
+        fig_timeline_h1.update_layout(
+            height=420,
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+            margin=dict(l=40, r=20, t=20, b=40),
+            xaxis=dict(
+                range=[0, 30],
+                tickmode="linear",
+                tick0=0,
+                dtick=5,
+                title="Minutes"
+            ),
+            yaxis=dict(
+                tickmode="array",
+                tickvals=[1, 2, 3, 4, 5, 6],
+                ticktext=[
+                    "BT Scores",
+                    "Opp Scores",
+                    "BT Kickouts",
+                    "Opp Kickouts",
+                    "BT Turnovers",
+                    "Opp Turnovers"
+                ],
+                range=[0.5, 6.5]
+            ),
+            showlegend=False
+        )
+
+        st.plotly_chart(
+            fig_timeline_h1,
+            use_container_width=True,
+            key="timeline_first_half"
+        )
     
     with timeline_col2:
 
