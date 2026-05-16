@@ -1517,135 +1517,132 @@ with tab0:
     
     with st.container():
 
-        st.markdown("#### Second Half")
-
-        fig_timeline_h2 = go.Figure()
-        
-        # --- Second half scores ---
-        h2_scores = timeline_df.copy()
-        
-        h2_scores = h2_scores[
-            h2_scores[cols["half"]]
-            .astype(str)
-            .str.contains("2", na=False)
-        ].copy()
-        
-        score_events = [
-            "goal",
-            "goal from penalty",
-            "goal from free",
-            "point",
-            "point from free",
-            "point from 45",
-            "2 pointer",
-            "2 pointer from free"
-        ]
-        
-        h2_scores["__score_event__"] = (
-            h2_scores[cols["stat1"]]
-            .astype(str)
-            .str.strip()
-            .str.lower()
-        )
-        
-        h2_scores = h2_scores[
-            h2_scores["__score_event__"].isin(score_events)
-        ]
-        
-        h2_scores["marker_colour"] = h2_scores["__score_event__"].map({
-            "goal": "green",
-            "goal from penalty": "green",
-            "goal from free": "green",
-            "2 pointer": "orange",
-            "2 pointer from free": "orange",
-            "point": "white",
-            "point from free": "white",
-            "point from 45": "white"
-        })
-        
-        bt_scores_h2 = h2_scores[
-            h2_scores[cols["team"]]
-            .astype(str)
-            .str.lower()
-            .eq("ballintubber")
-        ]
-        
-        opp_scores_h2 = h2_scores[
-            ~h2_scores[cols["team"]]
-            .astype(str)
-            .str.lower()
-            .eq("ballintubber")
-        ]
-        
-        fig_timeline_h2.add_trace(
-            go.Scatter(
-                x=bt_scores_h2["__minute__"],
-                y=[1] * len(bt_scores_h2),
-                mode="markers",
-                marker=dict(
-                    size=9,
-                    color=bt_scores_h2["marker_colour"],
-                    line=dict(color="#444444", width=1)
-                ),
-                name="BT Scores",
-                hovertext=bt_scores_h2[cols["player"]],
-                hoverinfo="text"
+            st.markdown("#### Second Half")
+    
+            fig_timeline_h2 = go.Figure()
+            
+            # --- Second half scores ---
+            h2_scores = timeline_df.copy()
+            
+            h2_scores = h2_scores[
+                h2_scores[cols["half"]]
+                .astype(str)
+                .str.contains("2", na=False)
+            ].copy()
+            
+            score_events = [
+                "goal",
+                "goal from penalty",
+                "goal from free",
+                "point",
+                "point from free",
+                "point from 45",
+                "2 pointer",
+                "2 pointer from free"
+            ]
+            
+            h2_scores["__score_event__"] = (
+                h2_scores[cols["stat1"]]
+                .astype(str)
+                .str.strip()
+                .str.lower()
             )
-        )
-        
-        fig_timeline_h2.add_trace(
-            go.Scatter(
-                x=opp_scores_h2["__minute__"],
-                y=[2] * len(opp_scores_h2),
-                mode="markers",
-                marker=dict(
-                    size=9,
-                    color=opp_scores_h2["marker_colour"],
-                    line=dict(color="#444444", width=1)
-                ),
-                name="Opp Scores",
-                hovertext=opp_scores_h2[cols["player"]],
-                hoverinfo="text"
+            
+            h2_scores = h2_scores[
+                h2_scores["__score_event__"].isin(score_events)
+            ]
+            
+            h2_scores["marker_colour"] = h2_scores["__score_event__"].map({
+                "goal": "green",
+                "goal from penalty": "green",
+                "goal from free": "green",
+                "2 pointer": "orange",
+                "2 pointer from free": "orange",
+                "point": "white",
+                "point from free": "white",
+                "point from 45": "white"
+            })
+            
+            bt_scores_h2 = h2_scores[
+                h2_scores[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+            
+            opp_scores_h2 = h2_scores[
+                ~h2_scores[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=bt_scores_h2["__minute__"],
+                    y=[1] * len(bt_scores_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color=bt_scores_h2["marker_colour"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="BT Scores",
+                    hovertext=bt_scores_h2[cols["player"]],
+                    hoverinfo="text"
+                )
             )
-        )
-        
-        fig_timeline_h2.update_layout(
-            height=280,
-            paper_bgcolor="#F2F2F2",
-            plot_bgcolor="#F2F2F2",
-            margin=dict(l=40, r=20, t=20, b=40),
-            xaxis=dict(
-                range=[0, 30],
-                tickmode="linear",
-                tick0=0,
-                dtick=5,
-                title="Minutes"
-            ),
-            yaxis=dict(
-                tickmode="array",
-                tickvals=[1, 2, 3, 4, 5, 6],
-                ticktext=[
-                    "BT Scores",
-                    "Opp Scores",
-                    "BT Kickouts",
-                    "Opp Kickouts",
-                    "BT Turnovers",
-                    "Opp Turnovers"
-                ],
-                range=[0.5, 6.5]
-            ),
-            showlegend=False
-        )
-        
-        st.plotly_chart(
-            fig_timeline_h2,
-            use_container_width=True,
-            key="timeline_second_half"
-        )
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=opp_scores_h2["__minute__"],
+                    y=[2] * len(opp_scores_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color=opp_scores_h2["marker_colour"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="Opp Scores",
+                    hovertext=opp_scores_h2[cols["player"]],
+                    hoverinfo="text"
+                )
+            )
+            
+            fig_timeline_h2.update_layout(
+                height=280,
+                paper_bgcolor="#F2F2F2",
+                plot_bgcolor="#F2F2F2",
+                margin=dict(l=40, r=20, t=20, b=40),
+                xaxis=dict(
+                    range=[0, 30],
+                    tickmode="linear",
+                    tick0=0,
+                    dtick=5,
+                    title="Minutes"
+                ),
+                yaxis=dict(
+                    tickmode="array",
+                    tickvals=[1, 2, 3, 4, 5, 6],
+                    ticktext=[
+                        "BT Scores",
+                        "Opp Scores",
+                        "BT Kickouts",
+                        "Opp Kickouts",
+                        "BT Turnovers",
+                        "Opp Turnovers"
+                    ],
+                    range=[0.5, 6.5]
+                ),
+                showlegend=False
+            )
+            
+            st.plotly_chart(
+                fig_timeline_h2,
+                use_container_width=True,
+                key="timeline_second_half"
+            )
 
-with tab1:
-
-  
 with tab1:
     fig = make_pitch_figure()
 
