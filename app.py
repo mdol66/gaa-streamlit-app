@@ -1383,7 +1383,7 @@ with tab0:
     st.markdown("---")
     st.markdown("### Match Timeline")
 
-    timeline_col1, timeline_col2 = st.columns(2)
+    timeline_col1 = st.container()
     
     with timeline_col1:
     
@@ -1435,7 +1435,7 @@ with tab0:
                 x=bt_scores_h1["__minute__"],
                 y=[1] * len(bt_scores_h1),
                 mode="markers",
-                marker=dict(size=14, color="red", symbol="circle"),
+                marker=dict(size=9, color="red", symbol="circle"),
                 name="BT Scores",
                 hovertext=bt_scores_h1[cols["player"]],
                 hoverinfo="text"
@@ -1447,7 +1447,7 @@ with tab0:
                 x=opp_scores_h1["__minute__"],
                 y=[2] * len(opp_scores_h1),
                 mode="markers",
-                marker=dict(size=14, color="green", symbol="circle"),
+                marker=dict(size=9, color="green", symbol="circle"),
                 name="Opp Scores",
                 hovertext=opp_scores_h1[cols["player"]],
                 hoverinfo="text"
@@ -1488,7 +1488,7 @@ with tab0:
             key="timeline_first_half"
         )
     
-    with timeline_col2:
+    with st.container():
 
         st.markdown("#### Second Half")
 
