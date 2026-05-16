@@ -1774,18 +1774,6 @@ with tab1:
     #)
 st.markdown("#### Timeline score check")
 
-st.dataframe(
-    timeline_df[
-        timeline_df[cols["stat1"]]
-        .astype(str)
-        .str.lower()
-        .str.contains("goal|point|2 pointer", na=False)
-    ][
-        [cols["half"], cols["time"], cols["team"], cols["player"], cols["stat1"], cols["stat2"]]
-    ],
-    use_container_width=True
-)
-
 with tab2:
     def is_in(event_series, values):
         return event_series.isin(values)
