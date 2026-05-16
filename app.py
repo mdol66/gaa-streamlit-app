@@ -1422,7 +1422,8 @@ with tab0:
     
             st.plotly_chart(
                 fig_timeline_h1,
-                use_container_width=True
+                use_container_width=True,
+                key="timeline_first_half"
             )
     
         with timeline_col2:
@@ -1461,8 +1462,9 @@ with tab0:
     
             st.plotly_chart(
                 fig_timeline_h2,
-                use_container_width=True
-            )
+                use_container_width=True,
+                key="timeline_second_half"
+             )
 
   
 with tab1:
