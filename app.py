@@ -1455,7 +1455,7 @@ with tab0:
                 y=[1] * len(bt_scores_h1),
                 mode="markers",
                 marker=dict(
-                    size=8,
+                    size=9,
                     color=bt_scores_h1["marker_colour"],
                     line=dict(color="#444444", width=1)
                 ),
@@ -1471,7 +1471,7 @@ with tab0:
                 y=[2] * len(opp_scores_h1),
                 mode="markers",
                  marker=dict(
-                    size=8,
+                    size=9,
                     color=opp_scores_h1["marker_colour"],
                     line=dict(color="#444444", width=1)
                 ),
