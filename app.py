@@ -1487,7 +1487,6 @@ with tab0:
             plot_bgcolor="#F2F2F2",
             margin=dict(l=40, r=20, t=20, b=40),
             xaxis=dict(
-                range=[0, 30],
                 tickmode="linear",
                 tick0=0,
                 dtick=5,
@@ -1615,7 +1614,6 @@ with tab0:
                 plot_bgcolor="#F2F2F2",
                 margin=dict(l=40, r=20, t=20, b=40),
                 xaxis=dict(
-                    range=[0, 30],
                     tickmode="linear",
                     tick0=0,
                     dtick=5,
