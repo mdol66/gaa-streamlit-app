@@ -1386,7 +1386,7 @@ with tab0:
 
     timeline_col1, timeline_col2 = st.columns(2)
     
-        with timeline_col1:
+    with timeline_col1:
     
             st.markdown("#### First Half")
     
