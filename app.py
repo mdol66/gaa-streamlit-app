@@ -777,6 +777,22 @@ with tab0:
             .isin(selected_match_nos)
         ].copy()
 
+    # --- Timeline prep after match filter ---
+    timeline_df = dashboard_df.copy()
+
+    if cols.get("time"):
+        timeline_df["__minute__"] = (
+            timeline_df[cols["time"]]
+            .apply(parse_match_minute)
+        )
+
+    if cols.get("stat1"):
+        timeline_df["__event_lower__"] = (
+            timeline_df[cols["stat1"]]
+            .astype(str)
+            .str.lower()
+        )
+
     selected_match_text = "Selected Match"
     if cols["match_no"] and cols["team"] and not dashboard_df.empty:
         match_nos = dashboard_df[cols["match_no"]].dropna().astype(str).unique().tolist()
