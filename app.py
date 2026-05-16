@@ -1772,7 +1772,7 @@ with tab1:
         #"<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         #unsafe_allow_html=True
     #)
-st.markdown("#### Timeline score check")
+
 
 with tab2:
     def is_in(event_series, values):
