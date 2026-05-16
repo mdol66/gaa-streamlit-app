@@ -524,7 +524,23 @@ def build_player_scoring_table(
 
     return player_summary
 
+def parse_match_minute(value):
+    if pd.isna(value):
+        return None
 
+    text = str(value).strip()
+
+    if ":" in text:
+        parts = text.split(":")
+        try:
+            return int(parts[0]) + (int(parts[1]) / 60)
+        except Exception:
+            return None
+
+    try:
+        return float(text)
+    except Exception:
+        return None
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -554,7 +570,6 @@ except UnicodeDecodeError:
     df = pd.read_csv(uploaded, encoding="latin1")
 
 cols = infer_columns(df)
-st.write(df.columns.tolist())
 
 plot_df = df.copy()
 plot_df = df.copy()
@@ -749,6 +764,22 @@ with tab0:
     st.markdown("## Match Dashboard")
 
     dashboard_df = df.copy()
+    # --- Timeline prep ---
+    timeline_df = dashboard_df.copy()
+    
+    if cols.get("time"):
+        timeline_df["__minute__"] = (
+            timeline_df[cols["time"]]
+            .apply(parse_match_minute)
+        )
+    
+    if cols.get("stat1"):
+        timeline_df["__event_lower__"] = (
+            timeline_df[cols["stat1"]]
+            .astype(str)
+            .str.lower()
+        )
+    
 
     if cols["match_no"] and match_display_choices:
         selected_match_nos = [
@@ -1350,8 +1381,90 @@ with tab0:
                     )
                 else:
                     st.info("No kickout data")
+        st.markdown("---")
+        st.markdown("### Match Timeline")
+    
+        timeline_col1, timeline_col2 = st.columns(2)
+    
+        with timeline_col1:
+    
+            st.markdown("#### First Half")
+    
+            fig_timeline_h1 = go.Figure()
+    
+            fig_timeline_h1.update_layout(
+                height=280,
+                paper_bgcolor="white",
+                plot_bgcolor="white",
+                margin=dict(l=40, r=20, t=20, b=40),
+                xaxis=dict(
+                    range=[0, 30],
+                    tickmode="linear",
+                    tick0=0,
+                    dtick=5,
+                    title="Minutes"
+                ),
+                yaxis=dict(
+                    tickmode="array",
+                    tickvals=[1, 2, 3, 4, 5, 6],
+                    ticktext=[
+                        "BT Scores",
+                        "Opp Scores",
+                        "BT Kickouts",
+                        "Opp Kickouts",
+                        "BT Turnovers",
+                        "Opp Turnovers"
+                    ],
+                    range=[0.5, 6.5]
+                ),
+                showlegend=False
+            )
+    
+            st.plotly_chart(
+                fig_timeline_h1,
+                use_container_width=True
+            )
+    
+        with timeline_col2:
+    
+            st.markdown("#### Second Half")
+    
+            fig_timeline_h2 = go.Figure()
+    
+            fig_timeline_h2.update_layout(
+                height=280,
+                paper_bgcolor="white",
+                plot_bgcolor="white",
+                margin=dict(l=40, r=20, t=20, b=40),
+                xaxis=dict(
+                    range=[0, 30],
+                    tickmode="linear",
+                    tick0=0,
+                    dtick=5,
+                    title="Minutes"
+                ),
+                yaxis=dict(
+                    tickmode="array",
+                    tickvals=[1, 2, 3, 4, 5, 6],
+                    ticktext=[
+                        "BT Scores",
+                        "Opp Scores",
+                        "BT Kickouts",
+                        "Opp Kickouts",
+                        "BT Turnovers",
+                        "Opp Turnovers"
+                    ],
+                    range=[0.5, 6.5]
+                ),
+                showlegend=False
+            )
+    
+            st.plotly_chart(
+                fig_timeline_h2,
+                use_container_width=True
+            )
 
-   
+  
 with tab1:
     fig = make_pitch_figure()
 
