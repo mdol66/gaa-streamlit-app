@@ -1388,9 +1388,72 @@ with tab0:
     
     with timeline_col1:
     
-            st.markdown("#### First Half")
+        st.markdown("#### First Half")
     
-            fig_timeline_h1 = go.Figure()
+        fig_timeline_h1 = go.Figure()
+    
+        # --- First half scores ---
+        h1_scores = timeline_df.copy()
+    
+        h1_scores = h1_scores[
+            h1_scores[cols["period"]]
+            .astype(str)
+            .str.contains("1", na=False)
+        ].copy()
+    
+        score_events = [
+            "goal",
+            "goal from penalty",
+            "goal from free",
+            "point",
+            "point from free",
+            "point from 45",
+            "2 pointer",
+            "2 pointer from free"
+        ]
+    
+        h1_scores = h1_scores[
+            h1_scores["__event_lower__"]
+            .isin(score_events)
+        ]
+    
+        bt_scores_h1 = h1_scores[
+            h1_scores[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ]
+    
+        opp_scores_h1 = h1_scores[
+            ~h1_scores[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ]
+    
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=bt_scores_h1["__minute__"],
+                y=[1] * len(bt_scores_h1),
+                mode="markers",
+                marker=dict(size=14, color="red", symbol="circle"),
+                name="BT Scores",
+                hovertext=bt_scores_h1[cols["player"]],
+                hoverinfo="text"
+            )
+        )
+    
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=opp_scores_h1["__minute__"],
+                y=[2] * len(opp_scores_h1),
+                mode="markers",
+                marker=dict(size=14, color="green", symbol="circle"),
+                name="Opp Scores",
+                hovertext=opp_scores_h1[cols["player"]],
+                hoverinfo="text"
+            )
+        )
     
             fig_timeline_h1.update_layout(
                 height=420,
