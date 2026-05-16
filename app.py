@@ -1610,7 +1610,7 @@ with tab0:
             )
             
             fig_timeline_h2.update_layout(
-                height=280,
+                height=420,
                 paper_bgcolor="#F2F2F2",
                 plot_bgcolor="#F2F2F2",
                 margin=dict(l=40, r=20, t=20, b=40),
