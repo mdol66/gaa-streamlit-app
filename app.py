@@ -1579,13 +1579,14 @@ with tab0:
         ])
     ]
 
-    h1_turnovers["turnover_symbol"] = (
+    h1_turnovers["turnover_colour"] = (
         h1_turnovers["__turnover_event__"]
         .apply(
             lambda x:
-            "diamond" if x == "turnover won"
-            else "x"
+            "green" if x == "turnover won"
+            else "red"
         )
+    )
     )
 
     fig_timeline_h1.add_trace(
@@ -1596,8 +1597,8 @@ with tab0:
             marker=dict(
                 size=9,
                 color="#8B0000",
-                symbol=h1_turnovers["turnover_symbol"],
-                line=dict(color="#444444", width=1)
+                symbol="circle",
+                color=h1_turnovers["turnover_colour"],
             ),
             name="Turnovers",
             hovertext=h1_turnovers[cols["stat1"]],
