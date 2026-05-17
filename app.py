@@ -2152,8 +2152,8 @@ with tab3:
                 .agg(
                     Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                     Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Won=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Lost=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Won=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Lost=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                 )
                 .reset_index()
             )
@@ -2161,6 +2161,9 @@ with tab3:
             summary["match_label"] = summary[cols["match_no"]].astype(str).map(
                 lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
             )
+            temp_won = summary["Opp_KO_Won"].copy()
+            summary["Opp_KO_Won"] = summary["Opp_KO_Lost"]
+            summary["Opp_KO_Lost"] = temp_won
 
             summary = summary.drop(columns=[cols["match_no"]])
             summary = summary.rename(columns={"match_label": "Match"})
