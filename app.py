@@ -1614,6 +1614,9 @@ with tab0:
             tickmode="linear",
             tick0=0,
             dtick=5,
+            ticks="outside",
+            ticklen=8,
+            minor_ticks="outside",
             title="Minutes"
         ),
     
