@@ -2335,91 +2335,126 @@ with tab2:
             miss_events=miss_events,
         )
 
-        if player_summary_display is not None and not player_summary_display.empty:
-            st.markdown("### Player scoring breakdown")
-            scoring_heatmap_df = player_summary_display.copy()
+if player_summary_display is not None and not player_summary_display.empty:
+    st.markdown("### Player scoring breakdown")
 
-            heatmap_cols = [
-                c for c in scoring_heatmap_df.columns
-                if c not in ["Player", "Shot Efficiency"]
-            ]
-st.plotly_chart(
-    fig_score_heat,
-    use_container_width=True
-)
+    scoring_heatmap_df = player_summary_display.copy()
 
-# --- Shot efficiency values aligned to heatmap order ---
-shot_efficiency_values = []
+    heatmap_cols = [
+        c for c in scoring_heatmap_df.columns
+        if c not in ["Player", "Shot Efficiency"]
+    ]
 
-for _, row in scoring_heatmap_df.iterrows():
-    shots = row.get("Shots", 0)
-    scores = row.get("Scores", 0)
-
-    if shots > 0:
-        shot_efficiency_values.append(
-            f"{round((scores / shots) * 100)}%"
+    fig_score_heat = px.imshow(
+        scoring_heatmap_df[heatmap_cols]
+        .div(
+            scoring_heatmap_df[heatmap_cols]
+            .max(axis=0)
+            .replace(0, 1),
+            axis=1
         )
-    else:
-        shot_efficiency_values.append("-")
+        .T,
+        x=scoring_heatmap_df["Player"],
+        y=heatmap_cols,
+        text_auto=False,
+        aspect="auto",
+        title="Player Scoring Activity"
+    )
 
-        # --- Shot efficiency row aligned to heatmap ---
-        fig_efficiency = go.Figure()
-        
-        fig_efficiency.add_trace(
-            go.Scatter(
-                x=scoring_heatmap_df["Player"],
-                y=[0] * len(scoring_heatmap_df),
-                mode="text",
-                text=shot_efficiency_values,
-                textfont=dict(size=14, color="black"),
-                hoverinfo="skip"
+    fig_score_heat.update_traces(
+        text=scoring_heatmap_df[heatmap_cols].T,
+        texttemplate="%{text}",
+        hovertemplate=(
+            "Player=%{x}"
+            "<br>Metric=%{y}"
+            "<br>Value=%{text}"
+            "<extra></extra>"
+        )
+    )
+
+    fig_score_heat.update_layout(
+        height=450,
+        xaxis_title=None,
+        yaxis_title="Metric"
+    )
+
+    st.plotly_chart(
+        fig_score_heat,
+        use_container_width=True
+    )
+
+    # --- Shot efficiency values aligned to heatmap order ---
+    shot_efficiency_values = []
+
+    for _, row in scoring_heatmap_df.iterrows():
+        shots = row.get("Shots", 0)
+        scores = row.get("Scores", 0)
+
+        if shots > 0:
+            shot_efficiency_values.append(
+                f"{round((scores / shots) * 100)}%"
             )
-        )
-        
-        fig_efficiency.add_annotation(
-            x=-0.02,
-            y=0,
-            xref="paper",
-            yref="paper",
-            text="<b>Shot Efficiency</b>",
-            showarrow=False,
-            xanchor="right",
-            yanchor="middle",
-            font=dict(size=13, color="black")
-        )
-        
-        fig_efficiency.update_layout(
-            height=45,
-            margin=dict(l=85, r=65, t=0, b=0),
-            paper_bgcolor="white",
-            plot_bgcolor="white",
-            showlegend=False
-        )
-        
-        fig_efficiency.update_xaxes(
-            visible=False,
-            categoryorder="array",
-            categoryarray=scoring_heatmap_df["Player"]
-        )
-        
-        fig_efficiency.update_yaxes(
-            visible=False,
-            range=[-0.5, 0.5]
-        )
-        
-        st.plotly_chart(
-            fig_efficiency,
-            use_container_width=True,
-            config={"displayModeBar": False}
-        )
-        
-        st.dataframe(
-            player_summary_display,
-            use_container_width=True
-        )
-        
         else:
-            st.info("No player scoring data for current filters.")
+            shot_efficiency_values.append("-")
+
+    # --- Shot efficiency row aligned to heatmap ---
+    fig_efficiency = go.Figure()
+
+    fig_efficiency.add_trace(
+        go.Scatter(
+            x=scoring_heatmap_df["Player"],
+            y=[0] * len(scoring_heatmap_df),
+            mode="text",
+            text=shot_efficiency_values,
+            textfont=dict(size=14, color="black"),
+            hoverinfo="skip"
+        )
+    )
+
+    fig_efficiency.add_annotation(
+        x=-0.02,
+        y=0,
+        xref="paper",
+        yref="paper",
+        text="<b>Shot Efficiency</b>",
+        showarrow=False,
+        xanchor="right",
+        yanchor="middle",
+        font=dict(size=13, color="black")
+    )
+
+    fig_efficiency.update_layout(
+        height=45,
+        margin=dict(l=85, r=65, t=0, b=0),
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        showlegend=False
+    )
+
+    fig_efficiency.update_xaxes(
+        visible=False,
+        categoryorder="array",
+        categoryarray=scoring_heatmap_df["Player"]
+    )
+
+    fig_efficiency.update_yaxes(
+        visible=False,
+        range=[-0.5, 0.5]
+    )
+
+    st.plotly_chart(
+        fig_efficiency,
+        use_container_width=True,
+        config={"displayModeBar": False}
+    )
+
+    st.dataframe(
+        player_summary_display,
+        use_container_width=True
+    )
+
+else:
+    st.info("No player scoring data for current filters.")
 
 with tab3:
     st.markdown("### Kickout Analysis")
