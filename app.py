@@ -1614,34 +1614,9 @@ with tab0:
             tickmode="linear",
             tick0=0,
             dtick=5,
-            minor=dict(
-                tickmode="linear",
-                tick0=0,
-                dtick=1,
-                ticks="outside",
-                showgrid=False
-            ),
-            ticks="outside",
-            side="bottom",
             title="Minutes"
         ),
-        xaxis2=dict(
-            tickmode="linear",
-            tick0=0,
-            dtick=5,
-            minor=dict(
-                tickmode="linear",
-                tick0=0,
-                dtick=1,
-                ticks="outside",
-                showgrid=False
-            ),
-            ticks="outside",
-            side="top",
-            overlaying="x",
-            matches="x",
-            showgrid=False
-        ),
+    
         yaxis=dict(
             tickmode="array",
             tickvals=[1, 2, 3, 4, 5],
