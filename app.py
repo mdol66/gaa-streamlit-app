@@ -1500,6 +1500,14 @@ with tab0:
         h1_kickouts["__kickout_event__"]
         .str.contains("kick ?out", na=False)
     ]
+    h1_kickouts["kickout_symbol"] = (
+    h1_kickouts["__kickout_event__"]
+    .apply(
+        lambda x:
+        "triangle-up" if "won" in x
+        else "triangle-down"
+    )
+    )    
 
     bt_kickouts_h1 = h1_kickouts[
         h1_kickouts[cols["team"]]
@@ -1523,7 +1531,7 @@ with tab0:
             marker=dict(
                 size=9,
                 color="blue",
-                symbol="triangle-up",
+                symbol=bt_kickouts_h1["kickout_symbol"],
                 line=dict(color="#444444", width=1)
             ),
             name="BT Kickouts",
@@ -1540,7 +1548,7 @@ with tab0:
             marker=dict(
                 size=9,
                 color="purple",
-                symbol="triangle-up",
+                symbol=opp_kickouts_h1["kickout_symbol"],
                 line=dict(color="#444444", width=1)
             ),
             name="Opp Kickouts",
