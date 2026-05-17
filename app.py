@@ -1683,6 +1683,84 @@ with tab0:
                 )
             )
             
+            # --- Second half kickouts ---
+            h2_kickouts = timeline_df.copy()
+
+            h2_kickouts = h2_kickouts[
+                h2_kickouts[cols["half"]]
+                .astype(str)
+                .str.contains("2", na=False)
+            ].copy()
+
+            h2_kickouts["__kickout_event__"] = (
+                h2_kickouts[cols["stat1"]]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+            )
+
+            h2_kickouts = h2_kickouts[
+                h2_kickouts["__kickout_event__"]
+                .str.contains("kick ?out", na=False)
+            ]
+
+            h2_kickouts["kickout_symbol"] = (
+                h2_kickouts["__kickout_event__"]
+                .apply(
+                    lambda x:
+                    "triangle-up" if "won" in x
+                    else "triangle-down"
+                )
+            )
+
+            bt_kickouts_h2 = h2_kickouts[
+                h2_kickouts[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+
+            opp_kickouts_h2 = h2_kickouts[
+                ~h2_kickouts[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=bt_kickouts_h2["__minute__"],
+                    y=[3] * len(bt_kickouts_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color="blue",
+                        symbol=bt_kickouts_h2["kickout_symbol"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="BT Kickouts",
+                    hovertext=bt_kickouts_h2[cols["stat1"]],
+                    hoverinfo="text"
+                )
+            )
+
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=opp_kickouts_h2["__minute__"],
+                    y=[4] * len(opp_kickouts_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color="purple",
+                        symbol=opp_kickouts_h2["kickout_symbol"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="Opp Kickouts",
+                    hovertext=opp_kickouts_h2[cols["stat1"]],
+                    hoverinfo="text"
+                )
+            )
+
             fig_timeline_h2.update_layout(
                 height=420,
                 paper_bgcolor="#F2F2F2",
@@ -1709,7 +1787,7 @@ with tab0:
                 ),
                 showlegend=False
             )
-            
+
             st.plotly_chart(
                 fig_timeline_h2,
                 use_container_width=True,
