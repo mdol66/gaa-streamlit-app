@@ -2396,16 +2396,34 @@ with tab2:
                 use_container_width=True
             )
             
-            # --- Shot efficiency row aligned to players ---
-            efficiency_df = pd.DataFrame(
-                [shot_efficiency_values],
-                columns=scoring_heatmap_df["Player"]
+            # --- Shot efficiency row aligned to heatmap ---
+            fig_efficiency = go.Figure(
+                data=[
+                    go.Table(
+                        header=dict(
+                            values=[""] * len(scoring_heatmap_df["Player"]),
+                            fill_color="white",
+                            line_color="white",
+                            height=1
+                        ),
+                        cells=dict(
+                            values=[shot_efficiency_values],
+                            align="center",
+                            height=35
+                        )
+                    )
+                ]
             )
             
-            st.dataframe(
-                efficiency_df,
-                hide_index=True,
-                use_container_width=True
+            fig_efficiency.update_layout(
+                margin=dict(l=85, r=65, t=0, b=0),
+                height=55
+            )
+            
+            st.plotly_chart(
+                fig_efficiency,
+                use_container_width=True,
+                config={"displayModeBar": False}
             )
             
             st.dataframe(
