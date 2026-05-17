@@ -2407,7 +2407,7 @@ with tab2:
                             height=1
                         ),
                         cells=dict(
-                            values=[shot_efficiency_values],
+                            values=[[v] for v in shot_efficiency_values],
                             align="center",
                             height=35
                         )
