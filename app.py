@@ -15,7 +15,6 @@ section[data-testid="stSidebar"] .block-container {
     padding-top: 0.5rem !important;
 }
 
-
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     gap: 0.35rem !important;
 }
@@ -415,6 +414,7 @@ def infer_columns(df: pd.DataFrame) -> dict[str, Optional[str]]:
         "outcome": first_existing(df, [["outcome"], ["result"], ["event_outcome"], ["shot_result"], ["status"]], required=False),
         "number": first_existing(df, [["event_no"], ["event_number"], ["number"], ["id"]], required=False),
         "half": first_existing(df, [["half"], ["period"]], required=False),
+        "time": first_existing(df, [["time"], ["match_time"], ["event_time"], ["timestamp"], ["minute"]], required=False),
         "match": first_existing(df, [["match"], ["match_name"], ["fixture"]], required=False),
         "match_no": first_existing(df, [["match_no"], ["match_number"], ["matchnum"], ["game_no"], ["game_number"]], required=False),
         "stat1": first_existing(df, [["Stat_1"], ["stat_1"], ["stat1"]], required=False),
@@ -523,7 +523,23 @@ def build_player_scoring_table(
 
     return player_summary
 
+def parse_match_minute(value):
+    if pd.isna(value):
+        return None
 
+    text = str(value).strip()
+
+    if ":" in text:
+        parts = text.split(":")
+        try:
+            return int(parts[0]) + (int(parts[1]) / 60)
+        except Exception:
+            return None
+
+    try:
+        return float(text)
+    except Exception:
+        return None
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -747,6 +763,7 @@ with tab0:
     st.markdown("## Match Dashboard")
 
     dashboard_df = df.copy()
+   
 
     if cols["match_no"] and match_display_choices:
         selected_match_nos = [
@@ -759,6 +776,22 @@ with tab0:
             .astype(str)
             .isin(selected_match_nos)
         ].copy()
+
+    # --- Timeline prep after match filter ---
+    timeline_df = dashboard_df.copy()
+
+    if cols.get("time"):
+        timeline_df["__minute__"] = (
+            timeline_df[cols["time"]]
+            .apply(parse_match_minute)
+        )
+
+    if cols.get("stat1"):
+        timeline_df["__event_lower__"] = (
+            timeline_df[cols["stat1"]]
+            .astype(str)
+            .str.lower()
+        )
 
     selected_match_text = "Selected Match"
     if cols["match_no"] and cols["team"] and not dashboard_df.empty:
@@ -1348,8 +1381,519 @@ with tab0:
                     )
                 else:
                     st.info("No kickout data")
+    st.markdown("---")
+    st.markdown("### Match Timeline")
 
+    timeline_col1 = st.container()
+    
+    with timeline_col1:
+    
+        st.markdown("#### First Half")
+    
+        fig_timeline_h1 = go.Figure()
+    
+        # --- First half scores ---
+        h1_scores = timeline_df.copy()
+    
+        h1_scores = h1_scores[
+            h1_scores[cols["half"]]
+            .astype(str)
+            .str.contains("1", na=False)
+        ].copy()
+    
+        score_events = [
+            "goal",
+            "goal from penalty",
+            "goal from free",
+            "point",
+            "point from free",
+            "point from 45",
+            "2 pointer",
+            "2 pointer from free"
+        ]
+        
+        h1_scores["__score_event__"] = (
+            h1_scores[cols["stat1"]]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
+        
+        h1_scores = h1_scores[
+            h1_scores["__score_event__"].isin(score_events)
+        ]
+    
+        h1_scores["marker_colour"] = h1_scores["__score_event__"].map({
+            "goal": "green",
+            "goal from penalty": "green",
+            "goal from free": "green",
+            "2 pointer": "orange",
+            "2 pointer from free": "orange",
+            "point": "white",
+            "point from free": "white",
+            "point from 45": "white"
+        })
+    
    
+        bt_scores_h1 = h1_scores[
+            h1_scores[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ]
+    
+        opp_scores_h1 = h1_scores[
+            ~h1_scores[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ]
+    
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=bt_scores_h1["__minute__"],
+                y=[1] * len(bt_scores_h1),
+                mode="markers",
+                marker=dict(
+                    size=9,
+                    color=bt_scores_h1["marker_colour"],
+                    line=dict(color="#444444", width=1)
+                ),
+                name="BT Scores",
+                hovertext=bt_scores_h1[cols["player"]],
+                hoverinfo="text"
+            )
+        )
+    
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=opp_scores_h1["__minute__"],
+                y=[2] * len(opp_scores_h1),
+                mode="markers",
+                 marker=dict(
+                    size=9,
+                    color=opp_scores_h1["marker_colour"],
+                    line=dict(color="#444444", width=1)
+                ),
+                name="Opp Scores",
+                hovertext=opp_scores_h1[cols["player"]],
+                hoverinfo="text"
+            )
+        )
+    # --- First half kickouts ---
+    h1_kickouts = timeline_df.copy()
+
+    h1_kickouts = h1_kickouts[
+        h1_kickouts[cols["half"]]
+        .astype(str)
+        .str.contains("1", na=False)
+    ].copy()
+
+    h1_kickouts["__kickout_event__"] = (
+        h1_kickouts[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    h1_kickouts = h1_kickouts[
+        h1_kickouts["__kickout_event__"]
+        .str.contains("kick ?out", na=False)
+    ]
+    h1_kickouts["kickout_symbol"] = (
+    h1_kickouts["__kickout_event__"]
+    .apply(
+        lambda x:
+        "triangle-up" if "won" in x
+        else "triangle-down"
+    )
+    )    
+
+    bt_kickouts_h1 = h1_kickouts[
+        h1_kickouts[cols["team"]]
+        .astype(str)
+        .str.lower()
+        .eq("ballintubber")
+    ]
+
+    opp_kickouts_h1 = h1_kickouts[
+        ~h1_kickouts[cols["team"]]
+        .astype(str)
+        .str.lower()
+        .eq("ballintubber")
+    ]
+
+    fig_timeline_h1.add_trace(
+        go.Scatter(
+            x=bt_kickouts_h1["__minute__"],
+            y=[3] * len(bt_kickouts_h1),
+            mode="markers",
+            marker=dict(
+                size=9,
+                color="blue",
+                symbol=bt_kickouts_h1["kickout_symbol"],
+                line=dict(color="#444444", width=1)
+            ),
+            name="BT Kickouts",
+            hovertext=bt_kickouts_h1[cols["stat1"]],
+            hoverinfo="text"
+        )
+    )
+
+    fig_timeline_h1.add_trace(
+        go.Scatter(
+            x=opp_kickouts_h1["__minute__"],
+            y=[4] * len(opp_kickouts_h1),
+            mode="markers",
+            marker=dict(
+                size=9,
+                color="purple",
+                symbol=opp_kickouts_h1["kickout_symbol"],
+                line=dict(color="#444444", width=1)
+            ),
+            name="Opp Kickouts",
+            hovertext=opp_kickouts_h1[cols["stat1"]],
+            hoverinfo="text"
+        )
+    )
+    # --- First half turnovers from Ballintubber perspective ---
+    h1_turnovers = timeline_df.copy()
+
+    h1_turnovers = h1_turnovers[
+        h1_turnovers[cols["half"]]
+        .astype(str)
+        .str.contains("1", na=False)
+    ].copy()
+
+    h1_turnovers["__turnover_event__"] = (
+        h1_turnovers[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    h1_turnovers = h1_turnovers[
+        h1_turnovers["__turnover_event__"].isin([
+            "turnover won",
+            "turnover lost"
+        ])
+    ]
+
+    h1_turnovers["turnover_colour"] = (
+        h1_turnovers["__turnover_event__"]
+        .apply(
+            lambda x:
+            "green" if x == "turnover won"
+            else "red"
+        )
+    )
+     
+    fig_timeline_h1.add_trace(
+        go.Scatter(
+            x=h1_turnovers["__minute__"],
+            y=[5] * len(h1_turnovers),
+            mode="markers",
+            marker=dict(
+                size=9,
+                color=h1_turnovers["turnover_colour"],
+                symbol="circle",
+                line=dict(color="#444444", width=1)
+            ),
+            name="Turnovers",
+            hovertext=h1_turnovers[cols["stat1"]],
+            hoverinfo="text"
+        )
+    )
+    fig_timeline_h1.update_layout(
+        height=420,
+        paper_bgcolor="#F2F2F2",
+        plot_bgcolor="#F2F2F2",
+        margin=dict(l=40, r=20, t=20, b=40),
+
+        xaxis=dict(
+            tickmode="linear",
+            tick0=0,
+            dtick=5,
+            ticks="outside",
+            ticklen=8,
+            minor_ticks="outside",
+            title="Minutes"
+        ),
+    
+        yaxis=dict(
+            tickmode="array",
+            tickvals=[1, 2, 3, 4, 5],
+            ticktext=[
+                "BT Scores",
+                "Opp Scores",
+                "BT Kickouts",
+                "Opp Kickouts",
+                "Turnovers"
+            ],
+            range=[0.5, 5.5]
+        ),
+        showlegend=False
+    )
+
+    st.plotly_chart(
+        fig_timeline_h1,
+        use_container_width=True,
+        key="timeline_first_half"
+    )
+    with st.container():
+
+            st.markdown("#### Second Half")
+    
+            fig_timeline_h2 = go.Figure()
+            
+            # --- Second half scores ---
+            h2_scores = timeline_df.copy()
+            
+            h2_scores = h2_scores[
+                h2_scores[cols["half"]]
+                .astype(str)
+                .str.contains("2", na=False)
+            ].copy()
+            
+            score_events = [
+                "goal",
+                "goal from penalty",
+                "goal from free",
+                "point",
+                "point from free",
+                "point from 45",
+                "2 pointer",
+                "2 pointer from free"
+            ]
+            
+            h2_scores["__score_event__"] = (
+                h2_scores[cols["stat1"]]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+            )
+            
+            h2_scores = h2_scores[
+                h2_scores["__score_event__"].isin(score_events)
+            ]
+            
+            h2_scores["marker_colour"] = h2_scores["__score_event__"].map({
+                "goal": "green",
+                "goal from penalty": "green",
+                "goal from free": "green",
+                "2 pointer": "orange",
+                "2 pointer from free": "orange",
+                "point": "white",
+                "point from free": "white",
+                "point from 45": "white"
+            })
+            
+            bt_scores_h2 = h2_scores[
+                h2_scores[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+            
+            opp_scores_h2 = h2_scores[
+                ~h2_scores[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=bt_scores_h2["__minute__"],
+                    y=[1] * len(bt_scores_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color=bt_scores_h2["marker_colour"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="BT Scores",
+                    hovertext=bt_scores_h2[cols["player"]],
+                    hoverinfo="text"
+                )
+            )
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=opp_scores_h2["__minute__"],
+                    y=[2] * len(opp_scores_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color=opp_scores_h2["marker_colour"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="Opp Scores",
+                    hovertext=opp_scores_h2[cols["player"]],
+                    hoverinfo="text"
+                )
+            )
+            
+            # --- Second half kickouts ---
+            h2_kickouts = timeline_df.copy()
+
+            h2_kickouts = h2_kickouts[
+                h2_kickouts[cols["half"]]
+                .astype(str)
+                .str.contains("2", na=False)
+            ].copy()
+
+            h2_kickouts["__kickout_event__"] = (
+                h2_kickouts[cols["stat1"]]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+            )
+
+            h2_kickouts = h2_kickouts[
+                h2_kickouts["__kickout_event__"]
+                .str.contains("kick ?out", na=False)
+            ]
+
+            h2_kickouts["kickout_symbol"] = (
+                h2_kickouts["__kickout_event__"]
+                .apply(
+                    lambda x:
+                    "triangle-up" if "won" in x
+                    else "triangle-down"
+                )
+            )
+
+            bt_kickouts_h2 = h2_kickouts[
+                h2_kickouts[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+
+            opp_kickouts_h2 = h2_kickouts[
+                ~h2_kickouts[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ]
+
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=bt_kickouts_h2["__minute__"],
+                    y=[3] * len(bt_kickouts_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color="blue",
+                        symbol=bt_kickouts_h2["kickout_symbol"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="BT Kickouts",
+                    hovertext=bt_kickouts_h2[cols["stat1"]],
+                    hoverinfo="text"
+                )
+            )
+
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=opp_kickouts_h2["__minute__"],
+                    y=[4] * len(opp_kickouts_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color="purple",
+                        symbol=opp_kickouts_h2["kickout_symbol"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="Opp Kickouts",
+                    hovertext=opp_kickouts_h2[cols["stat1"]],
+                    hoverinfo="text"
+                )
+            )
+
+            # --- Second half turnovers from Ballintubber perspective ---
+            h2_turnovers = timeline_df.copy()
+
+            h2_turnovers = h2_turnovers[
+                h2_turnovers[cols["half"]]
+                .astype(str)
+                .str.contains("2", na=False)
+            ].copy()
+
+            h2_turnovers["__turnover_event__"] = (
+                h2_turnovers[cols["stat1"]]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+            )
+
+            h2_turnovers = h2_turnovers[
+                h2_turnovers["__turnover_event__"].isin([
+                    "turnover won",
+                    "turnover lost"
+                ])
+            ]
+
+            h2_turnovers["turnover_colour"] = (
+                h2_turnovers["__turnover_event__"]
+                .apply(
+                    lambda x:
+                    "green" if x == "turnover won"
+                    else "red"
+                )
+            )
+
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=h2_turnovers["__minute__"],
+                    y=[5] * len(h2_turnovers),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color=h2_turnovers["turnover_colour"],
+                        symbol="circle",
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="Turnovers",
+                    hovertext=h2_turnovers[cols["stat1"]],
+                    hoverinfo="text"
+                )
+            )
+
+            fig_timeline_h2.update_layout(
+                height=420,
+                paper_bgcolor="#F2F2F2",
+                plot_bgcolor="#F2F2F2",
+                margin=dict(l=40, r=20, t=20, b=40),
+                xaxis=dict(
+                    tickmode="linear",
+                    tick0=0,
+                    dtick=5,
+                    title="Minutes"
+                ),
+                yaxis=dict(
+                    tickmode="array",
+                    tickvals=[1, 2, 3, 4, 5, 6],
+                    ticktext=[
+                        "BT Scores",
+                        "Opp Scores",
+                        "BT Kickouts",
+                        "Opp Kickouts",
+                        "BT Turnovers",
+                        "Opp Turnovers"
+                    ],
+                    range=[0.5, 6.5]
+                ),
+                showlegend=False
+            )
+
+            st.plotly_chart(
+                fig_timeline_h2,
+                use_container_width=True,
+                key="timeline_second_half"
+            )
+
 with tab1:
     fig = make_pitch_figure()
 
@@ -1481,6 +2025,7 @@ with tab1:
         #"<div style='text-align:right; font-size:12px; color:grey;'>Note: Events with x/y = -1 were not plotted on the pitch.</div>",
         #unsafe_allow_html=True
     #)
+
 
 with tab2:
     def is_in(event_series, values):
@@ -1860,8 +2405,8 @@ with tab3:
                 .agg(
                     Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                     Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Won=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Lost=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Won=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    Opp_KO_Lost=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
                 )
                 .reset_index()
             )
@@ -1878,7 +2423,7 @@ with tab3:
             
             # Reverse opposition perspective for this table only
             summary["Opp KO Index +/-"] = (
-                summary["Opp_KO_Lost"] - summary["Opp_KO_Won"]
+                summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
             )
             
             summary["Overall KO Index +/-"] = (
@@ -1992,4 +2537,3 @@ with tab3:
             player_table.style.set_properties(**{"text-align": "left"}),
             use_container_width=True
         )
-
