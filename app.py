@@ -2343,6 +2343,20 @@ with tab2:
                 c for c in scoring_heatmap_df.columns
                 if c not in ["Player", "Shot Efficiency"]
             ]
+            
+            # --- Shot efficiency values aligned to heatmap order ---
+            shot_efficiency_values = []
+            
+            for _, row in scoring_heatmap_df.iterrows():
+                shots = row.get("Shots", 0)
+                scores = row.get("Scores", 0)
+            
+                if shots > 0:
+                    shot_efficiency_values.append(
+                        f"{round((scores / shots) * 100)}%"
+                    )
+                else:
+                    shot_efficiency_values.append("-")
 
             fig_score_heat = px.imshow(
                 scoring_heatmap_df[heatmap_cols]
@@ -2381,7 +2395,23 @@ with tab2:
                 fig_score_heat,
                 use_container_width=True
             )
-            st.dataframe(player_summary_display, use_container_width=True)
+            
+            # --- Shot efficiency row aligned to players ---
+            efficiency_df = pd.DataFrame(
+                [shot_efficiency_values],
+                columns=scoring_heatmap_df["Player"]
+            )
+            
+            st.dataframe(
+                efficiency_df,
+                hide_index=True,
+                use_container_width=True
+            )
+            
+            st.dataframe(
+                player_summary_display,
+                use_container_width=True
+            )
         else:
             st.info("No player scoring data for current filters.")
 
