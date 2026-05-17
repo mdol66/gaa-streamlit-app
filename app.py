@@ -2373,9 +2373,10 @@ if player_summary_display is not None and not player_summary_display.empty:
     )
 
     fig_score_heat.update_layout(
-        height=450,
+        height=420,
         xaxis_title=None,
-        yaxis_title="Metric"
+        yaxis_title="Metric",
+        margin=dict(l=80, r=65, t=40, b=15)
     )
 
     st.plotly_chart(
