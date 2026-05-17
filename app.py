@@ -1587,7 +1587,7 @@ with tab0:
             else "red"
         )
     )
-    )
+    
  
     fig_timeline_h1.add_trace(
         go.Scatter(
