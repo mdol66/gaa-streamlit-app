@@ -2343,7 +2343,19 @@ with tab2:
                 c for c in scoring_heatmap_df.columns
                 if c not in ["Player", "Shot Efficiency"]
             ]
+            # --- Shot efficiency values aligned to heatmap order ---
+            shot_efficiency_values = []
             
+            for _, row in scoring_heatmap_df.iterrows():
+                shots = row.get("Shots", 0)
+                scores = row.get("Scores", 0)
+            
+                if shots > 0:
+                    shot_efficiency_values.append(
+                        f"{round((scores / shots) * 100)}%"
+                    )
+                else:
+                    shot_efficiency_values.append("-")
              # --- Shot efficiency row aligned to heatmap ---
             fig_efficiency = go.Figure()
             
