@@ -1532,22 +1532,22 @@ fig_timeline_h1.add_trace(
     )
     )
     
-    fig_timeline_h1.add_trace(
-        go.Scatter(
-            x=opp_kickouts_h1["__minute__"],
-            y=[4] * len(opp_kickouts_h1),
-            mode="markers",
-            marker=dict(
-                size=9,
-                color="purple",
-                symbol="triangle-up",
-                line=dict(color="#444444", width=1)
-            ),
-            name="Opp Kickouts",
-            hovertext=opp_kickouts_h1[cols["stat1"]],
-            hoverinfo="text"
-        )
+fig_timeline_h1.add_trace(
+    go.Scatter(
+        x=opp_kickouts_h1["__minute__"],
+        y=[4] * len(opp_kickouts_h1),
+        mode="markers",
+        marker=dict(
+            size=9,
+            color="purple",
+            symbol="triangle-up",
+            line=dict(color="#444444", width=1)
+        ),
+        name="Opp Kickouts",
+        hovertext=opp_kickouts_h1[cols["stat1"]],
+        hoverinfo="text"
     )
+    )    
     
         fig_timeline_h1.update_layout(
             height=420,
