@@ -2161,9 +2161,6 @@ with tab3:
             summary["match_label"] = summary[cols["match_no"]].astype(str).map(
                 lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
             )
-            temp_won = summary["Opp_KO_Won"].copy()
-            summary["Opp_KO_Won"] = summary["Opp_KO_Lost"]
-            summary["Opp_KO_Lost"] = temp_won
 
             summary = summary.drop(columns=[cols["match_no"]])
             summary = summary.rename(columns={"match_label": "Match"})
@@ -2173,7 +2170,7 @@ with tab3:
             
             # Reverse opposition perspective for this table only
             summary["Opp KO Index +/-"] = (
-                summary["Opp_KO_Lost"] - summary["Opp_KO_Won"]
+                summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
             )
             
             summary["Overall KO Index +/-"] = (
