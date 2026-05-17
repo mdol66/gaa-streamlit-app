@@ -1587,8 +1587,7 @@ with tab0:
             else "red"
         )
     )
-    
- 
+     
     fig_timeline_h1.add_trace(
         go.Scatter(
             x=h1_turnovers["__minute__"],
@@ -1596,9 +1595,9 @@ with tab0:
             mode="markers",
             marker=dict(
                 size=9,
-                color="#8B0000",
-                symbol="circle",
                 color=h1_turnovers["turnover_colour"],
+                symbol="circle",
+                line=dict(color="#444444", width=1)
             ),
             name="Turnovers",
             hovertext=h1_turnovers[cols["stat1"]],
