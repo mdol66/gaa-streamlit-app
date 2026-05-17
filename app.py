@@ -1556,7 +1556,54 @@ with tab0:
             hoverinfo="text"
         )
     )
+    # --- First half turnovers from Ballintubber perspective ---
+    h1_turnovers = timeline_df.copy()
 
+    h1_turnovers = h1_turnovers[
+        h1_turnovers[cols["half"]]
+        .astype(str)
+        .str.contains("1", na=False)
+    ].copy()
+
+    h1_turnovers["__turnover_event__"] = (
+        h1_turnovers[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    h1_turnovers = h1_turnovers[
+        h1_turnovers["__turnover_event__"].isin([
+            "turnover won",
+            "turnover lost"
+        ])
+    ]
+
+    h1_turnovers["turnover_symbol"] = (
+        h1_turnovers["__turnover_event__"]
+        .apply(
+            lambda x:
+            "diamond" if x == "turnover won"
+            else "x"
+        )
+    )
+
+    fig_timeline_h1.add_trace(
+        go.Scatter(
+            x=h1_turnovers["__minute__"],
+            y=[5] * len(h1_turnovers),
+            mode="markers",
+            marker=dict(
+                size=9,
+                color="#8B0000",
+                symbol=h1_turnovers["turnover_symbol"],
+                line=dict(color="#444444", width=1)
+            ),
+            name="Turnovers",
+            hovertext=h1_turnovers[cols["stat1"]],
+            hoverinfo="text"
+        )
+    )
     fig_timeline_h1.update_layout(
         height=420,
         paper_bgcolor="#F2F2F2",
