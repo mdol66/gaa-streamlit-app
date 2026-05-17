@@ -2414,7 +2414,7 @@ if player_summary_display is not None and not player_summary_display.empty:
 
     fig_efficiency.add_annotation(
         x=-0.02,
-        y=0,
+        y=0.5,
         xref="paper",
         yref="paper",
         text="<b>Shot Efficiency</b>",
@@ -2425,7 +2425,7 @@ if player_summary_display is not None and not player_summary_display.empty:
     )
 
     fig_efficiency.update_layout(
-        height=45,
+        height=35,
         margin=dict(l=85, r=65, t=0, b=0),
         paper_bgcolor="white",
         plot_bgcolor="white",
