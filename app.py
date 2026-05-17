@@ -1480,6 +1480,74 @@ with tab0:
                 hoverinfo="text"
             )
         )
+        # --- First half kickouts ---
+h1_kickouts = timeline_df.copy()
+
+h1_kickouts = h1_kickouts[
+    h1_kickouts[cols["half"]]
+    .astype(str)
+    .str.contains("1", na=False)
+].copy()
+
+h1_kickouts["__kickout_event__"] = (
+    h1_kickouts[cols["stat1"]]
+    .astype(str)
+    .str.strip()
+    .str.lower()
+)
+
+h1_kickouts = h1_kickouts[
+    h1_kickouts["__kickout_event__"]
+    .str.contains("kick ?out", na=False)
+]
+
+bt_kickouts_h1 = h1_kickouts[
+    h1_kickouts[cols["team"]]
+    .astype(str)
+    .str.lower()
+    .eq("ballintubber")
+]
+
+opp_kickouts_h1 = h1_kickouts[
+    ~h1_kickouts[cols["team"]]
+    .astype(str)
+    .str.lower()
+    .eq("ballintubber")
+]
+
+fig_timeline_h1.add_trace(
+    go.Scatter(
+        x=bt_kickouts_h1["__minute__"],
+        y=[3] * len(bt_kickouts_h1),
+        mode="markers",
+        marker=dict(
+            size=9,
+            color="blue",
+            symbol="triangle-up",
+            line=dict(color="#444444", width=1)
+        ),
+        name="BT Kickouts",
+        hovertext=bt_kickouts_h1[cols["stat1"]],
+        hoverinfo="text"
+    )
+    )
+    
+    fig_timeline_h1.add_trace(
+        go.Scatter(
+            x=opp_kickouts_h1["__minute__"],
+            y=[4] * len(opp_kickouts_h1),
+            mode="markers",
+            marker=dict(
+                size=9,
+                color="purple",
+                symbol="triangle-up",
+                line=dict(color="#444444", width=1)
+            ),
+            name="Opp Kickouts",
+            hovertext=opp_kickouts_h1[cols["stat1"]],
+            hoverinfo="text"
+        )
+    )
     
         fig_timeline_h1.update_layout(
             height=420,
