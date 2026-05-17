@@ -2540,7 +2540,7 @@ with tab3:
         )
 
         fig_heat.update_layout(
-            xaxis_title="Player",
+            xaxis_title=None,
             yaxis_title="Metric",
             height=450
         )
