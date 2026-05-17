@@ -1609,11 +1609,38 @@ with tab0:
         paper_bgcolor="#F2F2F2",
         plot_bgcolor="#F2F2F2",
         margin=dict(l=40, r=20, t=20, b=40),
+
         xaxis=dict(
             tickmode="linear",
             tick0=0,
             dtick=5,
+            minor=dict(
+                tickmode="linear",
+                tick0=0,
+                dtick=1,
+                ticks="outside",
+                showgrid=False
+            ),
+            ticks="outside",
+            side="bottom",
             title="Minutes"
+        ),
+        xaxis2=dict(
+            tickmode="linear",
+            tick0=0,
+            dtick=5,
+            minor=dict(
+                tickmode="linear",
+                tick0=0,
+                dtick=1,
+                ticks="outside",
+                showgrid=False
+            ),
+            ticks="outside",
+            side="top",
+            overlaying="x",
+            matches="x",
+            showgrid=False
         ),
         yaxis=dict(
             tickmode="array",
