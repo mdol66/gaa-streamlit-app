@@ -1419,8 +1419,22 @@ with tab0:
             .str.lower()
         )
         
+        miss_events_timeline = [
+            "wide",
+            "wide from free",
+            "short",
+            "short from free",
+            "off posts",
+            "off posts from free",
+            "off posts from 45",
+            "saved",
+            "saved from free",
+            "out for 45",
+            "out for 45 from free"
+        ]
+        
         h1_scores = h1_scores[
-            h1_scores["__score_event__"].isin(score_events)
+            h1_scores["__score_event__"].isin(score_events + miss_events_timeline)
         ]
     
         h1_scores["marker_colour"] = h1_scores["__score_event__"].map({
@@ -1435,20 +1449,42 @@ with tab0:
         })
     
    
-        bt_scores_h1 = h1_scores[
-            h1_scores[cols["team"]]
+        h1_score_only = h1_scores[
+            h1_scores["__score_event__"].isin(score_events)
+        ].copy()
+        
+        h1_miss_only = h1_scores[
+            h1_scores["__score_event__"].isin(miss_events_timeline)
+        ].copy()
+        
+        bt_scores_h1 = h1_score_only[
+            h1_score_only[cols["team"]]
             .astype(str)
             .str.lower()
             .eq("ballintubber")
-        ]
-    
-        opp_scores_h1 = h1_scores[
-            ~h1_scores[cols["team"]]
+        ].copy()
+        
+        opp_scores_h1 = h1_score_only[
+            ~h1_score_only[cols["team"]]
             .astype(str)
             .str.lower()
             .eq("ballintubber")
-        ]
-    
+        ].copy()
+        
+        bt_misses_h1 = h1_miss_only[
+            h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        opp_misses_h1 = h1_miss_only[
+            ~h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=bt_scores_h1["__minute__"],
@@ -1464,19 +1500,51 @@ with tab0:
                 hoverinfo="text"
             )
         )
-    
+        
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=bt_misses_h1["__minute__"],
+                y=[1] * len(bt_misses_h1),
+                mode="markers",
+                marker=dict(
+                    size=8,
+                    color="#888888",
+                    symbol="x-thin-open"
+                ),
+                name="BT Misses",
+                hovertext=bt_misses_h1[cols["stat1"]],
+                hoverinfo="text"
+            )
+        )
+        
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_scores_h1["__minute__"],
                 y=[2] * len(opp_scores_h1),
                 mode="markers",
-                 marker=dict(
+                marker=dict(
                     size=9,
                     color=opp_scores_h1["marker_colour"],
                     line=dict(color="#444444", width=1)
                 ),
                 name="Opp Scores",
                 hovertext=opp_scores_h1[cols["player"]],
+                hoverinfo="text"
+            )
+        )
+        
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=opp_misses_h1["__minute__"],
+                y=[2] * len(opp_misses_h1),
+                mode="markers",
+                marker=dict(
+                    size=8,
+                    color="#888888",
+                    symbol="x-thin-open"
+                ),
+                name="Opp Misses",
+                hovertext=opp_misses_h1[cols["stat1"]],
                 hoverinfo="text"
             )
         )
@@ -1674,7 +1742,7 @@ with tab0:
             )
             
             h2_scores = h2_scores[
-                h2_scores["__score_event__"].isin(score_events)
+                h2_scores["__score_event__"].isin(score_events + miss_events_timeline)
             ]
             
             h2_scores["marker_colour"] = h2_scores["__score_event__"].map({
@@ -1688,19 +1756,41 @@ with tab0:
                 "point from 45": "white"
             })
             
-            bt_scores_h2 = h2_scores[
-                h2_scores[cols["team"]]
-                .astype(str)
-                .str.lower()
-                .eq("ballintubber")
-            ]
+            h2_score_only = h2_scores[
+                h2_scores["__score_event__"].isin(score_events)
+            ].copy()
             
-            opp_scores_h2 = h2_scores[
-                ~h2_scores[cols["team"]]
+            h2_miss_only = h2_scores[
+                h2_scores["__score_event__"].isin(miss_events_timeline)
+            ].copy()
+            
+            bt_scores_h2 = h2_score_only[
+                h2_score_only[cols["team"]]
                 .astype(str)
                 .str.lower()
                 .eq("ballintubber")
-            ]
+            ].copy()
+            
+            opp_scores_h2 = h2_score_only[
+                ~h2_score_only[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+            
+            bt_misses_h2 = h2_miss_only[
+                h2_miss_only[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+            
+            opp_misses_h2 = h2_miss_only[
+                ~h2_miss_only[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
             
             fig_timeline_h2.add_trace(
                 go.Scatter(
@@ -1720,6 +1810,22 @@ with tab0:
             
             fig_timeline_h2.add_trace(
                 go.Scatter(
+                    x=bt_misses_h2["__minute__"],
+                    y=[1] * len(bt_misses_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=8,
+                        color="#888888",
+                        symbol="x-thin-open"
+                    ),
+                    name="BT Misses",
+                    hovertext=bt_misses_h2[cols["stat1"]],
+                    hoverinfo="text"
+                )
+            )
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
                     x=opp_scores_h2["__minute__"],
                     y=[2] * len(opp_scores_h2),
                     mode="markers",
@@ -1730,6 +1836,22 @@ with tab0:
                     ),
                     name="Opp Scores",
                     hovertext=opp_scores_h2[cols["player"]],
+                    hoverinfo="text"
+                )
+            )
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=opp_misses_h2["__minute__"],
+                    y=[2] * len(opp_misses_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=8,
+                        color="#888888",
+                        symbol="x-thin-open"
+                    ),
+                    name="Opp Misses",
+                    hovertext=opp_misses_h2[cols["stat1"]],
                     hoverinfo="text"
                 )
             )
@@ -2335,55 +2457,127 @@ with tab2:
             miss_events=miss_events,
         )
 
-        if player_summary_display is not None and not player_summary_display.empty:
-            st.markdown("### Player scoring breakdown")
-            scoring_heatmap_df = player_summary_display.copy()
+if player_summary_display is not None and not player_summary_display.empty:
+    st.markdown("### Player scoring breakdown")
 
-            heatmap_cols = [
-                c for c in scoring_heatmap_df.columns
-                if c not in ["Player", "Shot Efficiency"]
-            ]
+    scoring_heatmap_df = player_summary_display.copy()
 
-            fig_score_heat = px.imshow(
-                scoring_heatmap_df[heatmap_cols]
-                .div(
-                    scoring_heatmap_df[heatmap_cols]
-                    .max(axis=0)
-                    .replace(0, 1),
-                    axis=1
-                )
-                .T,
-                x=scoring_heatmap_df["Player"],
-                y=heatmap_cols,
-                text_auto=False,
-                aspect="auto",
-                title="Player Scoring Activity"
+    heatmap_cols = [
+        c for c in scoring_heatmap_df.columns
+        if c not in ["Player", "Shot Efficiency"]
+    ]
+
+    fig_score_heat = px.imshow(
+        scoring_heatmap_df[heatmap_cols]
+        .div(
+            scoring_heatmap_df[heatmap_cols]
+            .max(axis=0)
+            .replace(0, 1),
+            axis=1
+        )
+        .T,
+        x=scoring_heatmap_df["Player"],
+        y=heatmap_cols,
+        text_auto=False,
+        aspect="auto",
+        title="Player Scoring Activity"
+    )
+
+    fig_score_heat.update_traces(
+        text=scoring_heatmap_df[heatmap_cols].T,
+        texttemplate="%{text}",
+        hovertemplate=(
+            "Player=%{x}"
+            "<br>Metric=%{y}"
+            "<br>Value=%{text}"
+            "<extra></extra>"
+        )
+    )
+
+    fig_score_heat.update_layout(
+        height=420,
+        xaxis_title=None,
+        yaxis_title="Metric",
+        margin=dict(l=80, r=65, t=40, b=15)
+    )
+
+    st.plotly_chart(
+        fig_score_heat,
+        use_container_width=True
+    )
+
+    # --- Shot efficiency values aligned to heatmap order ---
+    shot_efficiency_values = []
+
+    for _, row in scoring_heatmap_df.iterrows():
+        shots = row.get("Shots", 0)
+        scores = row.get("Scores", 0)
+
+        if shots > 0:
+            shot_efficiency_values.append(
+                f"{round((scores / shots) * 100)}%"
             )
-
-            fig_score_heat.update_traces(
-                text=scoring_heatmap_df[heatmap_cols].T,
-                texttemplate="%{text}",
-                hovertemplate=(
-                    "Player=%{x}"
-                    "<br>Metric=%{y}"
-                    "<br>Value=%{text}"
-                    "<extra></extra>"
-                )
-            )
-
-            fig_score_heat.update_layout(
-                height=450,
-                xaxis_title="Player",
-                yaxis_title="Metric"
-            )
-
-            st.plotly_chart(
-                fig_score_heat,
-                use_container_width=True
-            )
-            st.dataframe(player_summary_display, use_container_width=True)
         else:
-            st.info("No player scoring data for current filters.")
+            shot_efficiency_values.append("-")
+
+    # --- Shot efficiency row aligned to heatmap ---
+    fig_efficiency = go.Figure()
+
+    fig_efficiency.add_trace(
+        go.Scatter(
+            x=scoring_heatmap_df["Player"],
+            y=[0] * len(scoring_heatmap_df),
+            mode="text",
+            text=shot_efficiency_values,
+            textfont=dict(size=14, color="black"),
+            hoverinfo="skip"
+        )
+    )
+
+    fig_efficiency.add_annotation(
+        x=-0.02,
+        y=0.5,
+        xref="paper",
+        yref="paper",
+        text="<b>Shot Efficiency</b>",
+        showarrow=False,
+        xanchor="right",
+        yanchor="middle",
+        font=dict(size=13, color="black")
+    )
+
+    fig_efficiency.update_layout(
+        height=35,
+        margin=dict(l=85, r=65, t=0, b=0),
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        showlegend=False
+    )
+
+    fig_efficiency.update_xaxes(
+        visible=False,
+        categoryorder="array",
+        categoryarray=scoring_heatmap_df["Player"]
+    )
+
+    fig_efficiency.update_yaxes(
+        visible=False,
+        range=[-0.5, 0.5]
+    )
+
+    st.plotly_chart(
+        fig_efficiency,
+        use_container_width=True,
+        config={"displayModeBar": False}
+    )
+
+    st.dataframe(
+        player_summary_display,
+        use_container_width=True
+    )
+
+else:
+    st.info("No player scoring data for current filters.")
 
 with tab3:
     st.markdown("### Kickout Analysis")
@@ -2523,7 +2717,7 @@ with tab3:
         )
 
         fig_heat.update_layout(
-            xaxis_title="Player",
+            xaxis_title=None,
             yaxis_title="Metric",
             height=450
         )
@@ -2537,3 +2731,4 @@ with tab3:
             player_table.style.set_properties(**{"text-align": "left"}),
             use_container_width=True
         )
+
