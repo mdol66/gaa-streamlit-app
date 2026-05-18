@@ -1419,8 +1419,22 @@ with tab0:
             .str.lower()
         )
         
+        miss_events_timeline = [
+            "wide",
+            "wide from free",
+            "short",
+            "short from free",
+            "off posts",
+            "off posts from free",
+            "off posts from 45",
+            "saved",
+            "saved from free",
+            "out for 45",
+            "out for 45 from free"
+        ]
+        
         h1_scores = h1_scores[
-            h1_scores["__score_event__"].isin(score_events)
+            h1_scores["__score_event__"].isin(score_events + miss_events_timeline)
         ]
     
         h1_scores["marker_colour"] = h1_scores["__score_event__"].map({
@@ -1466,13 +1480,8 @@ with tab0:
         )
             # --- First half BT missed shots ---
         bt_misses_h1 = h1_scores[
-            h1_scores["__score_event__"].isin([
-                "wide",
-                "short",
-                "off posts",
-                "saved",
-                "out for 45"
-            ])
+            h1_scores["__score_event__"].isin(miss_events_timeline)
+            & h1_scores[cols["team"]].astype(str).str.lower().eq("ballintubber")
         ]
         
         fig_timeline_h1.add_trace(
