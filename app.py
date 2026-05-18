@@ -1756,19 +1756,41 @@ with tab0:
                 "point from 45": "white"
             })
             
-            bt_scores_h2 = h2_scores[
-                h2_scores[cols["team"]]
-                .astype(str)
-                .str.lower()
-                .eq("ballintubber")
-            ]
+            h2_score_only = h2_scores[
+                h2_scores["__score_event__"].isin(score_events)
+            ].copy()
             
-            opp_scores_h2 = h2_scores[
-                ~h2_scores[cols["team"]]
+            h2_miss_only = h2_scores[
+                h2_scores["__score_event__"].isin(miss_events_timeline)
+            ].copy()
+            
+            bt_scores_h2 = h2_score_only[
+                h2_score_only[cols["team"]]
                 .astype(str)
                 .str.lower()
                 .eq("ballintubber")
-            ]
+            ].copy()
+            
+            opp_scores_h2 = h2_score_only[
+                ~h2_score_only[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+            
+            bt_misses_h2 = h2_miss_only[
+                h2_miss_only[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+            
+            opp_misses_h2 = h2_miss_only[
+                ~h2_miss_only[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
             
             fig_timeline_h2.add_trace(
                 go.Scatter(
@@ -1788,6 +1810,22 @@ with tab0:
             
             fig_timeline_h2.add_trace(
                 go.Scatter(
+                    x=bt_misses_h2["__minute__"],
+                    y=[1] * len(bt_misses_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=8,
+                        color="#888888",
+                        symbol="x-thin-open"
+                    ),
+                    name="BT Misses",
+                    hovertext=bt_misses_h2[cols["stat1"]],
+                    hoverinfo="text"
+                )
+            )
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
                     x=opp_scores_h2["__minute__"],
                     y=[2] * len(opp_scores_h2),
                     mode="markers",
@@ -1798,6 +1836,22 @@ with tab0:
                     ),
                     name="Opp Scores",
                     hovertext=opp_scores_h2[cols["player"]],
+                    hoverinfo="text"
+                )
+            )
+            
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=opp_misses_h2["__minute__"],
+                    y=[2] * len(opp_misses_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=8,
+                        color="#888888",
+                        symbol="x-thin-open"
+                    ),
+                    name="Opp Misses",
+                    hovertext=opp_misses_h2[cols["stat1"]],
                     hoverinfo="text"
                 )
             )
