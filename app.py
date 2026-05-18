@@ -1455,7 +1455,7 @@ with tab0:
             .astype(str)
             .str.lower()
             .eq("ballintubber")
-        ]
+        ].copy()
     
         opp_scores_h1 = h1_scores[
             ~h1_scores[cols["team"]]
