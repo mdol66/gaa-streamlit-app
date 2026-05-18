@@ -1507,8 +1507,8 @@ with tab0:
                 y=[1] * len(bt_misses_h1),
                 mode="markers",
                 marker=dict(
-                    size=9,
-                    color="#666666",
+                    size=8,
+                    color="#888888",
                     symbol="x-thin-open"
                 ),
                 name="BT Misses",
@@ -1539,8 +1539,8 @@ with tab0:
                 y=[2] * len(opp_misses_h1),
                 mode="markers",
                 marker=dict(
-                    size=9,
-                    color="#666666",
+                    size=8,
+                    color="#888888",
                     symbol="x-thin-open"
                 ),
                 name="Opp Misses",
