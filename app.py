@@ -1450,7 +1450,8 @@ with tab0:
     
    
         bt_scores_h1 = h1_scores[
-            h1_scores[cols["team"]]
+            h1_scores["__score_event__"].isin(score_events)
+            & h1_scores[cols["team"]]
             .astype(str)
             .str.lower()
             .eq("ballintubber")
