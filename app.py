@@ -1742,7 +1742,7 @@ with tab0:
             )
             
             h2_scores = h2_scores[
-                h2_scores["__score_event__"].isin(score_events)
+                h2_scores["__score_event__"].isin(score_events + miss_events_timeline)
             ]
             
             h2_scores["marker_colour"] = h2_scores["__score_event__"].map({
