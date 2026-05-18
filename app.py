@@ -2657,78 +2657,78 @@ with tab2:
             else:
                 st.info("No kickout data for current filters.")
 
-    non_score_df = plot_df.copy()
-    non_score_df = non_score_df[
-        non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
-    ]
-
-    non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
-    non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
-
-    exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
-    non_score_df = non_score_df[
-        ~non_score_df["__stat1_lower__"].isin(exclude_events)
-    ]
-
-    if not non_score_df.empty:
-        non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
-        non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
-
-        non_score_df.loc[
-            non_score_df["__stat2_lower__"].isin([
-                "yellow card",
-                "black card",
-                "red card"
-            ]),
-            "__event_for_table__"
-        ] = non_score_df["__stat2_lower__"]
-
-        player_table = (
-            non_score_df.groupby(["__player_clean__", "__event_for_table__"])
-            .size()
-            .unstack(fill_value=0)
-            .reset_index()
-        )
-
-        player_table = player_table[
-            player_table["__player_clean__"].notna()
-            & (player_table["__player_clean__"].astype(str).str.lower() != "nan")
+        non_score_df = plot_df.copy()
+        non_score_df = non_score_df[
+            non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
         ]
-
-        player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
-        player_table = player_table.sort_values(by="Total", ascending=False)
-        player_table = player_table.rename(columns={"__player_clean__": "Player"})
-
-        drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
-        player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
-
-        heatmap_numeric_cols = [
-            c for c in player_table.columns
-            if c not in ["Player", "Total"]
+    
+        non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
+        non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
+    
+        exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
+        non_score_df = non_score_df[
+            ~non_score_df["__stat1_lower__"].isin(exclude_events)
         ]
-
-        fig_heat = px.imshow(
-            player_table[heatmap_numeric_cols].T,
-            x=player_table["Player"],
-            y=heatmap_numeric_cols,
-            text_auto=True,
-            aspect="auto",
-            title="Player Non-scoring Activity"
-        )
-
-        fig_heat.update_layout(
-            xaxis_title=None,
-            yaxis_title="Metric",
-            height=450
-        )
-
-        st.plotly_chart(
-            fig_heat,
-            use_container_width=True
-        )
-
-        st.dataframe(
-            player_table.style.set_properties(**{"text-align": "left"}),
-            use_container_width=True
-        )
+    
+        if not non_score_df.empty:
+            non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
+            non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
+    
+            non_score_df.loc[
+                non_score_df["__stat2_lower__"].isin([
+                    "yellow card",
+                    "black card",
+                    "red card"
+                ]),
+                "__event_for_table__"
+            ] = non_score_df["__stat2_lower__"]
+    
+            player_table = (
+                non_score_df.groupby(["__player_clean__", "__event_for_table__"])
+                .size()
+                .unstack(fill_value=0)
+                .reset_index()
+            )
+    
+            player_table = player_table[
+                player_table["__player_clean__"].notna()
+                & (player_table["__player_clean__"].astype(str).str.lower() != "nan")
+            ]
+    
+            player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
+            player_table = player_table.sort_values(by="Total", ascending=False)
+            player_table = player_table.rename(columns={"__player_clean__": "Player"})
+    
+            drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
+            player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
+    
+            heatmap_numeric_cols = [
+                c for c in player_table.columns
+                if c not in ["Player", "Total"]
+            ]
+    
+            fig_heat = px.imshow(
+                player_table[heatmap_numeric_cols].T,
+                x=player_table["Player"],
+                y=heatmap_numeric_cols,
+                text_auto=True,
+                aspect="auto",
+                title="Player Non-scoring Activity"
+            )
+    
+            fig_heat.update_layout(
+                xaxis_title=None,
+                yaxis_title="Metric",
+                height=450
+            )
+    
+            st.plotly_chart(
+                fig_heat,
+                use_container_width=True
+            )
+    
+            st.dataframe(
+                player_table.style.set_properties(**{"text-align": "left"}),
+                use_container_width=True
+            )
 
