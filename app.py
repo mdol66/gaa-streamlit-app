@@ -1501,7 +1501,7 @@ with tab0:
                 hoverinfo="text"
             )
         )
-        )
+        
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_scores_h1["__minute__"],
