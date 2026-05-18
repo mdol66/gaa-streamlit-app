@@ -2457,278 +2457,278 @@ with tab2:
             miss_events=miss_events,
         )
 
-if player_summary_display is not None and not player_summary_display.empty:
-    st.markdown("### Player scoring breakdown")
-
-    scoring_heatmap_df = player_summary_display.copy()
-
-    heatmap_cols = [
-        c for c in scoring_heatmap_df.columns
-        if c not in ["Player", "Shot Efficiency"]
-    ]
-
-    fig_score_heat = px.imshow(
-        scoring_heatmap_df[heatmap_cols]
-        .div(
+    if player_summary_display is not None and not player_summary_display.empty:
+        st.markdown("### Player scoring breakdown")
+    
+        scoring_heatmap_df = player_summary_display.copy()
+    
+        heatmap_cols = [
+            c for c in scoring_heatmap_df.columns
+            if c not in ["Player", "Shot Efficiency"]
+        ]
+    
+        fig_score_heat = px.imshow(
             scoring_heatmap_df[heatmap_cols]
-            .max(axis=0)
-            .replace(0, 1),
-            axis=1
-        )
-        .T,
-        x=scoring_heatmap_df["Player"],
-        y=heatmap_cols,
-        text_auto=False,
-        aspect="auto",
-        title="Player Scoring Activity"
-    )
-
-    fig_score_heat.update_traces(
-        text=scoring_heatmap_df[heatmap_cols].T,
-        texttemplate="%{text}",
-        hovertemplate=(
-            "Player=%{x}"
-            "<br>Metric=%{y}"
-            "<br>Value=%{text}"
-            "<extra></extra>"
-        )
-    )
-
-    fig_score_heat.update_layout(
-        height=420,
-        xaxis_title=None,
-        yaxis_title="Metric",
-        margin=dict(l=80, r=65, t=40, b=15)
-    )
-
-    st.plotly_chart(
-        fig_score_heat,
-        use_container_width=True
-    )
-
-    # --- Shot efficiency values aligned to heatmap order ---
-    shot_efficiency_values = []
-
-    for _, row in scoring_heatmap_df.iterrows():
-        shots = row.get("Shots", 0)
-        scores = row.get("Scores", 0)
-
-        if shots > 0:
-            shot_efficiency_values.append(
-                f"{round((scores / shots) * 100)}%"
+            .div(
+                scoring_heatmap_df[heatmap_cols]
+                .max(axis=0)
+                .replace(0, 1),
+                axis=1
             )
-        else:
-            shot_efficiency_values.append("-")
-
-    # --- Shot efficiency row aligned to heatmap ---
-    fig_efficiency = go.Figure()
-
-    fig_efficiency.add_trace(
-        go.Scatter(
+            .T,
             x=scoring_heatmap_df["Player"],
-            y=[0] * len(scoring_heatmap_df),
-            mode="text",
-            text=shot_efficiency_values,
-            textfont=dict(size=14, color="black"),
-            hoverinfo="skip"
-        )
-    )
-
-    fig_efficiency.add_annotation(
-        x=-0.02,
-        y=0.5,
-        xref="paper",
-        yref="paper",
-        text="<b>Shot Efficiency</b>",
-        showarrow=False,
-        xanchor="right",
-        yanchor="middle",
-        font=dict(size=13, color="black")
-    )
-
-    fig_efficiency.update_layout(
-        height=35,
-        margin=dict(l=85, r=65, t=0, b=0),
-        paper_bgcolor="white",
-        plot_bgcolor="white",
-        showlegend=False
-    )
-
-    fig_efficiency.update_xaxes(
-        visible=False,
-        categoryorder="array",
-        categoryarray=scoring_heatmap_df["Player"]
-    )
-
-    fig_efficiency.update_yaxes(
-        visible=False,
-        range=[-0.5, 0.5]
-    )
-
-    st.plotly_chart(
-        fig_efficiency,
-        use_container_width=True,
-        config={"displayModeBar": False}
-    )
-
-    st.dataframe(
-        player_summary_display,
-        use_container_width=True
-    )
-
-else:
-    st.info("No player scoring data for current filters.")
-
-with tab3:
-    st.markdown("### Kickout Analysis")
-
-    if cols["stat1"] and cols["team"]:
-        ko_df = plot_df.copy()
-
-        ko_df["__stat1_lower__"] = ko_df[cols["stat1"]].astype(str).str.lower()
-        ko_df = ko_df[ko_df["__stat1_lower__"].str.contains("kick ?out", na=False)]
-
-        if not ko_df.empty:
-            ko_df["__team_lower__"] = ko_df[cols["team"]].astype(str).str.lower()
-            ko_df["__is_ball__"] = ko_df["__team_lower__"] == "ballintubber"
-            ko_df["__is_won__"] = ko_df["__stat1_lower__"].str.contains("won", na=False)
-            ko_df["__is_lost__"] = ko_df["__stat1_lower__"].str.contains("lost", na=False)
-
-            summary = (
-                ko_df.groupby(cols["match_no"])
-                .agg(
-                    Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Won=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                    Opp_KO_Lost=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
-                )
-                .reset_index()
-            )
-
-            summary["match_label"] = summary[cols["match_no"]].astype(str).map(
-                lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
-            )
-
-            summary = summary.drop(columns=[cols["match_no"]])
-            summary = summary.rename(columns={"match_label": "Match"})
-            summary["Own KO Index +/-"] = (
-                summary["Own_KO_Won"] - summary["Own_KO_Lost"]
-            )
-            
-            # Reverse opposition perspective for this table only
-            summary["Opp KO Index +/-"] = (
-                summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
-            )
-            
-            summary["Overall KO Index +/-"] = (
-                summary["Own KO Index +/-"]
-                + summary["Opp KO Index +/-"]
-            )
-
-            summary = summary[[
-                "Match",
-                "Own_KO_Won",
-                "Own_KO_Lost",
-                "Own KO Index +/-",
-                "Opp_KO_Won",
-                "Opp_KO_Lost",
-                "Opp KO Index +/-",
-                "Overall KO Index +/-"
-            ]]
-
-            st.markdown(
-                """
-                <div style="font-size:12px; margin-top:4px; margin-bottom:12px; color:grey;">
-                    <b>Note:</b> Kickout Index is shown from Ballintubber's perspective.
-                    Positive values are favourable to Ballintubber, negative values are unfavourable.
-                    Opposition kickout values are therefore reversed for interpretation.
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-            st.dataframe(
-                summary.style.set_properties(**{
-                    "font-size": "13px"
-                }),
-                hide_index=True,
-                use_container_width=True
-            )
-        else:
-            st.info("No kickout data for current filters.")
-
-    non_score_df = plot_df.copy()
-    non_score_df = non_score_df[
-        non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
-    ]
-
-    non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
-    non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
-
-    exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
-    non_score_df = non_score_df[
-        ~non_score_df["__stat1_lower__"].isin(exclude_events)
-    ]
-
-    if not non_score_df.empty:
-        non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
-        non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
-
-        non_score_df.loc[
-            non_score_df["__stat2_lower__"].isin([
-                "yellow card",
-                "black card",
-                "red card"
-            ]),
-            "__event_for_table__"
-        ] = non_score_df["__stat2_lower__"]
-
-        player_table = (
-            non_score_df.groupby(["__player_clean__", "__event_for_table__"])
-            .size()
-            .unstack(fill_value=0)
-            .reset_index()
-        )
-
-        player_table = player_table[
-            player_table["__player_clean__"].notna()
-            & (player_table["__player_clean__"].astype(str).str.lower() != "nan")
-        ]
-
-        player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
-        player_table = player_table.sort_values(by="Total", ascending=False)
-        player_table = player_table.rename(columns={"__player_clean__": "Player"})
-
-        drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
-        player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
-
-        heatmap_numeric_cols = [
-            c for c in player_table.columns
-            if c not in ["Player", "Total"]
-        ]
-
-        fig_heat = px.imshow(
-            player_table[heatmap_numeric_cols].T,
-            x=player_table["Player"],
-            y=heatmap_numeric_cols,
-            text_auto=True,
+            y=heatmap_cols,
+            text_auto=False,
             aspect="auto",
-            title="Player Non-scoring Activity"
+            title="Player Scoring Activity"
         )
-
-        fig_heat.update_layout(
+    
+        fig_score_heat.update_traces(
+            text=scoring_heatmap_df[heatmap_cols].T,
+            texttemplate="%{text}",
+            hovertemplate=(
+                "Player=%{x}"
+                "<br>Metric=%{y}"
+                "<br>Value=%{text}"
+                "<extra></extra>"
+            )
+        )
+    
+        fig_score_heat.update_layout(
+            height=420,
             xaxis_title=None,
             yaxis_title="Metric",
-            height=450
+            margin=dict(l=80, r=65, t=40, b=15)
         )
-
+    
         st.plotly_chart(
-            fig_heat,
+            fig_score_heat,
             use_container_width=True
         )
-
+    
+        # --- Shot efficiency values aligned to heatmap order ---
+        shot_efficiency_values = []
+    
+        for _, row in scoring_heatmap_df.iterrows():
+            shots = row.get("Shots", 0)
+            scores = row.get("Scores", 0)
+    
+            if shots > 0:
+                shot_efficiency_values.append(
+                    f"{round((scores / shots) * 100)}%"
+                )
+            else:
+                shot_efficiency_values.append("-")
+    
+        # --- Shot efficiency row aligned to heatmap ---
+        fig_efficiency = go.Figure()
+    
+        fig_efficiency.add_trace(
+            go.Scatter(
+                x=scoring_heatmap_df["Player"],
+                y=[0] * len(scoring_heatmap_df),
+                mode="text",
+                text=shot_efficiency_values,
+                textfont=dict(size=14, color="black"),
+                hoverinfo="skip"
+            )
+        )
+    
+        fig_efficiency.add_annotation(
+            x=-0.02,
+            y=0.5,
+            xref="paper",
+            yref="paper",
+            text="<b>Shot Efficiency</b>",
+            showarrow=False,
+            xanchor="right",
+            yanchor="middle",
+            font=dict(size=13, color="black")
+        )
+    
+        fig_efficiency.update_layout(
+            height=35,
+            margin=dict(l=85, r=65, t=0, b=0),
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+            showlegend=False
+        )
+    
+        fig_efficiency.update_xaxes(
+            visible=False,
+            categoryorder="array",
+            categoryarray=scoring_heatmap_df["Player"]
+        )
+    
+        fig_efficiency.update_yaxes(
+            visible=False,
+            range=[-0.5, 0.5]
+        )
+    
+        st.plotly_chart(
+            fig_efficiency,
+            use_container_width=True,
+            config={"displayModeBar": False}
+        )
+    
         st.dataframe(
-            player_table.style.set_properties(**{"text-align": "left"}),
+            player_summary_display,
             use_container_width=True
         )
+    
+    else:
+        st.info("No player scoring data for current filters.")
+    
+    with tab3:
+        st.markdown("### Kickout Analysis")
+    
+        if cols["stat1"] and cols["team"]:
+            ko_df = plot_df.copy()
+    
+            ko_df["__stat1_lower__"] = ko_df[cols["stat1"]].astype(str).str.lower()
+            ko_df = ko_df[ko_df["__stat1_lower__"].str.contains("kick ?out", na=False)]
+    
+            if not ko_df.empty:
+                ko_df["__team_lower__"] = ko_df[cols["team"]].astype(str).str.lower()
+                ko_df["__is_ball__"] = ko_df["__team_lower__"] == "ballintubber"
+                ko_df["__is_won__"] = ko_df["__stat1_lower__"].str.contains("won", na=False)
+                ko_df["__is_lost__"] = ko_df["__stat1_lower__"].str.contains("lost", na=False)
+    
+                summary = (
+                    ko_df.groupby(cols["match_no"])
+                    .agg(
+                        Own_KO_Won=("__is_won__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                        Own_KO_Lost=("__is_lost__", lambda x: ((ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                        Opp_KO_Won=("__is_lost__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                        Opp_KO_Lost=("__is_won__", lambda x: ((~ko_df.loc[x.index, "__is_ball__"]) & x).sum()),
+                    )
+                    .reset_index()
+                )
+    
+                summary["match_label"] = summary[cols["match_no"]].astype(str).map(
+                    lambda x: next((label for label, num in match_labels.items() if str(num) == x), x)
+                )
+    
+                summary = summary.drop(columns=[cols["match_no"]])
+                summary = summary.rename(columns={"match_label": "Match"})
+                summary["Own KO Index +/-"] = (
+                    summary["Own_KO_Won"] - summary["Own_KO_Lost"]
+                )
+                
+                # Reverse opposition perspective for this table only
+                summary["Opp KO Index +/-"] = (
+                    summary["Opp_KO_Won"] - summary["Opp_KO_Lost"]
+                )
+                
+                summary["Overall KO Index +/-"] = (
+                    summary["Own KO Index +/-"]
+                    + summary["Opp KO Index +/-"]
+                )
+    
+                summary = summary[[
+                    "Match",
+                    "Own_KO_Won",
+                    "Own_KO_Lost",
+                    "Own KO Index +/-",
+                    "Opp_KO_Won",
+                    "Opp_KO_Lost",
+                    "Opp KO Index +/-",
+                    "Overall KO Index +/-"
+                ]]
+    
+                st.markdown(
+                    """
+                    <div style="font-size:12px; margin-top:4px; margin-bottom:12px; color:grey;">
+                        <b>Note:</b> Kickout Index is shown from Ballintubber's perspective.
+                        Positive values are favourable to Ballintubber, negative values are unfavourable.
+                        Opposition kickout values are therefore reversed for interpretation.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+    
+                st.dataframe(
+                    summary.style.set_properties(**{
+                        "font-size": "13px"
+                    }),
+                    hide_index=True,
+                    use_container_width=True
+                )
+            else:
+                st.info("No kickout data for current filters.")
+
+        non_score_df = plot_df.copy()
+        non_score_df = non_score_df[
+            non_score_df[cols["team"]].astype(str).str.lower() == "ballintubber"
+        ]
+    
+        non_score_df["__stat1_lower__"] = non_score_df[cols["stat1"]].astype(str).str.lower()
+        non_score_df["__stat2_lower__"] = non_score_df[cols["stat2"]].astype(str).str.lower()
+    
+        exclude_events = score_events + miss_events + ["out for 45", "out for 45/65"]
+        non_score_df = non_score_df[
+            ~non_score_df["__stat1_lower__"].isin(exclude_events)
+        ]
+    
+        if not non_score_df.empty:
+            non_score_df["__player_clean__"] = non_score_df[cols["player"]].astype(str).apply(clean_player_name)
+            non_score_df["__event_for_table__"] = non_score_df["__stat1_lower__"]
+    
+            non_score_df.loc[
+                non_score_df["__stat2_lower__"].isin([
+                    "yellow card",
+                    "black card",
+                    "red card"
+                ]),
+                "__event_for_table__"
+            ] = non_score_df["__stat2_lower__"]
+    
+            player_table = (
+                non_score_df.groupby(["__player_clean__", "__event_for_table__"])
+                .size()
+                .unstack(fill_value=0)
+                .reset_index()
+            )
+    
+            player_table = player_table[
+                player_table["__player_clean__"].notna()
+                & (player_table["__player_clean__"].astype(str).str.lower() != "nan")
+            ]
+    
+            player_table["Total"] = player_table.drop(columns="__player_clean__").sum(axis=1)
+            player_table = player_table.sort_values(by="Total", ascending=False)
+            player_table = player_table.rename(columns={"__player_clean__": "Player"})
+    
+            drop_cols = ["own kick out lost", "out for 45", "out for 45/65"]
+            player_table = player_table.drop(columns=[c for c in drop_cols if c in player_table.columns])
+    
+            heatmap_numeric_cols = [
+                c for c in player_table.columns
+                if c not in ["Player", "Total"]
+            ]
+    
+            fig_heat = px.imshow(
+                player_table[heatmap_numeric_cols].T,
+                x=player_table["Player"],
+                y=heatmap_numeric_cols,
+                text_auto=True,
+                aspect="auto",
+                title="Player Non-scoring Activity"
+            )
+    
+            fig_heat.update_layout(
+                xaxis_title=None,
+                yaxis_title="Metric",
+                height=450
+            )
+    
+            st.plotly_chart(
+                fig_heat,
+                use_container_width=True
+            )
+    
+            st.dataframe(
+                player_table.style.set_properties(**{"text-align": "left"}),
+                use_container_width=True
+            )
 
