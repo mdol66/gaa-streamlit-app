@@ -1458,11 +1458,12 @@ with tab0:
         ].copy()
     
         opp_scores_h1 = h1_scores[
-            ~h1_scores[cols["team"]]
+            h1_scores["__score_event__"].isin(score_events)
+            & ~h1_scores[cols["team"]]
             .astype(str)
             .str.lower()
             .eq("ballintubber")
-        ]
+        ].copy()
     
         fig_timeline_h1.add_trace(
             go.Scatter(
