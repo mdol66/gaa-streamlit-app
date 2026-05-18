@@ -1489,16 +1489,18 @@ with tab0:
             go.Scatter(
                 x=bt_misses_h1["__minute__"],
                 y=[1] * len(bt_misses_h1),
-                mode="text",
-                text=["x"] * len(bt_misses_h1),
-                textfont=dict(
-                    size=16,
-                    color="#666666"
+                mode="markers",
+                marker=dict(
+                    size=10,
+                    color="rgba(0,0,0,0)",
+                    symbol="x",
+                    line=dict(color="#666666", width=1)
                 ),
                 name="BT Misses",
                 hovertext=bt_misses_h1[cols["stat1"]],
                 hoverinfo="text"
             )
+        )
         )
         fig_timeline_h1.add_trace(
             go.Scatter(
