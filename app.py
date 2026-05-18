@@ -1464,7 +1464,32 @@ with tab0:
                 hoverinfo="text"
             )
         )
-    
+            # --- First half BT missed shots ---
+        bt_misses_h1 = h1_scores[
+            h1_scores["__score_event__"].isin([
+                "wide",
+                "short",
+                "off posts",
+                "saved",
+                "out for 45"
+            ])
+        ]
+        
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=bt_misses_h1["__minute__"],
+                y=[1] * len(bt_misses_h1),
+                mode="markers",
+                marker=dict(
+                    size=10,
+                    color="#666666",
+                    symbol="x"
+                ),
+                name="BT Misses",
+                hovertext=bt_misses_h1[cols["stat1"]],
+                hoverinfo="text"
+            )
+        )
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_scores_h1["__minute__"],
