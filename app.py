@@ -155,8 +155,8 @@ def build_pitch_shapes() -> list[dict]:
     y100_20 = 100.0 - y20
     y100_45 = 100.0 - y45
 
-    large_w = sw(19.0)
-    small_w = sw(14.0)
+    large_w = sw(15.0)
+    small_w = sw(10.5)
     goal_w = sw(6.5)
     cx = 50.0
 
