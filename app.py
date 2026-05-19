@@ -216,8 +216,8 @@ def build_pitch_shapes() -> list[dict]:
         return path
 
         # Small D / semi-circle
-    ry13 = sy(13.0)
-    rx13 = ry13 * ((x_right - x_left) / 100)
+    ry14 = sy(14.0)
+    rx14 = ry14 * ((x_right - x_left) / 100)
     
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y20, rx13, ry13, 0, 180), line=line))
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y100_20, rx13, ry13, 180, 360), line=line))
