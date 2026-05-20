@@ -1382,6 +1382,87 @@ with tab0:
                     )
                 else:
                     st.info("No kickout data")
+
+    spacer_col, scorers_col = st.columns([1, 2])
+
+    with scorers_col:
+
+        st.markdown("### Scorers")
+
+        scorers_df = dashboard_df.copy()
+
+        scorers_df = scorers_df[
+            scorers_df[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+
+        scorers_df["__player_clean__"] = (
+            scorers_df[cols["player"]]
+            .astype(str)
+            .apply(clean_player_name)
+        )
+
+        scorers_df["__stat1_lower__"] = (
+            scorers_df[cols["stat1"]]
+            .astype(str)
+            .str.lower()
+        )
+
+        scorers_df = scorers_df[
+            scorers_df["__stat1_lower__"]
+            .str.contains(
+                "goal|point|2 pointer",
+                na=False
+            )
+        ].copy()
+
+        if not scorers_df.empty:
+
+            scorer_table = (
+                scorers_df
+                .groupby("__player_clean__")
+                .agg(
+                    Goals=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "goal",
+                            na=False
+                        ).sum()
+                    ),
+                    Points=(
+                        "__stat1_lower__",
+                        lambda x: (
+                            x.str.contains("point", na=False).sum()
+                            + x.str.contains("2 pointer", na=False).sum()
+                        )
+                    )
+                )
+                .reset_index()
+            )
+
+            scorer_table["Score"] = scorer_table.apply(
+                lambda row:
+                f"{int(row['Goals'])}-{int(row['Points']):02d}",
+                axis=1
+            )
+
+            scorer_table = scorer_table.rename(
+                columns={
+                    "__player_clean__": "Player"
+                }
+            )
+
+            scorer_table = scorer_table[
+                ["Player", "Score"]
+            ]
+
+            st.dataframe(
+                scorer_table,
+                hide_index=True,
+                use_container_width=True
+            )
     st.markdown("---")
     st.markdown("### Match Timeline")
 
