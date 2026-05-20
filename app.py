@@ -1052,7 +1052,7 @@ with tab0:
                     scoring_table,
                     hide_index=True,
                     use_container_width=True,
-                    height=620
+                    height=625
                 )
     
         
