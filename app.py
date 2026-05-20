@@ -1191,7 +1191,7 @@ with tab0:
                     ],
                     hide_index=True,
                     use_container_width=True,
-                    height=270
+                    height=275
                 )
 
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
