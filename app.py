@@ -1507,7 +1507,7 @@ with tab0:
                         ko_receiver_table,
                         hide_index=True,
                         use_container_width=True,
-                        height=220
+                        height=308
                     )
 
 
