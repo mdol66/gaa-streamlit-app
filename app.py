@@ -2576,6 +2576,10 @@ with tab2:
             player_summary_display,
             use_container_width=True
         )
+        st.markdown(
+            "<div style='height:80px;'></div>",
+            unsafe_allow_html=True
+        )
     
     else:
         st.info("No player scoring data for current filters.")
