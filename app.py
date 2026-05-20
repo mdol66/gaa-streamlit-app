@@ -872,7 +872,14 @@ with tab0:
     with left_col:
         with st.container(border=True):
     
-            st.markdown("### Scoring")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">Scoring</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             scoring_df = dashboard_df.copy()
     
@@ -1252,7 +1259,14 @@ with tab0:
     with right_col:
         with st.container(border=True):
     
-            st.markdown("### Kickouts")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">Kickouts</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             ko_df = dashboard_df.copy()
     
