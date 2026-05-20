@@ -1245,6 +1245,18 @@ with tab0:
 
                 scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
                 scorer_table = scorer_table[["Player", "Score"]]
+                scorer_table["__sort__"] = (
+                    scorer_table["Score"]
+                    .str.split("-", expand=True)[0].astype(int) * 100
+                    +
+                    scorer_table["Score"]
+                    .str.split("-", expand=True)[1].astype(int)
+                )
+                
+                scorer_table = scorer_table.sort_values(
+                    by="__sort__",
+                    ascending=False
+                ).drop(columns="__sort__")
 
                 st.dataframe(
                     scorer_table,
