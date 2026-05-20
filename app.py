@@ -155,8 +155,8 @@ def build_pitch_shapes() -> list[dict]:
     y100_20 = 100.0 - y20
     y100_45 = 100.0 - y45
 
-    large_w = sw(19.0)
-    small_w = sw(14.0)
+    large_w = sw(15.0)
+    small_w = sw(10.5)
     goal_w = sw(6.5)
     cx = 50.0
 
@@ -215,9 +215,10 @@ def build_pitch_shapes() -> list[dict]:
             path += f" L {x},{y}"
         return path
 
-    rx13 = sw(13.0)
-    ry13 = sy(13.0)
-
+        # Small D / semi-circle
+    ry13 = sy(15.0)
+    rx13 = ry13 * ((x_right - x_left) / 100)
+    
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y20, rx13, ry13, 0, 180), line=line))
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y100_20, rx13, ry13, 180, 360), line=line))
 
@@ -871,7 +872,14 @@ with tab0:
     with left_col:
         with st.container(border=True):
     
-            st.markdown("### Scoring")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">Scoring</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             scoring_df = dashboard_df.copy()
     
@@ -1044,7 +1052,7 @@ with tab0:
                     scoring_table,
                     hide_index=True,
                     use_container_width=True,
-                    height=620
+                    height=638
                 )
     
         
@@ -1177,16 +1185,100 @@ with tab0:
                     comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
                 )
 
-                st.table(
+                st.dataframe(
                     comparison_df[
                         ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
-                    ]
+                    ],
+                    hide_index=True,
+                    use_container_width=True,
+                    height=275
                 )
+
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+
+            st.markdown("### Scorers")
+
+            scorers_df = dashboard_df.copy()
+
+            scorers_df = scorers_df[
+                scorers_df[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+
+            scorers_df["__player_clean__"] = (
+                scorers_df[cols["player"]]
+                .astype(str)
+                .apply(clean_player_name)
+            )
+
+            scorers_df["__stat1_lower__"] = (
+                scorers_df[cols["stat1"]]
+                .astype(str)
+                .str.lower()
+            )
+
+            scorers_df = scorers_df[
+                scorers_df["__stat1_lower__"]
+                .str.contains("goal|point|2 pointer", na=False)
+            ].copy()
+
+            if not scorers_df.empty:
+                scorer_table = (
+                    scorers_df
+                    .groupby("__player_clean__")
+                    .agg(
+                        Goals=("__stat1_lower__", lambda x: x.str.contains("goal", na=False).sum()),
+                        Points=("__stat1_lower__", lambda x: (
+                            x.str.contains("point", na=False).sum()
+                            + x.str.contains("2 pointer", na=False).sum()
+                        ))
+                    )
+                    .reset_index()
+                )
+
+                scorer_table["Score"] = scorer_table.apply(
+                    lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d}",
+                    axis=1
+                )
+
+                scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
+                scorer_table = scorer_table[["Player", "Score"]]
+                scorer_table["__sort__"] = (
+                    scorer_table["Score"]
+                    .str.split("-", expand=True)[0].astype(int) * 100
+                    +
+                    scorer_table["Score"]
+                    .str.split("-", expand=True)[1].astype(int)
+                )
+                
+                scorer_table = scorer_table.sort_values(
+                    by="__sort__",
+                    ascending=False
+                ).drop(columns="__sort__")
+
+                st.dataframe(
+                    scorer_table,
+                    hide_index=True,
+                    use_container_width=True,
+                    height=308
+                )
+    
+               
+
     
     with right_col:
         with st.container(border=True):
     
-            st.markdown("### Kickouts")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">Kickouts</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             ko_df = dashboard_df.copy()
     
@@ -1381,6 +1473,70 @@ with tab0:
                     )
                 else:
                     st.info("No kickout data")
+                    
+                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    
+                st.markdown("### Kickout Receivers")
+    
+                ko_receivers_df = dashboard_df.copy()
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                    .eq("ballintubber")
+                ].copy()
+    
+                ko_receivers_df["__stat1_lower__"] = (
+                    ko_receivers_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df["__stat1_lower__"]
+                    .str.contains("kick ?out", na=False)
+                ].copy()
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df["__stat1_lower__"]
+                    .str.contains("won", na=False)
+                ].copy()
+    
+                if not ko_receivers_df.empty:
+    
+                    ko_receivers_df["__player_clean__"] = (
+                        ko_receivers_df[cols["player"]]
+                        .astype(str)
+                        .apply(clean_player_name)
+                    )
+    
+                    ko_receiver_table = (
+                        ko_receivers_df
+                        .groupby("__player_clean__")
+                        .size()
+                        .reset_index(name="Own KO Won")
+                        .sort_values(
+                            by="Own KO Won",
+                            ascending=False
+                        )
+                        .head(6)
+                    )
+    
+                    ko_receiver_table = ko_receiver_table.rename(
+                        columns={
+                            "__player_clean__": "Player"
+                        }
+                    )
+    
+                    st.dataframe(
+                        ko_receiver_table,
+                        hide_index=True,
+                        use_container_width=True,
+                        height=326
+                    )
+
+
     st.markdown("---")
     st.markdown("### Match Timeline")
 
@@ -2015,6 +2171,11 @@ with tab0:
                 use_container_width=True,
                 key="timeline_second_half"
             )
+        
+            st.markdown(
+                "<div style='height:80px;'></div>",
+                unsafe_allow_html=True
+            )
 
 with tab1:
     fig = make_pitch_figure()
@@ -2575,6 +2736,10 @@ with tab2:
             player_summary_display,
             use_container_width=True
         )
+        st.markdown(
+            "<div style='height:80px;'></div>",
+            unsafe_allow_html=True
+        )
     
     else:
         st.info("No player scoring data for current filters.")
@@ -2730,5 +2895,9 @@ with tab2:
             st.dataframe(
                 player_table.style.set_properties(**{"text-align": "left"}),
                 use_container_width=True
+            )
+            st.markdown(
+                "<div style='height:80px;'></div>",
+                unsafe_allow_html=True
             )
 
