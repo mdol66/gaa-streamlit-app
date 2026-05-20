@@ -1246,68 +1246,7 @@ with tab0:
                     height=308
                 )
     
-                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-    
-                st.markdown("### Kickout Receivers")
-    
-                ko_receivers_df = dashboard_df.copy()
-    
-                ko_receivers_df = ko_receivers_df[
-                    ko_receivers_df[cols["team"]]
-                    .astype(str)
-                    .str.lower()
-                    .eq("ballintubber")
-                ].copy()
-    
-                ko_receivers_df["__stat1_lower__"] = (
-                    ko_receivers_df[cols["stat1"]]
-                    .astype(str)
-                    .str.lower()
-                )
-    
-                ko_receivers_df = ko_receivers_df[
-                    ko_receivers_df["__stat1_lower__"]
-                    .str.contains("kick ?out", na=False)
-                ].copy()
-    
-                ko_receivers_df = ko_receivers_df[
-                    ko_receivers_df["__stat1_lower__"]
-                    .str.contains("won", na=False)
-                ].copy()
-    
-                if not ko_receivers_df.empty:
-    
-                    ko_receivers_df["__player_clean__"] = (
-                        ko_receivers_df[cols["player"]]
-                        .astype(str)
-                        .apply(clean_player_name)
-                    )
-    
-                    ko_receiver_table = (
-                        ko_receivers_df
-                        .groupby("__player_clean__")
-                        .size()
-                        .reset_index(name="Own KO Won")
-                        .sort_values(
-                            by="Own KO Won",
-                            ascending=False
-                        )
-                        .head(6)
-                    )
-    
-                    ko_receiver_table = ko_receiver_table.rename(
-                        columns={
-                            "__player_clean__": "Player"
-                        }
-                    )
-    
-                    st.dataframe(
-                        ko_receiver_table,
-                        hide_index=True,
-                        use_container_width=True,
-                        height=220
-                    )
-
+               
 
     
     with right_col:
@@ -1508,6 +1447,69 @@ with tab0:
                     )
                 else:
                     st.info("No kickout data")
+                    
+                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    
+                st.markdown("### Kickout Receivers")
+    
+                ko_receivers_df = dashboard_df.copy()
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                    .eq("ballintubber")
+                ].copy()
+    
+                ko_receivers_df["__stat1_lower__"] = (
+                    ko_receivers_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df["__stat1_lower__"]
+                    .str.contains("kick ?out", na=False)
+                ].copy()
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df["__stat1_lower__"]
+                    .str.contains("won", na=False)
+                ].copy()
+    
+                if not ko_receivers_df.empty:
+    
+                    ko_receivers_df["__player_clean__"] = (
+                        ko_receivers_df[cols["player"]]
+                        .astype(str)
+                        .apply(clean_player_name)
+                    )
+    
+                    ko_receiver_table = (
+                        ko_receivers_df
+                        .groupby("__player_clean__")
+                        .size()
+                        .reset_index(name="Own KO Won")
+                        .sort_values(
+                            by="Own KO Won",
+                            ascending=False
+                        )
+                        .head(6)
+                    )
+    
+                    ko_receiver_table = ko_receiver_table.rename(
+                        columns={
+                            "__player_clean__": "Player"
+                        }
+                    )
+    
+                    st.dataframe(
+                        ko_receiver_table,
+                        hide_index=True,
+                        use_container_width=True,
+                        height=220
+                    )
+
 
     st.markdown("---")
     st.markdown("### Match Timeline")
