@@ -2732,4 +2732,8 @@ with tab2:
                 player_table.style.set_properties(**{"text-align": "left"}),
                 use_container_width=True
             )
+            st.markdown(
+                "<div style='height:80px;'></div>",
+                unsafe_allow_html=True
+            )
 
