@@ -1243,7 +1243,7 @@ with tab0:
                     scorer_table,
                     hide_index=True,
                     use_container_width=True,
-                    height=180
+                    height=300
                 )
     
     with right_col:
