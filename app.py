@@ -2016,6 +2016,11 @@ with tab0:
                 use_container_width=True,
                 key="timeline_second_half"
             )
+        
+            st.markdown(
+                "<div style='height:80px;'></div>",
+                unsafe_allow_html=True
+            )
 
 with tab1:
     fig = make_pitch_figure()
