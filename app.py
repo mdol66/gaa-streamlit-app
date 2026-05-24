@@ -430,11 +430,25 @@ def build_display_number(df: pd.DataFrame, number_col: Optional[str]) -> pd.Seri
 
 
 def clean_player_name(value: str) -> str:
+    if pd.isna(value):
+        return "Unallocated"
+
     text = str(value).strip()
+
+    if text.lower() in ["nan", "none", ""]:
+        return "Unallocated"
+
     parts = text.split()
+
     if len(parts) >= 2 and parts[0].isdigit():
-        return " ".join(parts[1:])
-    return text
+        cleaned = " ".join(parts[1:])
+    else:
+        cleaned = text
+
+    if cleaned.strip().lower() in ["nan", "none", ""]:
+        return "Unallocated"
+
+    return cleaned
 
 
 def build_player_scoring_table(
