@@ -1733,6 +1733,7 @@ with tab0:
                 mode="text",
                 text=opp_misses_h1["__miss_text__"],
                 textposition="middle center",
+                textfont=dict(size=10, color="#666666"),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
                 hoverinfo="text"
