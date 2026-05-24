@@ -1669,10 +1669,15 @@ with tab0:
             go.Scatter(
                 x=bt_misses_h1["__minute__"],
                 y=[1] * len(bt_misses_h1),
-                mode="text",
+                mode="markers+text",
                 text=bt_misses_h1["__miss_text__"],
                 textposition="middle center",
                 textfont=dict(size=20, color="#888888"),
+                marker=dict(
+                    size=20,
+                    color="#888888",
+                    symbol="x-thin-open"
+                ),
                 name="BT Misses",
                 hovertext=bt_misses_h1[cols["stat1"]],
                 hoverinfo="text"
