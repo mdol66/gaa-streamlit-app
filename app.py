@@ -1723,14 +1723,14 @@ with tab0:
 
         opp_misses_h1["__miss_symbol__"] = (
             opp_misses_h1["__score_event__"]
-            .apply(lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open")
+            .apply(lambda x: "S" if "short" in str(x).lower() else "×")
         )
 
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_misses_h1["__minute__"],
                 y=[2] * len(opp_misses_h1),
-                mode="markers+text",
+                mode="text",
                 text=opp_misses_h1["__miss_text__"],
                 textposition="middle center",
                 marker=dict(
