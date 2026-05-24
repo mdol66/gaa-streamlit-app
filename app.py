@@ -1660,6 +1660,47 @@ with tab0:
             .apply(lambda x: "$" if "short" in str(x).lower() else "")
         )
 
+        h1_score_only = h1_scores[
+            h1_scores["__score_event__"].isin(score_events)
+        ].copy()
+        
+        h1_miss_only = h1_scores[
+            h1_scores["__score_event__"].isin(miss_events_timeline)
+        ].copy()
+        
+        bt_scores_h1 = h1_score_only[
+            h1_score_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        opp_scores_h1 = h1_score_only[
+            ~h1_score_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        bt_misses_h1 = h1_miss_only[
+            h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        opp_misses_h1 = h1_miss_only[
+            ~h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+
+        bt_misses_h1["__miss_text__"] = (
+            bt_misses_h1["__score_event__"]
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
+        )
+
         opp_misses_h1["__miss_text__"] = (
             opp_misses_h1["__score_event__"]
             .apply(lambda x: "$" if "short" in str(x).lower() else "")
@@ -1672,12 +1713,12 @@ with tab0:
                 mode="markers+text",
                 text=bt_misses_h1["__miss_text__"],
                 textposition="middle center",
-                textfont=dict(size=6, color="#888888"),
+                textfont=dict(size=9, color="#888888"),
                 marker=dict(
-                    size=10,
+                    size=6,
                     color="#888888",
                     symbol=bt_misses_h1["__score_event__"].apply(
-                        lambda x: "hash-open" if "short" in str(x).lower() else "x-thin-open"
+                        lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
                     )
                 ),
                 name="BT Misses",
@@ -1709,12 +1750,12 @@ with tab0:
                 mode="markers+text",
                 text=opp_misses_h1["__miss_text__"],
                 textposition="middle center",
-                textfont=dict(size=6, color="#888888"),
+                textfont=dict(size=9, color="#888888"),
                 marker=dict(
-                    size=10,
+                    size=6,
                     color="#888888",
                     symbol=opp_misses_h1["__score_event__"].apply(
-                        lambda x: "hash-open" if "short" in str(x).lower() else "x-thin-open"
+                        lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
                     )
                 ),
                 name="Opp Misses",
