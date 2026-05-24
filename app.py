@@ -18,7 +18,7 @@ section[data-testid="stSidebar"] .block-container {
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     gap: 0.35rem !important;
 }
-
+ 
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
@@ -430,11 +430,25 @@ def build_display_number(df: pd.DataFrame, number_col: Optional[str]) -> pd.Seri
 
 
 def clean_player_name(value: str) -> str:
+    if pd.isna(value):
+        return "Unallocated"
+
     text = str(value).strip()
+
+    if text.lower() in ["nan", "none", ""]:
+        return "Unallocated"
+
     parts = text.split()
+
     if len(parts) >= 2 and parts[0].isdigit():
-        return " ".join(parts[1:])
-    return text
+        cleaned = " ".join(parts[1:])
+    else:
+        cleaned = text
+
+    if cleaned.strip().lower() in ["nan", "none", ""]:
+        return "Unallocated"
+
+    return cleaned
 
 
 def build_player_scoring_table(
@@ -1640,39 +1654,79 @@ with tab0:
             .str.lower()
             .eq("ballintubber")
         ].copy()
-        
-        fig_timeline_h1.add_trace(
-            go.Scatter(
-                x=bt_scores_h1["__minute__"],
-                y=[1] * len(bt_scores_h1),
-                mode="markers",
-                marker=dict(
-                    size=9,
-                    color=bt_scores_h1["marker_colour"],
-                    line=dict(color="#444444", width=1)
-                ),
-                name="BT Scores",
-                hovertext=bt_scores_h1[cols["player"]],
-                hoverinfo="text"
-            )
+
+        bt_misses_h1["__miss_text__"] = (
+            bt_misses_h1["__score_event__"]
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
         )
+
+        h1_score_only = h1_scores[
+            h1_scores["__score_event__"].isin(score_events)
+        ].copy()
         
+        h1_miss_only = h1_scores[
+            h1_scores["__score_event__"].isin(miss_events_timeline)
+        ].copy()
+        
+        bt_scores_h1 = h1_score_only[
+            h1_score_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        opp_scores_h1 = h1_score_only[
+            ~h1_score_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        bt_misses_h1 = h1_miss_only[
+            h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        opp_misses_h1 = h1_miss_only[
+            ~h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+
+        bt_misses_h1["__miss_text__"] = (
+            bt_misses_h1["__score_event__"]
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
+        )
+
+        opp_misses_h1["__miss_text__"] = (
+            opp_misses_h1["__score_event__"]
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
+        )
+
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=bt_misses_h1["__minute__"],
                 y=[1] * len(bt_misses_h1),
-                mode="markers",
+                mode="markers+text",
+                text=bt_misses_h1["__miss_text__"],
+                textposition="middle center",
+                textfont=dict(size=9, color="#888888"),
                 marker=dict(
-                    size=8,
+                    size=6,
                     color="#888888",
-                    symbol="x-thin-open"
+                    symbol=bt_misses_h1["__score_event__"].apply(
+                        lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                    )
                 ),
                 name="BT Misses",
                 hovertext=bt_misses_h1[cols["stat1"]],
                 hoverinfo="text"
             )
         )
-        
+
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_scores_h1["__minute__"],
@@ -1688,16 +1742,21 @@ with tab0:
                 hoverinfo="text"
             )
         )
-        
+
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_misses_h1["__minute__"],
                 y=[2] * len(opp_misses_h1),
-                mode="markers",
+                mode="markers+text",
+                text=opp_misses_h1["__miss_text__"],
+                textposition="middle center",
+                textfont=dict(size=9, color="#888888"),
                 marker=dict(
-                    size=8,
+                    size=6,
                     color="#888888",
-                    symbol="x-thin-open"
+                    symbol=opp_misses_h1["__score_event__"].apply(
+                        lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                    )
                 ),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
@@ -1916,6 +1975,10 @@ with tab0:
                 h2_scores["__score_event__"].isin(score_events)
             ].copy()
             
+            h2_score_only = h2_scores[
+                h2_scores["__score_event__"].isin(score_events)
+            ].copy()
+            
             h2_miss_only = h2_scores[
                 h2_scores["__score_event__"].isin(miss_events_timeline)
             ].copy()
@@ -1947,39 +2010,38 @@ with tab0:
                 .str.lower()
                 .eq("ballintubber")
             ].copy()
-            
-            fig_timeline_h2.add_trace(
-                go.Scatter(
-                    x=bt_scores_h2["__minute__"],
-                    y=[1] * len(bt_scores_h2),
-                    mode="markers",
-                    marker=dict(
-                        size=9,
-                        color=bt_scores_h2["marker_colour"],
-                        line=dict(color="#444444", width=1)
-                    ),
-                    name="BT Scores",
-                    hovertext=bt_scores_h2[cols["player"]],
-                    hoverinfo="text"
-                )
+
+            bt_misses_h2["__miss_text__"] = (
+                bt_misses_h2["__score_event__"]
+                .apply(lambda x: "$" if "short" in str(x).lower() else "")
             )
-            
+
+            opp_misses_h2["__miss_text__"] = (
+                opp_misses_h2["__score_event__"]
+                .apply(lambda x: "$" if "short" in str(x).lower() else "")
+            )
+
             fig_timeline_h2.add_trace(
                 go.Scatter(
                     x=bt_misses_h2["__minute__"],
                     y=[1] * len(bt_misses_h2),
-                    mode="markers",
+                    mode="markers+text",
+                    text=bt_misses_h2["__miss_text__"],
+                    textposition="middle center",
+                    textfont=dict(size=9, color="#888888"),
                     marker=dict(
-                        size=8,
+                        size=6,
                         color="#888888",
-                        symbol="x-thin-open"
+                        symbol=bt_misses_h2["__score_event__"].apply(
+                            lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                        )
                     ),
                     name="BT Misses",
                     hovertext=bt_misses_h2[cols["stat1"]],
                     hoverinfo="text"
                 )
             )
-            
+
             fig_timeline_h2.add_trace(
                 go.Scatter(
                     x=opp_scores_h2["__minute__"],
@@ -1995,16 +2057,21 @@ with tab0:
                     hoverinfo="text"
                 )
             )
-            
+
             fig_timeline_h2.add_trace(
                 go.Scatter(
                     x=opp_misses_h2["__minute__"],
                     y=[2] * len(opp_misses_h2),
-                    mode="markers",
+                    mode="markers+text",
+                    text=opp_misses_h2["__miss_text__"],
+                    textposition="middle center",
+                    textfont=dict(size=9, color="#888888"),
                     marker=dict(
-                        size=8,
+                        size=6,
                         color="#888888",
-                        symbol="x-thin-open"
+                        symbol=opp_misses_h2["__score_event__"].apply(
+                            lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                        )
                     ),
                     name="Opp Misses",
                     hovertext=opp_misses_h2[cols["stat1"]],
