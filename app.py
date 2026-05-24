@@ -1672,9 +1672,9 @@ with tab0:
                 mode="markers+text",
                 text=bt_misses_h1["__miss_text__"],
                 textposition="middle center",
-                textfont=dict(size=8, color="#888888"),
+                textfont=dict(size=7, color="#888888"),
                 marker=dict(
-                    size=9,
+                    size=10,
                     color="#888888",
                     symbol="x-thin-open"
                 ),
