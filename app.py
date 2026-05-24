@@ -1634,7 +1634,7 @@ with tab0:
             .eq("ballintubber")
         ].copy()
         
-                opp_scores_h1 = h1_score_only[
+        opp_scores_h1 = h1_score_only[
             ~h1_score_only[cols["team"]]
             .astype(str)
             .str.lower()
