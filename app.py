@@ -1674,7 +1674,7 @@ with tab0:
                 textposition="middle center",
                 textfont=dict(size=7, color="#888888"),
                 marker=dict(
-                    size=10,
+                    size=7,
                     color="#888888",
                     symbol="x-thin-open"
                 ),
