@@ -18,7 +18,7 @@ section[data-testid="stSidebar"] .block-container {
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     gap: 0.35rem !important;
 }
-
+ 
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
