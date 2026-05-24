@@ -2247,17 +2247,17 @@ with tab0:
                 ),
                 yaxis=dict(
                     tickmode="array",
-                    tickvals=[1, 2, 3, 4, 5, 6],
+                    tickvals=[1, 2, 3, 4, 5],
                     ticktext=[
                         "BT Scores",
                         "Opp Scores",
                         "BT Kickouts",
                         "Opp Kickouts",
-                        "BT Turnovers",
-                        "Opp Turnovers"
+                        "Turnovers"
                     ],
-                    range=[0.5, 6.5]
+                    range=[0.5, 5.5]
                 ),
+                
                 showlegend=False
             )
 
