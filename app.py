@@ -1657,7 +1657,7 @@ with tab0:
 
         bt_misses_h1["__miss_text__"] = (
             bt_misses_h1["__score_event__"]
-            .apply(lambda x: "s" if "short" in str(x).lower() else "×")
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
         )
 
         opp_misses_h1["__miss_text__"] = (
