@@ -1715,15 +1715,27 @@ with tab0:
             )
         )
         
+        opp_misses_h1["__miss_text__"] = (
+            opp_misses_h1["__score_event__"]
+            .apply(lambda x: "S" if "short" in x else "")
+        )
+
+        opp_misses_h1["__miss_symbol__"] = (
+            opp_misses_h1["__score_event__"]
+            .apply(lambda x: "circle-open" if "short" in x else "x-thin-open")
+        )
+
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_misses_h1["__minute__"],
                 y=[2] * len(opp_misses_h1),
-                mode="markers",
+                mode="markers+text",
+                text=opp_misses_h1["__miss_text__"],
+                textposition="middle center",
                 marker=dict(
-                    size=8,
+                    size=9,
                     color="#888888",
-                    symbol="x-thin-open"
+                    symbol=opp_misses_h1["__miss_symbol__"]
                 ),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
