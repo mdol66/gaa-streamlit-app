@@ -1672,6 +1672,7 @@ with tab0:
                 mode="markers+text",
                 text=bt_misses_h1["__miss_text__"],
                 textposition="middle center",
+                textfont=dict(size=10, color="#666666"),
                 marker=dict(
                     size=9,
                     color="#888888",
