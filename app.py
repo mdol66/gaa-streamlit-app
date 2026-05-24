@@ -1733,11 +1733,6 @@ with tab0:
                 mode="text",
                 text=opp_misses_h1["__miss_text__"],
                 textposition="middle center",
-                marker=dict(
-                    size=9,
-                    color="#888888",
-                    symbol=opp_misses_h1["__miss_symbol__"]
-                ),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
                 hoverinfo="text"
