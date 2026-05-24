@@ -1669,7 +1669,7 @@ with tab0:
             go.Scatter(
                 x=bt_misses_h1["__minute__"],
                 y=[1] * len(bt_misses_h1),
-                mode="markers+text",
+                mode="text",
                 text=bt_misses_h1["__miss_text__"],
                 textposition="middle center",
                 textfont=dict(size=10, color="#666666"),
@@ -1718,7 +1718,7 @@ with tab0:
         
         opp_misses_h1["__miss_text__"] = (
             opp_misses_h1["__score_event__"]
-            .apply(lambda x: "S" if "short" in str(x).lower() else "")
+            .apply(lambda x: "S" if "short" in str(x).lower() else "×")
         )
 
         opp_misses_h1["__miss_symbol__"] = (
