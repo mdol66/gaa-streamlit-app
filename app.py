@@ -1655,18 +1655,30 @@ with tab0:
             .eq("ballintubber")
         ].copy()
         
+        bt_misses_h1["__miss_text__"] = (
+            bt_misses_h1["__score_event__"]
+            .apply(lambda x: "S" if "short" in x else "")
+        )
+
+        bt_misses_h1["__miss_symbol__"] = (
+            bt_misses_h1["__score_event__"]
+            .apply(lambda x: "circle-open" if "short" in x else "x-thin-open")
+        )
+
         fig_timeline_h1.add_trace(
             go.Scatter(
-                x=bt_scores_h1["__minute__"],
-                y=[1] * len(bt_scores_h1),
-                mode="markers",
+                x=bt_misses_h1["__minute__"],
+                y=[1] * len(bt_misses_h1),
+                mode="markers+text",
+                text=bt_misses_h1["__miss_text__"],
+                textposition="middle center",
                 marker=dict(
                     size=9,
-                    color=bt_scores_h1["marker_colour"],
-                    line=dict(color="#444444", width=1)
+                    color="#888888",
+                    symbol=bt_misses_h1["__miss_symbol__"]
                 ),
-                name="BT Scores",
-                hovertext=bt_scores_h1[cols["player"]],
+                name="BT Misses",
+                hovertext=bt_misses_h1[cols["stat1"]],
                 hoverinfo="text"
             )
         )
