@@ -1662,7 +1662,7 @@ with tab0:
 
         opp_misses_h1["__miss_text__"] = (
             opp_misses_h1["__score_event__"]
-            .apply(lambda x: "S" if "short" in str(x).lower() else "×")
+            .apply(lambda x: "s" if "short" in str(x).lower() else "×")
         )
 
         fig_timeline_h1.add_trace(
