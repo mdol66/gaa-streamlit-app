@@ -1654,7 +1654,21 @@ with tab0:
             .str.lower()
             .eq("ballintubber")
         ].copy()
-
+        fig_timeline_h1.add_trace(
+            go.Scatter(
+                x=bt_scores_h1["__minute__"],
+                y=[1] * len(bt_scores_h1),
+                mode="markers",
+                marker=dict(
+                    size=9,
+                    color=bt_scores_h1["marker_colour"],
+                    line=dict(color="#444444", width=1)
+                ),
+                name="BT Scores",
+                hovertext=bt_scores_h1[cols["player"]],
+                hoverinfo="text"
+            )
+        )
         bt_misses_h1["__miss_text__"] = (
             bt_misses_h1["__score_event__"]
             .apply(lambda x: "$" if "short" in str(x).lower() else "")
@@ -2010,7 +2024,21 @@ with tab0:
                 .str.lower()
                 .eq("ballintubber")
             ].copy()
-
+            fig_timeline_h2.add_trace(
+                go.Scatter(
+                    x=bt_scores_h2["__minute__"],
+                    y=[1] * len(bt_scores_h2),
+                    mode="markers",
+                    marker=dict(
+                        size=9,
+                        color=bt_scores_h2["marker_colour"],
+                        line=dict(color="#444444", width=1)
+                    ),
+                    name="BT Scores",
+                    hovertext=bt_scores_h2[cols["player"]],
+                    hoverinfo="text"
+                )
+            )
             bt_misses_h2["__miss_text__"] = (
                 bt_misses_h2["__score_event__"]
                 .apply(lambda x: "$" if "short" in str(x).lower() else "")
