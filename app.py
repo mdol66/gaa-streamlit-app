@@ -2005,9 +2005,8 @@ with tab0:
                     hoverinfo="text"
                 )
             )
-
-        fig_timeline_h2.add_trace(
-            go.Scatter(
+            fig_timeline_h2.add_trace(
+                go.Scatter(
                 x=opp_misses_h2["__minute__"],
                 y=[2] * len(opp_misses_h2),
                 mode="text",
