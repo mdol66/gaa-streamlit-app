@@ -1662,7 +1662,7 @@ with tab0:
 
         opp_misses_h1["__miss_text__"] = (
             opp_misses_h1["__score_event__"]
-            .apply(lambda x: "s" if "short" in str(x).lower() else "×")
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
         )
 
         fig_timeline_h1.add_trace(
@@ -1704,10 +1704,15 @@ with tab0:
             go.Scatter(
                 x=opp_misses_h1["__minute__"],
                 y=[2] * len(opp_misses_h1),
-                mode="text",
+                mode="markers+text",
                 text=opp_misses_h1["__miss_text__"],
                 textposition="middle center",
                 textfont=dict(size=20, color="#888888"),
+                marker=dict(
+                    size=20,
+                    color="#888888",
+                    symbol="x-thin-open"
+                ),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
                 hoverinfo="text"
