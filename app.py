@@ -1672,7 +1672,7 @@ with tab0:
                 mode="text",
                 text=bt_misses_h1["__miss_text__"],
                 textposition="middle center",
-                textfont=dict(size=10, color="#666666"),
+                textfont=dict(size=16, color="#888888"),
                 marker=dict(
                     size=9,
                     color="#888888",
@@ -1733,7 +1733,7 @@ with tab0:
                 mode="text",
                 text=opp_misses_h1["__miss_text__"],
                 textposition="middle center",
-                textfont=dict(size=10, color="#666666"),
+                textfont=dict(size=16, color="#888888"),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
                 hoverinfo="text"
