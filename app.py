@@ -1672,11 +1672,13 @@ with tab0:
                 mode="markers+text",
                 text=bt_misses_h1["__miss_text__"],
                 textposition="middle center",
-                textfont=dict(size=7, color="#888888"),
+                textfont=dict(size=6, color="#888888"),
                 marker=dict(
-                    size=7,
+                    size=10,
                     color="#888888",
-                    symbol="x-thin-open"
+                    symbol=bt_misses_h1["__score_event__"].apply(
+                        lambda x: "hash-open" if "short" in str(x).lower() else "x-thin-open"
+                    )
                 ),
                 name="BT Misses",
                 hovertext=bt_misses_h1[cols["stat1"]],
@@ -1707,11 +1709,13 @@ with tab0:
                 mode="markers+text",
                 text=opp_misses_h1["__miss_text__"],
                 textposition="middle center",
-                textfont=dict(size=7, color="#888888"),
+                textfont=dict(size=6, color="#888888"),
                 marker=dict(
-                    size=7,
+                    size=10,
                     color="#888888",
-                    symbol="x-thin-open"
+                    symbol=opp_misses_h1["__score_event__"].apply(
+                        lambda x: "hash-open" if "short" in str(x).lower() else "x-thin-open"
+                    )
                 ),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
