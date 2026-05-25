@@ -1534,7 +1534,7 @@ with tab0:
                             by="Own KO Won",
                             ascending=False
                         )
-                        .head(6)
+                        .head(8)
                     )
     
                     ko_receiver_table = ko_receiver_table.rename(
