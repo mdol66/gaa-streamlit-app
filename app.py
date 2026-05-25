@@ -1257,30 +1257,47 @@ with tab0:
                     axis=1
                 )
 
-                scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
-                scorer_table = scorer_table[["Player", "Score"]]
-                scorer_table["__sort__"] = (
-                    scorer_table["Score"]
-                    .str.split("-", expand=True)[0].astype(int) * 100
-                    +
-                    scorer_table["Score"]
-                    .str.split("-", expand=True)[1].astype(int)
+                scorer_table = (
+                    scorers_df
+                    .groupby("__player_clean__")
+                    .agg(
+                        Goals=("__stat1_lower__", lambda x: x.eq("goal").sum()),
+                        OnePointers=("__stat1_lower__", lambda x: x.eq("point").sum()),
+                        TwoPointers=("__stat1_lower__", lambda x: x.eq("2 pointer").sum())
+                    )
+                    .reset_index()
                 )
                 
+                scorer_table["Points"] = (
+                    scorer_table["OnePointers"]
+                    + scorer_table["TwoPointers"] * 2
+                )
+                
+                scorer_table["TotalPoints"] = (
+                    scorer_table["Goals"] * 3
+                    + scorer_table["Points"]
+                )
+                
+                scorer_table["Score"] = scorer_table.apply(
+                    lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d} ({int(row['TotalPoints'])})",
+                    axis=1
+                )
+                
+                scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
+                
                 scorer_table = scorer_table.sort_values(
-                    by="__sort__",
+                    by="TotalPoints",
                     ascending=False
-                ).drop(columns="__sort__")
-
+                )
+                
+                scorer_table = scorer_table[["Player", "Score"]]
+                
                 st.dataframe(
                     scorer_table,
                     hide_index=True,
                     use_container_width=True,
                     height=308
-                )
-    
-               
-
+                )        
     
     with right_col:
         with st.container(border=True):
@@ -1534,7 +1551,7 @@ with tab0:
                             by="Own KO Won",
                             ascending=False
                         )
-                        .head(6)
+                        .head(8)
                     )
     
                     ko_receiver_table = ko_receiver_table.rename(
