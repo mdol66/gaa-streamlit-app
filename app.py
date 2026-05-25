@@ -1279,7 +1279,7 @@ with tab0:
                     ascending=False
                 ).drop(columns="__sort__")
                 
-                scorer_table = scorer_table[["Player", "Score"]]
+                scorer_table = scorer_table[["Player", "Score"]].copy()
         
     
     with right_col:
