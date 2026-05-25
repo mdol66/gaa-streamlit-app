@@ -1257,20 +1257,30 @@ with tab0:
                     axis=1
                 )
 
-                scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
-                scorer_table = scorer_table[
-                    ["Player", "Goals", "Points", "Score"]
-                ]
+                scorer_table = scorer_table.rename(
+                    columns={"__player_clean__": "Player"}
+                )
+                
+                # Keep hidden columns for sorting
+                scorer_table["TwoPointers"] = scorer_table["Points"]
+                
+                # Weighted score:
+                # Goal = 3
+                # 2 Pointer = 2
+                # Point = 1
                 scorer_table["__sort__"] = (
-                        scorer_table["Goals"] * 3
-                        + scorer_table["Points"]
-                    )
+                    scorer_table["Goals"] * 3
+                    + scorer_table["Points"]
+                )
                 
                 scorer_table = scorer_table.sort_values(
                     by="__sort__",
                     ascending=False
                 ).drop(columns="__sort__")
-
+                
+                # Display only final columns
+                scorer_table = scorer_table[["Player", "Score"]]
+                
                 st.dataframe(
                     scorer_table,
                     hide_index=True,
