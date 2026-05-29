@@ -555,6 +555,85 @@ def parse_match_minute(value):
         return float(text)
     except Exception:
         return None
+
+def classify_score_source(score_idx, match_df, cols):
+    score_row = match_df.loc[score_idx]
+
+    score_team = str(score_row[cols["team"]]).strip().lower()
+    score_half = str(score_row[cols["half"]]).strip().lower()
+    score_event = str(score_row[cols["stat1"]]).strip().lower()
+
+    if not score_team or score_team in ["1st half", "2nd half"]:
+        return "Review Needed"
+
+    previous_df = match_df.loc[:score_idx - 1].copy()
+
+    previous_df = previous_df[
+        previous_df[cols["half"]].astype(str).str.strip().str.lower() == score_half
+    ].copy()
+
+    if previous_df.empty:
+        return "Won Throw-In"
+
+    meaningful_previous = previous_df[
+        ~previous_df[cols["team"]].astype(str).str.strip().str.lower().isin(
+            ["1st half", "2nd half"]
+        )
+    ].copy()
+
+    if meaningful_previous.empty:
+        return "Won Throw-In"
+
+    for _, row in meaningful_previous.iloc[::-1].iterrows():
+        event = str(row[cols["stat1"]]).strip().lower()
+        team = str(row[cols["team"]]).strip().lower()
+
+        same_team = team == score_team
+        opposition_team = team != score_team
+
+        # Opposition short directly gives possession to scoring team
+        if "short" in event and opposition_team:
+            return "Short Won"
+
+        # Same-team short is continuation of possession
+        if "short" in event and same_team:
+            continue
+
+        # Frees do not automatically create source.
+        # Keep tracing back through free sequences.
+        if "free" in event and "conceded" in event:
+            continue
+
+        # Same-team turnover won
+        if event == "turnover won" and same_team:
+            return "Turnover Won"
+
+        # Opposition turnover lost
+        if event == "turnover lost" and opposition_team:
+            return "Turnover Won"
+
+        # Same-team own kickout retained
+        if "kick out won" in event and same_team:
+            return "Own Kickout Won"
+
+        # Opposition kickout lost
+        if "kick out lost" in event and opposition_team:
+            return "Opposition Kickout Won"
+
+        # If previous clear possession was opposition and no transfer was logged
+        if opposition_team and event in [
+            "point", "point from free", "point from 45",
+            "2 pointer", "2 pointer from free",
+            "goal", "goal from free", "goal from penalty",
+            "wide", "wide from free",
+            "saved", "saved from free",
+            "off posts", "off posts from free",
+            "out for 45", "out for 45 from free"
+        ]:
+            return "Likely Turnover Won"
+
+    return "Review Needed"
+
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -2423,6 +2502,59 @@ with tab1:
 
 
 with tab2:
+
+    st.subheader("Source of Score Test")
+
+    test_df = plot_df.copy()
+
+    score_events_source = [
+        "goal",
+        "goal from penalty",
+        "goal from free",
+        "point",
+        "point from free",
+        "point from 45",
+        "2 pointer",
+        "2 pointer from free"
+    ]
+
+    test_df["__stat1_lower__"] = (
+        test_df[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    score_rows = test_df[
+        test_df["__stat1_lower__"].isin(score_events_source)
+    ].copy()
+
+    source_results = []
+
+    for idx in score_rows.index:
+
+        source = classify_score_source(
+            idx,
+            test_df,
+            cols
+        )
+
+        source_results.append({
+            "Half": score_rows.loc[idx, cols["half"]],
+            "Time": score_rows.loc[idx, cols["time"]],
+            "Team": score_rows.loc[idx, cols["team"]],
+            "Score": score_rows.loc[idx, cols["stat1"]],
+            "Source": source
+        })
+
+    source_table = pd.DataFrame(source_results)
+
+    st.dataframe(
+        source_table,
+        use_container_width=True,
+        hide_index=True
+    )
+    
     def is_in(event_series, values):
         return event_series.isin(values)
 
