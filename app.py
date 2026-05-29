@@ -615,7 +615,8 @@ def classify_score_source(score_idx, match_df, cols):
         # If there is no earlier possession source in this half,
         # the free itself is the source.
         if "free" in event and "conceded" in event:
-            earlier_events = meaningful_previous.loc[:row.name - 1]
+            row_position = meaningful_previous.index.get_loc(row.name)
+            earlier_events = meaningful_previous.iloc[:row_position]
 
             if earlier_events.empty:
                 return "Free Won"
