@@ -612,7 +612,14 @@ def classify_score_source(score_idx, match_df, cols):
 
         # Frees do not automatically create source.
         # Keep tracing back through free sequences.
+        # If there is no earlier possession source in this half,
+        # the free itself is the source.
         if "free" in event and "conceded" in event:
+            earlier_events = meaningful_previous.loc[:row.name - 1]
+
+            if earlier_events.empty:
+                return "Free Won"
+
             continue
 
         # Same-team turnover won
