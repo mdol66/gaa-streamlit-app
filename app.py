@@ -2608,6 +2608,24 @@ with tab2:
         use_container_width=True,
         hide_index=True
     )
+    st.subheader("Source of Score Summary")
+
+    source_summary = (
+        source_table
+        .groupby(["Team", "Source"])
+        .size()
+        .reset_index(name="Scores")
+        .sort_values(
+            by=["Team", "Scores"],
+            ascending=[True, False]
+        )
+    )
+
+    st.dataframe(
+        source_summary,
+        use_container_width=True,
+        hide_index=True
+    )
     
     def is_in(event_series, values):
         return event_series.isin(values)
