@@ -583,13 +583,28 @@ def classify_score_source(score_idx, match_df, cols):
     ].copy()
 
     if meaningful_previous.empty:
+
+        last_previous_event = (
+            str(previous_df.iloc[-1][cols["stat1"]])
+            .strip()
+            .lower()
+            if not previous_df.empty
+            else ""
+        )
+
+        if (
+            "free" in last_previous_event
+            and "conceded" in last_previous_event
+        ):
+            return "Free Won"
+
         return "Won Throw-In"
+
     last_previous_event = str(previous_df.iloc[-1][cols["stat1"]]).strip().lower()
     last_previous_team = str(previous_df.iloc[-1][cols["team"]]).strip().lower()
 
     if (
-        len(meaningful_previous) == 0
-        or score_position <= 1
+        score_position <= 1
         or last_previous_team in ["", "nan", "none"]
         or last_previous_event in ["", "nan", "none"]
     ):
