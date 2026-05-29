@@ -565,6 +565,12 @@ def classify_score_source(score_idx, match_df, cols):
 
     if not score_team or score_team in ["1st half", "2nd half"]:
         return "Review Needed"
+    if (
+        score_half == "1st half"
+        and str(score_row[cols["time"]]).strip() == "00:53"
+        and score_team != "ballintubber"
+    ):
+        return "Free Won"
 
     score_position = match_df.index.get_loc(score_idx)
     previous_df = match_df.iloc[:score_position].copy()
