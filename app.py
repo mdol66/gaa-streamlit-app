@@ -2505,7 +2505,21 @@ with tab2:
 
     st.subheader("Source of Score Test")
 
-    test_df = plot_df.copy()
+test_df = df.copy()
+
+if cols["match_no"] and match_display_choices:
+    selected_match_nos = [
+        match_labels[label]
+        for label in match_display_choices
+    ]
+
+    test_df = test_df[
+        test_df[cols["match_no"]]
+        .astype(str)
+        .isin(selected_match_nos)
+    ].copy()
+
+test_df = test_df.reset_index(drop=True)
 
     score_events_source = [
         "goal",
