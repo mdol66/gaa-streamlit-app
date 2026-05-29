@@ -2692,18 +2692,36 @@ with tab2:
         * 100
     ).round(0).astype(int).astype(str) + "%"
 
+    source_order = {
+        "Turnover Won": 1,
+        "Opposition Kickout Won": 2,
+        "Own Kickout Won": 3,
+        "Short Won": 4,
+        "Free Won": 5,
+        "Won Throw-In": 6,
+        "Likely Turnover Won": 7,
+        "Review Needed": 8
+    }
+
+    source_summary["Sort_Order"] = (
+        source_summary["Source"]
+        .map(source_order)
+        .fillna(999)
+    )
+
     source_summary = source_summary[
         [
             "Team",
             "Source",
             "Scores",
             "% of Scores",
-            "Score Total"
+            "Score Total",
+            "Sort_Order"
         ]
     ].sort_values(
-        by=["Team", "Scores"],
-        ascending=[True, False]
-    )
+        by=["Team", "Sort_Order"]
+    ).drop(columns=["Sort_Order"])
+    
 
     st.dataframe(
         source_summary,
