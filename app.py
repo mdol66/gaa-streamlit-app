@@ -2610,15 +2610,99 @@ with tab2:
     )
     st.subheader("Source of Score Summary")
 
+    source_table["Score_Value"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({
+            "goal": 3,
+            "goal from free": 3,
+            "goal from penalty": 3,
+            "2 pointer": 2,
+            "2 pointer from free": 2,
+            "point": 1,
+            "point from free": 1,
+            "point from 45": 1
+        })
+        .fillna(0)
+    )
+
+    source_table["Goals"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "goal",
+            "goal from free",
+            "goal from penalty"
+        ])
+        .astype(int)
+    )
+
+    source_table["Points"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "point",
+            "point from free",
+            "point from 45"
+        ])
+        .astype(int)
+    )
+
+    source_table["TwoPointers"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "2 pointer",
+            "2 pointer from free"
+        ])
+        .astype(int)
+    )
+
     source_summary = (
         source_table
-        .groupby(["Team", "Source"])
-        .size()
-        .reset_index(name="Scores")
-        .sort_values(
-            by=["Team", "Scores"],
-            ascending=[True, False]
-        )
+        .groupby(["Team", "Source"], as_index=False)
+        .agg({
+            "Score": "count",
+            "Goals": "sum",
+            "Points": "sum",
+            "TwoPointers": "sum",
+            "Score_Value": "sum"
+        })
+        .rename(columns={"Score": "Scores"})
+    )
+
+    source_summary["Score Total"] = (
+        source_summary["Goals"].astype(str)
+        + "-"
+        + (
+            source_summary["Points"]
+            + (source_summary["TwoPointers"] * 2)
+        ).astype(str)
+    )
+
+    source_summary["% of Scores"] = (
+        source_summary["Scores"]
+        / source_summary.groupby("Team")["Scores"]
+        .transform("sum")
+        * 100
+    ).round(0).astype(int).astype(str) + "%"
+
+    source_summary = source_summary[
+        [
+            "Team",
+            "Source",
+            "Scores",
+            "% of Scores",
+            "Score Total"
+        ]
+    ].sort_values(
+        by=["Team", "Scores"],
+        ascending=[True, False]
     )
 
     st.dataframe(
