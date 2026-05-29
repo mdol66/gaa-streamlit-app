@@ -2506,52 +2506,52 @@ with tab2:
     st.subheader("Source of Score Test")
 
     test_df = df.copy()
-    
+
     if cols["match_no"] and match_display_choices:
         selected_match_nos = [
             match_labels[label]
             for label in match_display_choices
         ]
-    
+
         test_df = test_df[
             test_df[cols["match_no"]]
             .astype(str)
             .isin(selected_match_nos)
         ].copy()
-    
-    test_df = test_df.reset_index(drop=True)
-    
-        score_events_source = [
-            "goal",
-            "goal from penalty",
-            "goal from free",
-            "point",
-            "point from free",
-            "point from 45",
-            "2 pointer",
-            "2 pointer from free"
-        ]
 
-        test_df["__stat1_lower__"] = (
-            test_df[cols["stat1"]]
-            .astype(str)
-            .str.strip()
-            .str.lower()
+    test_df = test_df.reset_index(drop=True)
+
+    score_events_source = [
+        "goal",
+        "goal from penalty",
+        "goal from free",
+        "point",
+        "point from free",
+        "point from 45",
+        "2 pointer",
+        "2 pointer from free"
+    ]
+
+    test_df["__stat1_lower__"] = (
+        test_df[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    score_rows = test_df[
+        test_df["__stat1_lower__"].isin(score_events_source)
+    ].copy()
+
+    source_results = []
+
+    for idx in score_rows.index:
+
+        source = classify_score_source(
+            idx,
+            test_df,
+            cols
         )
-    
-        score_rows = test_df[
-            test_df["__stat1_lower__"].isin(score_events_source)
-        ].copy()
-    
-        source_results = []
-    
-        for idx in score_rows.index:
-    
-            source = classify_score_source(
-                idx,
-                test_df,
-                cols
-            )
 
         source_results.append({
             "Half": score_rows.loc[idx, cols["half"]],
