@@ -2728,10 +2728,7 @@ with tab2:
         by=["Team", "Sort_Order"]
     ).drop(columns=["Sort_Order"])
     
-    source_summary = source_summary.sort_values(
-        by=["Team", "Sort_Order"]
-    ).reset_index(drop=True)
-    
+ 
     st.dataframe(
         source_summary,
         use_container_width=True,
