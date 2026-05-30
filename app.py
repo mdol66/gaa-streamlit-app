@@ -670,7 +670,7 @@ def classify_score_source(score_idx, match_df, cols):
             "off posts", "off posts from free",
             "out for 45", "out for 45 from free"
         ]:
-            return "Likely Turnover Won"
+            return "Turnover Won"
 
     return "Review Needed"
 
@@ -2730,8 +2730,7 @@ with tab2:
         "Short Won": 4,
         "Free Won": 5,
         "Won Throw-In": 6,
-        "Likely Turnover Won": 7,
-        "Review Needed": 8
+        "Review Needed": 7
     }
 
     source_summary["Sort_Order"] = (
