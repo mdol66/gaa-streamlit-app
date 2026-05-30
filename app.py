@@ -3377,13 +3377,203 @@ with tab4:
 
     st.subheader("Player Shot Analysis")
 
+    player_shot_df = plot_df.copy()
+
+    player_shot_df = player_shot_df[
+        player_shot_df[cols["team"]]
+        .astype(str)
+        .str.lower()
+        .eq("ballintubber")
+    ].copy()
+
+    player_shot_df["__player_clean__"] = (
+        player_shot_df[cols["player"]]
+        .astype(str)
+        .apply(clean_player_name)
+    )
+
+    player_shot_df["__stat1_lower__"] = (
+        player_shot_df[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    player_shot_events = [
+        "goal",
+        "goal from penalty",
+        "goal from free",
+        "point",
+        "point from free",
+        "point from 45",
+        "2 pointer",
+        "2 pointer from free",
+        "wide",
+        "wide from free",
+        "short",
+        "short from free",
+        "saved",
+        "saved from free",
+        "off posts",
+        "off posts from free",
+        "out for 45",
+        "out for 45 from free"
+    ]
+
+    player_shot_df = player_shot_df[
+        player_shot_df["__stat1_lower__"].isin(player_shot_events)
+    ].copy()
+
+    if cols["stat2"]:
+        player_shot_df["__is_placed__"] = (
+            player_shot_df[cols["stat2"]]
+            .fillna("")
+            .astype(str)
+            .str.strip() != ""
+        )
+    else:
+        player_shot_df["__is_placed__"] = False
+
+    def build_player_shot_table(df):
+        if df.empty:
+            return pd.DataFrame()
+
+        summary = (
+            df.groupby("__player_clean__")
+            .agg(
+                Goals=("__stat1_lower__", lambda x: x.isin([
+                    "goal",
+                    "goal from penalty",
+                    "goal from free"
+                ]).sum()),
+                TwoPointers=("__stat1_lower__", lambda x: x.isin([
+                    "2 pointer",
+                    "2 pointer from free"
+                ]).sum()),
+                Points=("__stat1_lower__", lambda x: x.isin([
+                    "point",
+                    "point from free",
+                    "point from 45"
+                ]).sum()),
+                Wides=("__stat1_lower__", lambda x: x.isin([
+                    "wide",
+                    "wide from free"
+                ]).sum()),
+                Shorts=("__stat1_lower__", lambda x: x.isin([
+                    "short",
+                    "short from free"
+                ]).sum()),
+                Saved=("__stat1_lower__", lambda x: x.isin([
+                    "saved",
+                    "saved from free"
+                ]).sum()),
+                OffPosts=("__stat1_lower__", lambda x: x.isin([
+                    "off posts",
+                    "off posts from free"
+                ]).sum()),
+                OutFor45=("__stat1_lower__", lambda x: x.isin([
+                    "out for 45",
+                    "out for 45 from free"
+                ]).sum()),
+                TotalShots=("__stat1_lower__", "count")
+            )
+            .reset_index()
+        )
+
+        summary["Scores"] = (
+            summary["Goals"]
+            + summary["TwoPointers"]
+            + summary["Points"]
+        )
+
+        summary["Efficiency"] = (
+            summary["Scores"]
+            / summary["TotalShots"].replace(0, pd.NA)
+        ).fillna(0)
+
+        summary["Efficiency"] = (
+            (summary["Efficiency"] * 100)
+            .round(0)
+            .astype(int)
+            .astype(str)
+            + "%"
+        )
+
+        summary["Score Return"] = (
+            summary["Goals"].astype(int).astype(str)
+            + "-"
+            + (
+                summary["Points"]
+                + (summary["TwoPointers"] * 2)
+            ).astype(int).astype(str)
+        )
+
+        summary = summary.rename(columns={
+            "__player_clean__": "Player",
+            "TwoPointers": "2 Pointers",
+            "OffPosts": "Off Posts",
+            "OutFor45": "Out for 45",
+            "TotalShots": "Total Shots"
+        })
+
+        summary = summary[
+            [
+                "Player",
+                "Goals",
+                "2 Pointers",
+                "Points",
+                "Efficiency",
+                "Score Return",
+                "Wides",
+                "Shorts",
+                "Saved",
+                "Off Posts",
+                "Out for 45",
+                "Total Shots"
+            ]
+        ].sort_values(
+            by="Total Shots",
+            ascending=False
+        )
+
+        return summary
+
+    play_shots_df = player_shot_df[
+        ~player_shot_df["__is_placed__"]
+    ].copy()
+
+    placed_shots_df = player_shot_df[
+        player_shot_df["__is_placed__"]
+    ].copy()
+
+    play_table = build_player_shot_table(play_shots_df)
+    placed_table = build_player_shot_table(placed_shots_df)
+
     play_col, placed_col = st.columns(2)
 
     with play_col:
         st.markdown("### Shots From Play")
 
+        if not play_table.empty:
+            st.dataframe(
+                play_table,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info("No shots from play for current filters.")
+
     with placed_col:
         st.markdown("### Placed Ball Shots")
+
+        if not placed_table.empty:
+            st.dataframe(
+                placed_table,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info("No placed ball shots for current filters.")
 
     st.markdown("---")
 
