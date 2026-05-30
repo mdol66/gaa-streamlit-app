@@ -235,7 +235,7 @@ def build_pitch_shapes() -> list[dict]:
 def add_pitch_labels(fig: go.Figure) -> None:
     fig.add_annotation(
         x=50,
-        y=-5,
+        y=0,
         text="Opposition GOAL",
         showarrow=False,
         font=dict(
@@ -246,7 +246,7 @@ def add_pitch_labels(fig: go.Figure) -> None:
 
     fig.add_annotation(
         x=50,
-        y=105,
+        y=100,
         text="Ballintubber GOAL",
         showarrow=False,
         font=dict(
