@@ -2616,6 +2616,8 @@ with tab2:
         "% of Scores = percentage of that team's total scores."
     )
 
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+
     source_table["Score_Value"] = (
         source_table["Score"]
         .astype(str)
