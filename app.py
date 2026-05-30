@@ -2768,7 +2768,7 @@ with tab2:
             y="Source",
             color="Team",
             orientation="h",
-            text="Scores",
+            text="Score Total",
             title="Source of Score",
             color_discrete_map={
                 "Ballintubber": "red",
