@@ -3613,10 +3613,9 @@ with tab4:
     placed_table = build_player_shot_table(
         placed_shots_df
     )
+    play_col, placed_col = st.columns(2)
 
-    table_col, map_col = st.columns([1, 2])
-
-    with table_col:
+    with play_col:
 
         st.markdown("### Shots From Play")
 
@@ -3631,9 +3630,9 @@ with tab4:
                 "No shots from play for current filters."
             )
 
-        st.markdown(
-            "### Placed Ball Shots"
-        )
+    with placed_col:
+
+        st.markdown("### Placed Ball Shots")
 
         if not placed_table.empty:
             st.dataframe(
@@ -3646,30 +3645,108 @@ with tab4:
                 "No placed ball shots for current filters."
             )
 
-    with map_col:
+    st.markdown("---")
 
-        st.markdown(
-            "### Shot Location Map"
-        )
+    legend_col, map_col = st.columns([1, 5])
 
-        shot_map_df = (
-            player_shot_df.copy()
-        )
+    with legend_col:
+
+        st.markdown("### Legend")
+
+        shot_map_df = player_shot_df.copy()
 
         shot_map_df = shot_map_df[
-            shot_map_df["__x_plot__"]
-            .notna()
-            &
-            shot_map_df["__y_plot__"]
-            .notna()
+            shot_map_df["__x_plot__"].notna()
+            & shot_map_df["__y_plot__"].notna()
         ].copy()
+
+        legend_counts = (
+            shot_map_df[cols["outcome"]]
+            .map(normalize_outcome)
+            .value_counts()
+            .reset_index()
+        )
+
+        legend_counts.columns = ["category", "count"]
+
+        palette = event_palette_all()
+
+        for _, row in legend_counts.iterrows():
+            cat = row["category"]
+            cnt = row["count"]
+            color = palette.get(cat, "#000000")
+
+            st.markdown(
+                f"""
+                <div style="display:flex; align-items:center; margin-bottom:6px;">
+                    <div style="
+                        width:14px;
+                        height:14px;
+                        border-radius:50%;
+                        background:{color};
+                        border:2px solid #E8E8E8;
+                        margin-right:8px;
+                        flex-shrink:0;
+                    "></div>
+                    <div style="font-size:14px;">{cat} ({cnt})</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        st.markdown("### Channel breakdown")
+
+        channel_df = shot_map_df.copy()
+
+        x_series = channel_df[cols["x"]]
+
+        channel_df["Channel"] = pd.cut(
+            x_series,
+            bins=[-0.01, 33.33, 66.66, 100.01],
+            labels=["1", "2", "3"]
+        )
+
+        channel_df["Outcome"] = (
+            channel_df[cols["outcome"]]
+            .map(normalize_outcome)
+        )
+
+        channel_table = (
+            channel_df
+            .groupby(["Outcome", "Channel"])
+            .size()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+
+        totals = channel_table.select_dtypes(
+            include="number"
+        ).sum()
+
+        totals["Outcome"] = "Total"
+
+        channel_table = pd.concat(
+            [
+                channel_table,
+                pd.DataFrame([totals])
+            ],
+            ignore_index=True
+        )
+
+        st.dataframe(
+            channel_table,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    with map_col:
+
+        st.markdown("### Shot Location Map")
 
         if not shot_map_df.empty:
 
-            fig_player_shots = (
-                make_pitch_figure(
-                    title="Player Shot Location Map"
-                )
+            fig_player_shots = make_pitch_figure(
+                title="Player Shot Location Map"
             )
 
             add_numbered_markers(
