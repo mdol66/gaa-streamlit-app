@@ -3557,7 +3557,7 @@ with tab4:
         if not play_table.empty:
             st.dataframe(
                 play_table,
-                use_container_width=True,
+                use_container_width=False,
                 hide_index=True
             )
         else:
@@ -3569,7 +3569,7 @@ with tab4:
         if not placed_table.empty:
             st.dataframe(
                 placed_table,
-                use_container_width=True,
+                use_container_width=False,
                 hide_index=True
             )
         else:
