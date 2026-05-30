@@ -236,14 +236,15 @@ def add_pitch_labels(fig: go.Figure) -> None:
     fig.add_annotation(
         x=50,
         y=15,
-        text="Ballintubber GOAL",
+        text="Opposition GOAL",
         showarrow=False,
         font=dict(size=24, color="rgba(255,255,255,0.42)"),
     )
+
     fig.add_annotation(
         x=50,
         y=85,
-        text="Opposition GOAL",
+        text="Ballintubber GOAL",
         showarrow=False,
         font=dict(size=24, color="rgba(0,0,0,0.42)"),
     )
