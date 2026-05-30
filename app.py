@@ -3377,7 +3377,26 @@ with tab4:
 
     st.subheader("Player Shot Analysis")
 
-    st.info(
-        "Player shot analysis coming next..."
+    player_shot_df = plot_df.copy()
+
+    player_shot_df["__player_clean__"] = (
+        player_shot_df[cols["player"]]
+        .astype(str)
+        .apply(clean_player_name)
+    )
+
+    player_options = (
+        player_shot_df["__player_clean__"]
+        .dropna()
+        .astype(str)
+        .loc[lambda s: s.str.strip() != ""]
+        .sort_values()
+        .unique()
+        .tolist()
+    )
+
+    selected_player_shot = st.selectbox(
+        "Select Player",
+        ["All Players"] + player_options
     )
 
