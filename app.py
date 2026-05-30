@@ -235,18 +235,24 @@ def build_pitch_shapes() -> list[dict]:
 def add_pitch_labels(fig: go.Figure) -> None:
     fig.add_annotation(
         x=50,
-        y=15,
+        y=6,
         text="Opposition GOAL",
         showarrow=False,
-        font=dict(size=24, color="rgba(255,255,255,0.42)"),
+        font=dict(
+            size=18,
+            color="rgba(255,255,255,0.55)"
+        ),
     )
 
     fig.add_annotation(
         x=50,
-        y=85,
+        y=94,
         text="Ballintubber GOAL",
         showarrow=False,
-        font=dict(size=24, color="rgba(0,0,0,0.42)"),
+        font=dict(
+            size=18,
+            color="rgba(255,255,255,0.55)"
+        ),
     )
     # Channel labels
     for x, label in [(19.33, "1"), (50, "2"), (80.67, "3")]:
