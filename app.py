@@ -2480,8 +2480,162 @@ with tab1:
             .str.strip() != ""
         )
 
-        st.write(
-            f"Rows found: {len(shot_table_df)}"
+        def build_player_shot_summary(df):
+
+            if df.empty:
+                return pd.DataFrame()
+
+            summary = (
+                df.groupby("__player_clean__")
+                .agg(
+                    Goals=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "goal",
+                            "goal from penalty",
+                            "goal from free"
+                        ]).sum()
+                    ),
+                    TwoPointers=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "2 pointer",
+                            "2 pointer from free"
+                        ]).sum()
+                    ),
+                    Points=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "point",
+                            "point from free",
+                            "point from 45"
+                        ]).sum()
+                    ),
+                    Wides=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "wide",
+                            na=False
+                        ).sum()
+                    ),
+                    Shorts=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "short",
+                            na=False
+                        ).sum()
+                    ),
+                    TotalShots=(
+                        "__stat1_lower__",
+                        "count"
+                    )
+                )
+                .reset_index()
+            )
+
+            summary["Scores"] = (
+                summary["Goals"]
+                + summary["TwoPointers"]
+                + summary["Points"]
+            )
+
+            summary["Efficiency"] = (
+                summary["Scores"]
+                / summary["TotalShots"]
+            ).fillna(0)
+
+            summary["Efficiency"] = (
+                (
+                    summary["Efficiency"]
+                    * 100
+                )
+                .round(0)
+                .astype(int)
+                .astype(str)
+                + "%"
+            )
+
+            summary["Score Return"] = (
+                summary["Goals"]
+                .astype(str)
+                + "-"
+                + (
+                    summary["Points"]
+                    + (
+                        summary["TwoPointers"]
+                        * 2
+                    )
+                ).astype(str)
+            )
+
+            summary = summary.rename(
+                columns={
+                    "__player_clean__":
+                    "Player",
+                    "TwoPointers":
+                    "2 Pointers",
+                    "TotalShots":
+                    "Total Shots"
+                }
+            )
+
+            summary = summary[
+                [
+                    "Player",
+                    "Goals",
+                    "2 Pointers",
+                    "Points",
+                    "Efficiency",
+                    "Score Return",
+                    "Wides",
+                    "Shorts",
+                    "Total Shots"
+                ]
+            ].sort_values(
+                by="Total Shots",
+                ascending=False
+            )
+
+            return summary
+
+        play_table = (
+            build_player_shot_summary(
+                shot_table_df[
+                    ~shot_table_df[
+                        "__is_placed__"
+                    ]
+                ]
+            )
+        )
+
+        placed_table = (
+            build_player_shot_summary(
+                shot_table_df[
+                    shot_table_df[
+                        "__is_placed__"
+                    ]
+                ]
+            )
+        )
+
+        st.markdown(
+            "**Shots From Play**"
+        )
+
+        st.dataframe(
+            play_table,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.markdown(
+            "**Placed Ball Shots**"
+        )
+
+        st.dataframe(
+            placed_table,
+            use_container_width=True,
+            hide_index=True
         )
 
     col1, col2 = st.columns([2, 5], vertical_alignment="center")
