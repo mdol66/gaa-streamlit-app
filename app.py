@@ -3421,7 +3421,9 @@ with tab4:
     ]
 
     player_shot_df = player_shot_df[
-        player_shot_df["__stat1_lower__"].isin(player_shot_events)
+        player_shot_df["__stat1_lower__"].isin(
+            player_shot_events
+        )
     ].copy()
 
     if cols["stat2"]:
@@ -3435,47 +3437,75 @@ with tab4:
         player_shot_df["__is_placed__"] = False
 
     def build_player_shot_table(df):
+
         if df.empty:
             return pd.DataFrame()
 
         summary = (
             df.groupby("__player_clean__")
             .agg(
-                Goals=("__stat1_lower__", lambda x: x.isin([
-                    "goal",
-                    "goal from penalty",
-                    "goal from free"
-                ]).sum()),
-                TwoPointers=("__stat1_lower__", lambda x: x.isin([
-                    "2 pointer",
-                    "2 pointer from free"
-                ]).sum()),
-                Points=("__stat1_lower__", lambda x: x.isin([
-                    "point",
-                    "point from free",
-                    "point from 45"
-                ]).sum()),
-                Wides=("__stat1_lower__", lambda x: x.isin([
-                    "wide",
-                    "wide from free"
-                ]).sum()),
-                Shorts=("__stat1_lower__", lambda x: x.isin([
-                    "short",
-                    "short from free"
-                ]).sum()),
-                Saved=("__stat1_lower__", lambda x: x.isin([
-                    "saved",
-                    "saved from free"
-                ]).sum()),
-                OffPosts=("__stat1_lower__", lambda x: x.isin([
-                    "off posts",
-                    "off posts from free"
-                ]).sum()),
-                OutFor45=("__stat1_lower__", lambda x: x.isin([
-                    "out for 45",
-                    "out for 45 from free"
-                ]).sum()),
-                TotalShots=("__stat1_lower__", "count")
+                Goals=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "goal",
+                        "goal from penalty",
+                        "goal from free"
+                    ]).sum()
+                ),
+                TwoPointers=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "2 pointer",
+                        "2 pointer from free"
+                    ]).sum()
+                ),
+                Points=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "point",
+                        "point from free",
+                        "point from 45"
+                    ]).sum()
+                ),
+                Wides=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "wide",
+                        "wide from free"
+                    ]).sum()
+                ),
+                Shorts=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "short",
+                        "short from free"
+                    ]).sum()
+                ),
+                Saved=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "saved",
+                        "saved from free"
+                    ]).sum()
+                ),
+                OffPosts=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "off posts",
+                        "off posts from free"
+                    ]).sum()
+                ),
+                OutFor45=(
+                    "__stat1_lower__",
+                    lambda x: x.isin([
+                        "out for 45",
+                        "out for 45 from free"
+                    ]).sum()
+                ),
+                TotalShots=(
+                    "__stat1_lower__",
+                    "count"
+                )
             )
             .reset_index()
         )
@@ -3488,7 +3518,8 @@ with tab4:
 
         summary["Efficiency"] = (
             summary["Scores"]
-            / summary["TotalShots"].replace(0, pd.NA)
+            / summary["TotalShots"]
+            .replace(0, pd.NA)
         ).fillna(0)
 
         summary["Efficiency"] = (
@@ -3500,12 +3531,18 @@ with tab4:
         )
 
         summary["Score Return"] = (
-            summary["Goals"].astype(int).astype(str)
+            summary["Goals"]
+            .astype(int)
+            .astype(str)
             + "-"
             + (
                 summary["Points"]
-                + (summary["TwoPointers"] * 2)
-            ).astype(int).astype(str)
+                + (
+                    summary["TwoPointers"] * 2
+                )
+            )
+            .astype(int)
+            .astype(str)
         )
 
         summary = summary.rename(columns={
@@ -3569,71 +3606,98 @@ with tab4:
         player_shot_df["__is_placed__"]
     ].copy()
 
-    play_table = build_player_shot_table(play_shots_df)
-    placed_table = build_player_shot_table(placed_shots_df)
+    play_table = build_player_shot_table(
+        play_shots_df
+    )
 
-    play_col, placed_col = st.columns(2)
+    placed_table = build_player_shot_table(
+        placed_shots_df
+    )
 
-    with play_col:
+    table_col, map_col = st.columns([1, 2])
+
+    with table_col:
+
         st.markdown("### Shots From Play")
 
         if not play_table.empty:
             st.dataframe(
                 play_table,
-                use_container_width=False,
+                use_container_width=True,
                 hide_index=True
             )
         else:
-            st.info("No shots from play for current filters.")
+            st.info(
+                "No shots from play for current filters."
+            )
 
-    with placed_col:
-        st.markdown("### Placed Ball Shots")
+        st.markdown(
+            "### Placed Ball Shots"
+        )
 
         if not placed_table.empty:
             st.dataframe(
                 placed_table,
-                use_container_width=False,
+                use_container_width=True,
                 hide_index=True
             )
         else:
-            st.info("No placed ball shots for current filters.")
+            st.info(
+                "No placed ball shots for current filters."
+            )
 
-    st.markdown("---")
+    with map_col:
 
-    st.markdown("### Shot Location Map")
-
-    shot_map_df = player_shot_df.copy()
-
-    shot_map_df = shot_map_df[
-        shot_map_df["__x_plot__"].notna()
-        & shot_map_df["__y_plot__"].notna()
-    ].copy()
-
-    if not shot_map_df.empty:
-
-        fig_player_shots = make_pitch_figure(
-            title="Player Shot Location Map"
+        st.markdown(
+            "### Shot Location Map"
         )
 
-        add_numbered_markers(
-            fig_player_shots,
-            shot_map_df,
-            "__x_plot__",
-            "__y_plot__",
-            "__plot_number__",
-            cols["outcome"],
-            cols["player"]
+        shot_map_df = (
+            player_shot_df.copy()
         )
 
-        fig_player_shots.update_layout(
-            height=700,
-            margin=dict(l=20, r=8, t=40, b=8)
-        )
+        shot_map_df = shot_map_df[
+            shot_map_df["__x_plot__"]
+            .notna()
+            &
+            shot_map_df["__y_plot__"]
+            .notna()
+        ].copy()
 
-        st.plotly_chart(
-            fig_player_shots,
-            use_container_width=True
-        )
+        if not shot_map_df.empty:
 
-    else:
-        st.info("No shot locations available for current filters.")
+            fig_player_shots = (
+                make_pitch_figure(
+                    title="Player Shot Location Map"
+                )
+            )
+
+            add_numbered_markers(
+                fig_player_shots,
+                shot_map_df,
+                "__x_plot__",
+                "__y_plot__",
+                "__plot_number__",
+                cols["outcome"],
+                cols["player"]
+            )
+
+            fig_player_shots.update_layout(
+                height=700,
+                margin=dict(
+                    l=20,
+                    r=8,
+                    t=40,
+                    b=8
+                )
+            )
+
+            st.plotly_chart(
+                fig_player_shots,
+                use_container_width=True
+            )
+
+        else:
+            st.info(
+                "No shot locations available for current filters."
+            )
