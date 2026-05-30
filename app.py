@@ -2770,7 +2770,11 @@ with tab2:
             color="Team",
             orientation="h",
             text="Scores",
-            title="Source of Score"
+            title="Source of Score",
+            color_discrete_map={
+                "Ballintubber": "red",
+                "Opposition": "lightgrey"
+            }
         )
 
         fig_source.update_layout(
