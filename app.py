@@ -2410,11 +2410,15 @@ with tab1:
     marker_df = plot_df.copy()
 
     if len(marker_df):
+        marker_df["__y_plot_flipped__"] = (
+            100
+            - marker_df["__y_plot__"]
+        )
         add_numbered_markers(
             fig,
             marker_df,
             "__x_plot__",
-            "__y_plot__",
+            "__y_plot_flipped__",
             "__plot_number__",
             cols["outcome"],
             cols["player"]
