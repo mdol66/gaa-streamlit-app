@@ -3377,26 +3377,14 @@ with tab4:
 
     st.subheader("Player Shot Analysis")
 
-    player_shot_df = plot_df.copy()
+    play_col, placed_col = st.columns(2)
 
-    player_shot_df["__player_clean__"] = (
-        player_shot_df[cols["player"]]
-        .astype(str)
-        .apply(clean_player_name)
-    )
+    with play_col:
+        st.markdown("### Shots From Play")
 
-    player_options = (
-        player_shot_df["__player_clean__"]
-        .dropna()
-        .astype(str)
-        .loc[lambda s: s.str.strip() != ""]
-        .sort_values()
-        .unique()
-        .tolist()
-    )
+    with placed_col:
+        st.markdown("### Placed Ball Shots")
 
-    selected_player_shot = st.selectbox(
-        "Select Player",
-        ["All Players"] + player_options
-    )
+    st.markdown("---")
 
+    st.markdown("### Shot Location Map")
