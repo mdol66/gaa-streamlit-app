@@ -2423,6 +2423,37 @@ with tab1:
     col1, col2 = st.columns([2, 5], vertical_alignment="center")
 
     with col1:
+        with st.expander(
+            "Player Shot Analysis Table",
+            expanded=False
+        ):
+
+            shot_table_df = marker_df.copy()
+
+            shot_table_df = shot_table_df[
+                shot_table_df[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+
+            shot_table_df["__player_clean__"] = (
+                shot_table_df[cols["player"]]
+                .astype(str)
+                .apply(clean_player_name)
+            )
+
+            shot_table_df["__stat1_lower__"] = (
+                shot_table_df[cols["stat1"]]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+            )
+
+            st.write(
+                f"Rows found: {len(shot_table_df)}"
+            )
+            
         st.markdown("### Legend")
 
         legend_counts = (
