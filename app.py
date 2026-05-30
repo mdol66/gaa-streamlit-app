@@ -2428,7 +2428,7 @@ with tab1:
             expanded=False
         ):
 
-            shot_table_df = marker_df.copy()
+            shot_table_df = analysis_df.copy()
 
             shot_table_df = shot_table_df[
                 shot_table_df[cols["team"]]
