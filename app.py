@@ -331,7 +331,7 @@ def event_palette() -> dict[str, str]:
     return {
         "goal": "#15FF00",
         "point": "#F5A300",
-        "2 pointer": "#A39A00",
+        "2 pointer": "#FFD700",
         "wide": "#FF3B30",
         "off posts": "#A8A8A8",
         "out for 45": "#20D5E8",
@@ -348,7 +348,7 @@ def event_palette_all() -> dict[str, str]:
     return {
         "goal": "#00C853",
         "point": "#FFB300",
-        "2 pointer": "#8E24AA",
+        "2 pointer": "#FFD700",
         "wide": "#F4511E",
         "off posts": "#90A4AE",
         "out for 45": "#00ACC1",
