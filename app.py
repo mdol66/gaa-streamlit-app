@@ -2618,7 +2618,7 @@ with tab2:
 
 st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
-    source_table["Score_Value"] = (
+source_table["Score_Value"] = (
         source_table["Score"]
         .astype(str)
         .str.strip()
@@ -2636,7 +2636,7 @@ st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
         .fillna(0)
     )
 
-    source_table["Goals"] = (
+source_table["Goals"] = (
         source_table["Score"]
         .astype(str)
         .str.lower()
@@ -2648,7 +2648,7 @@ st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
         .astype(int)
     )
 
-    source_table["Points"] = (
+source_table["Points"] = (
         source_table["Score"]
         .astype(str)
         .str.lower()
@@ -2660,7 +2660,7 @@ st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
         .astype(int)
     )
 
-    source_table["TwoPointers"] = (
+source_table["TwoPointers"] = (
         source_table["Score"]
         .astype(str)
         .str.lower()
@@ -2671,7 +2671,7 @@ st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
         .astype(int)
     )
 
-    source_summary = (
+source_summary = (
         source_table
         .groupby(["Team", "Source"], as_index=False)
         .agg({
@@ -2684,7 +2684,7 @@ st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
         .rename(columns={"Score": "Scores"})
     )
 
-    source_summary["Score Total"] = (
+source_summary["Score Total"] = (
         source_summary["Goals"].astype(str)
         + "-"
         + (
@@ -2693,14 +2693,14 @@ st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
         ).astype(str)
     )
 
-    source_summary["% of Scores"] = (
+source_summary["% of Scores"] = (
         source_summary["Scores"]
         / source_summary.groupby("Team")["Scores"]
         .transform("sum")
         * 100
     ).round(0).astype(int).astype(str) + "%"
 
-    source_order = {
+source_order = {
         "Turnover Won": 1,
         "Opposition Kickout Won": 2,
         "Own Kickout Won": 3,
@@ -2711,13 +2711,13 @@ st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
         "Review Needed": 8
     }
 
-    source_summary["Sort_Order"] = (
+source_summary["Sort_Order"] = (
         source_summary["Source"]
         .map(source_order)
         .fillna(999)
     )
 
-    source_summary = source_summary[
+source_summary = source_summary[
         [
             "Team",
             "Source",
