@@ -606,15 +606,6 @@ def classify_score_source(score_idx, match_df, cols):
 
         return "Won Throw-In"
 
-    last_previous_event = str(previous_df.iloc[-1][cols["stat1"]]).strip().lower()
-    last_previous_team = str(previous_df.iloc[-1][cols["team"]]).strip().lower()
-
-    if (
-        score_position <= 1
-        or last_previous_team in ["", "nan", "none"]
-        or last_previous_event in ["", "nan", "none"]
-    ):
-        return "Won Throw-In"
 
     for _, row in meaningful_previous.iloc[::-1].iterrows():
         event = str(row[cols["stat1"]]).strip().lower()
