@@ -2616,125 +2616,123 @@ with tab2:
         "% of Scores = percentage of that team's total scores."
     )
 
-st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div style='height:4px;'></div>",
+        unsafe_allow_html=True
+    )
 
-        source_table["Score_Value"] = (
-            source_table["Score"]
-            .astype(str)
-            .str.strip()
-            .str.lower()
-            .map({
-                "goal": 3,
-                "goal from free": 3,
-                "goal from penalty": 3,
-                "2 pointer": 2,
-                "2 pointer from free": 2,
-                "point": 1,
-                "point from free": 1,
-                "point from 45": 1
-            })
-            .fillna(0)
-        )
+    source_table["Score_Value"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({
+            "goal": 3,
+            "goal from free": 3,
+            "goal from penalty": 3,
+            "2 pointer": 2,
+            "2 pointer from free": 2,
+            "point": 1,
+            "point from free": 1,
+            "point from 45": 1
+        })
+        .fillna(0)
+    )
 
-        source_table["Goals"] = (
-            source_table["Score"]
-            .astype(str)
-            .str.lower()
-            .isin([
-                "goal",
-                "goal from free",
-                "goal from penalty"
-            ])
-            .astype(int)
-        )
+    source_table["Goals"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "goal",
+            "goal from free",
+            "goal from penalty"
+        ])
+        .astype(int)
+    )
 
-        source_table["Points"] = (
-            source_table["Score"]
-            .astype(str)
-            .str.lower()
-            .isin([
-                "point",
-                "point from free",
-                "point from 45"
-            ])
-            .astype(int)
-        )
+    source_table["Points"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "point",
+            "point from free",
+            "point from 45"
+        ])
+        .astype(int)
+    )
 
-        source_table["TwoPointers"] = (
-            source_table["Score"]
-            .astype(str)
-            .str.lower()
-            .isin([
-                "2 pointer",
-                "2 pointer from free"
-            ])
-            .astype(int)
-        )
+    source_table["TwoPointers"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "2 pointer",
+            "2 pointer from free"
+        ])
+        .astype(int)
+    )
 
-        source_summary = (
-            source_table
-            .groupby(["Team", "Source"], as_index=False)
-            .agg({
-                "Score": "count",
-                "Goals": "sum",
-                "Points": "sum",
-                "TwoPointers": "sum",
-                "Score_Value": "sum"
-            })
-            .rename(columns={"Score": "Scores"})
-        )
+    source_summary = (
+        source_table
+        .groupby(["Team", "Source"], as_index=False)
+        .agg({
+            "Score": "count",
+            "Goals": "sum",
+            "Points": "sum",
+            "TwoPointers": "sum",
+            "Score_Value": "sum"
+        })
+        .rename(columns={"Score": "Scores"})
+    )
 
-        source_summary["Score Total"] = (
-            source_summary["Goals"].astype(str)
-            + "-"
-            + (
-                source_summary["Points"]
-                + (source_summary["TwoPointers"] * 2)
-            ).astype(str)
-        )
+    source_summary["Score Total"] = (
+        source_summary["Goals"].astype(str)
+        + "-"
+        + (
+            source_summary["Points"]
+            + (source_summary["TwoPointers"] * 2)
+        ).astype(str)
+    )
 
-        source_summary["% of Scores"] = (
-            source_summary["Scores"]
-            / source_summary.groupby("Team")["Scores"]
-            .transform("sum")
-            * 100
-        ).round(0).astype(int).astype(str) + "%"
+    source_summary["% of Scores"] = (
+        source_summary["Scores"]
+        / source_summary.groupby("Team")["Scores"]
+        .transform("sum")
+        * 100
+    ).round(0).astype(int).astype(str) + "%"
 
-        source_order = {
-            "Turnover Won": 1,
-            "Opposition Kickout Won": 2,
-            "Own Kickout Won": 3,
-            "Short Won": 4,
-            "Free Won": 5,
-            "Won Throw-In": 6,
-            "Likely Turnover Won": 7,
-            "Review Needed": 8
-        }
+    source_order = {
+        "Turnover Won": 1,
+        "Opposition Kickout Won": 2,
+        "Own Kickout Won": 3,
+        "Short Won": 4,
+        "Free Won": 5,
+        "Won Throw-In": 6,
+        "Likely Turnover Won": 7,
+        "Review Needed": 8
+    }
 
-        source_summary["Sort_Order"] = (
-            source_summary["Source"]
-            .map(source_order)
-            .fillna(999)
-        )
+    source_summary["Sort_Order"] = (
+        source_summary["Source"]
+        .map(source_order)
+        .fillna(999)
+    )
 
-        source_summary = source_summary[
-            [
-                "Team",
-                "Source",
-                "Scores",
-                "% of Scores",
-                "Score Total",
-                "Sort_Order"
-            ]
-        ].sort_values(
-            by=["Team", "Sort_Order"]
-        ).drop(columns=["Sort_Order"])
+    source_summary = source_summary[
+        [
+            "Team",
+            "Source",
+            "Scores",
+            "% of Scores",
+            "Score Total",
+            "Sort_Order"
+        ]
+    ].sort_values(
+        by=["Team", "Sort_Order"]
+    ).drop(columns=["Sort_Order"])
 
-        st.dataframe(
-            source_summary,
-            use_container_width=True,
-            hide_index=True
-        )
     st.dataframe(
         source_summary,
         use_container_width=True,
