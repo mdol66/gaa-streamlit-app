@@ -579,7 +579,7 @@ def classify_score_source(score_idx, match_df, cols):
         previous_df[cols["half"]].astype(str).str.strip().str.lower() == score_half
     ].copy()
 
-    if previous_df.empty:
+    if score_position <= 1 and meaningful_previous.empty:
         return "Won Throw-In"
 
     meaningful_previous = previous_df[
