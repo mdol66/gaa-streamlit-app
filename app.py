@@ -3601,3 +3601,39 @@ with tab4:
     st.markdown("---")
 
     st.markdown("### Shot Location Map")
+
+    shot_map_df = player_shot_df.copy()
+
+    shot_map_df = shot_map_df[
+        shot_map_df["__x_plot__"].notna()
+        & shot_map_df["__y_plot__"].notna()
+    ].copy()
+
+    if not shot_map_df.empty:
+
+        fig_player_shots = make_pitch_figure(
+            title="Player Shot Location Map"
+        )
+
+        add_numbered_markers(
+            fig_player_shots,
+            shot_map_df,
+            "__x_plot__",
+            "__y_plot__",
+            "__plot_number__",
+            cols["outcome"],
+            cols["player"]
+        )
+
+        fig_player_shots.update_layout(
+            height=700,
+            margin=dict(l=20, r=8, t=40, b=8)
+        )
+
+        st.plotly_chart(
+            fig_player_shots,
+            use_container_width=True
+        )
+
+    else:
+        st.info("No shot locations available for current filters.")
