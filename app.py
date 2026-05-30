@@ -3373,4 +3373,11 @@ with tab2:
                 "<div style='height:80px;'></div>",
                 unsafe_allow_html=True
             )
+with tab4:
+
+    st.subheader("Player Shot Analysis")
+
+    st.info(
+        "Player shot analysis coming next..."
+    )
 
