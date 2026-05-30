@@ -3379,6 +3379,55 @@ with tab4:
     st.subheader("Player Shot Analysis")
 
     player_shot_df = analysis_df.copy()
+    
+    player_shot_df[cols["x"]] = (
+        pd.to_numeric(
+            player_shot_df[cols["x"]],
+            errors="coerce"
+        ).fillna(-1)
+    )
+
+    player_shot_df[cols["y"]] = (
+        pd.to_numeric(
+            player_shot_df[cols["y"]],
+            errors="coerce"
+        ).fillna(-1)
+    )
+
+    player_shot_df["__x_plot__"] = (
+        x_left
+        + (
+            player_shot_df[cols["x"]]
+            / 100.0
+        )
+        * (
+            x_right
+            - x_left
+        )
+    )
+
+    player_shot_df["__y_plot__"] = (
+        player_shot_df[cols["y"]]
+    )
+
+    player_shot_df.loc[
+        (
+            player_shot_df[cols["x"]] == -1
+        )
+        |
+        (
+            player_shot_df[cols["y"]] == -1
+        ),
+        [
+            "__x_plot__",
+            "__y_plot__"
+        ]
+    ] = pd.NA
+
+    player_shot_df["__plot_number__"] = range(
+        1,
+        len(player_shot_df) + 1
+    )
 
     player_shot_df = player_shot_df[
         player_shot_df[cols["team"]]
