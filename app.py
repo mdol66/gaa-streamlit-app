@@ -2638,7 +2638,10 @@ with tab1:
             hide_index=True
         )
 
-    col1, col2 = st.columns([2, 5], vertical_alignment="center")
+    col1, col2 = st.columns(
+        [2, 5],
+        vertical_alignment="top"
+    )
     
     with col1:
           
