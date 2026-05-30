@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-st.set_page_config(page_title="Gaelic Football Pitch Maps", layout="wide")
+st.set_page_config(page_title="Gaelic Football Match Analysis App", layout="wide")
 
 st.markdown("""
 <style>
@@ -2603,11 +2603,15 @@ with tab2:
 
     source_table = pd.DataFrame(source_results)
 
-    st.dataframe(
-        source_table,
-        use_container_width=True,
-        hide_index=True
-    )
+    with st.expander(
+        "Source of Score Debug Table",
+        expanded=False
+    ):
+        st.dataframe(
+            source_table,
+            use_container_width=True,
+            hide_index=True
+        )
     st.subheader("Source of Score Summary")
 
     source_table["Score_Value"] = (
