@@ -2543,8 +2543,6 @@ with tab1:
 
 with tab2:
 
-    st.subheader("Source of Score Test")
-
     test_df = df.copy()
 
     if cols["match_no"] and match_display_choices:
@@ -2730,7 +2728,10 @@ with tab2:
         by=["Team", "Sort_Order"]
     ).drop(columns=["Sort_Order"])
     
-
+    source_summary = source_summary.sort_values(
+        by=["Team", "Sort_Order"]
+    ).reset_index(drop=True)
+    
     st.dataframe(
         source_summary,
         use_container_width=True,
