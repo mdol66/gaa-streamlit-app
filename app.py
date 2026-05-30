@@ -574,6 +574,7 @@ def classify_score_source(score_idx, match_df, cols):
 
     score_position = match_df.index.get_loc(score_idx)
     previous_df = match_df.iloc[:score_position].copy()
+    score_position = match_df.index.get_loc(score_idx)
 
     previous_df = previous_df[
         previous_df[cols["half"]].astype(str).str.strip().str.lower() == score_half
