@@ -2613,6 +2613,10 @@ with tab2:
             hide_index=True
         )
     st.subheader("Source of Score Summary")
+    st.caption(
+        "Shows where each team's scores originated from. "
+        "% of Scores = percentage of that team's total scores."
+    )
 
     source_table["Score_Value"] = (
         source_table["Score"]
