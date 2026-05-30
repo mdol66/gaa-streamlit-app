@@ -2419,231 +2419,230 @@ with tab1:
             cols["outcome"],
             cols["player"]
         )
+    with st.expander(
+        "Player Shot Analysis Table",
+        expanded=False
+    ):
+        shot_table_df = analysis_df.copy()
 
+        shot_table_df = shot_table_df[
+            shot_table_df[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+
+        shot_table_df["__player_clean__"] = (
+            shot_table_df[cols["player"]]
+            .astype(str)
+            .apply(clean_player_name)
+        )
+
+        shot_table_df["__stat1_lower__"] = (
+            shot_table_df[cols["stat1"]]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
+
+        shot_table_df["__is_placed__"] = (
+            shot_table_df[cols["stat2"]]
+            .fillna("")
+            .astype(str)
+            .str.strip() != ""
+        )
+
+        def build_player_shot_summary(df):
+
+            if df.empty:
+                return pd.DataFrame()
+
+            summary = (
+                df.groupby("__player_clean__")
+                .agg(
+                    Goals=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "goal",
+                            "goal from penalty",
+                            "goal from free"
+                        ]).sum()
+                    ),
+                    TwoPointers=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "2 pointer",
+                            "2 pointer from free"
+                        ]).sum()
+                    ),
+                    Points=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "point",
+                            "point from free",
+                            "point from 45"
+                        ]).sum()
+                    ),
+                    Wides=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "wide",
+                            na=False
+                        ).sum()
+                    ),
+                    Shorts=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "short",
+                            na=False
+                        ).sum()
+                    ),
+                    TotalShots=(
+                        "__stat1_lower__",
+                        "count"
+                    )
+                )
+                .reset_index()
+            )
+
+            summary["Scores"] = (
+                summary["Goals"]
+                + summary["TwoPointers"]
+                + summary["Points"]
+            )
+
+            summary["Efficiency"] = (
+                summary["Scores"]
+                / summary["TotalShots"]
+            ).fillna(0)
+
+            summary["Efficiency"] = (
+                (
+                    summary["Efficiency"]
+                    * 100
+                )
+                .round(0)
+                .astype(int)
+                .astype(str)
+                + "%"
+            )
+
+            summary["Score Return"] = (
+                summary["Goals"]
+                .astype(str)
+                + "-"
+                + (
+                    summary["Points"]
+                    + (
+                        summary["TwoPointers"]
+                        * 2
+                    )
+                ).astype(str)
+            )
+
+            summary = summary.rename(
+                columns={
+                    "__player_clean__":
+                    "Player",
+                    "TwoPointers":
+                    "2 Pointers",
+                    "TotalShots":
+                    "Total Shots"
+                }
+            )
+
+            keep_cols = [
+                "Player",
+                "Goals",
+                "2 Pointers",
+                "Points",
+                "Efficiency",
+                "Score Return",
+                "Wides",
+                "Shorts",
+                "Total Shots"
+            ]
+
+            hide_if_zero = [
+                "Goals",
+                "2 Pointers",
+                "Points",
+                "Wides",
+                "Shorts"
+            ]
+
+            final_cols = []
+
+            for col in keep_cols:
+
+                if col not in hide_if_zero:
+                    final_cols.append(col)
+
+                elif summary[col].sum() > 0:
+                    final_cols.append(col)
+
+            summary = summary[
+                final_cols
+            ].sort_values(
+                by="Total Shots",
+                ascending=False
+            )
+
+            return summary
+
+        play_table = (
+            build_player_shot_summary(
+                shot_table_df[
+                    ~shot_table_df[
+                        "__is_placed__"
+                    ]
+                ]
+            )
+        )
+
+        placed_table = (
+            build_player_shot_summary(
+                shot_table_df[
+                    shot_table_df[
+                        "__is_placed__"
+                    ]
+                ]
+            )
+        )
+
+        st.markdown(
+            "**Shots From Play**"
+        )
+
+        if not play_table.empty:
+            st.dataframe(
+                play_table,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info(
+                "No shots from play."
+            )
+
+        st.markdown(
+            "**Placed Ball Shots**"
+        )
+
+        if not placed_table.empty:
+            st.dataframe(
+                placed_table,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info(
+                "No placed ball shots."
+            )
     col1, col2 = st.columns([2, 5], vertical_alignment="center")
 
     with col1:
-        with st.expander(
-            "Player Shot Analysis Table",
-            expanded=False
-        ):
 
-            shot_table_df = analysis_df.copy()
-
-            shot_table_df = shot_table_df[
-                shot_table_df[cols["team"]]
-                .astype(str)
-                .str.lower()
-                .eq("ballintubber")
-            ].copy()
-
-            shot_table_df["__player_clean__"] = (
-                shot_table_df[cols["player"]]
-                .astype(str)
-                .apply(clean_player_name)
-            )
-
-            shot_table_df["__stat1_lower__"] = (
-                shot_table_df[cols["stat1"]]
-                .astype(str)
-                .str.strip()
-                .str.lower()
-            )
-
-            shot_table_df["__is_placed__"] = (
-                shot_table_df[cols["stat2"]]
-                .fillna("")
-                .astype(str)
-                .str.strip() != ""
-            )
-
-            def build_player_shot_summary(df):
-
-                if df.empty:
-                    return pd.DataFrame()
-
-                summary = (
-                    df.groupby("__player_clean__")
-                    .agg(
-                        Goals=(
-                            "__stat1_lower__",
-                            lambda x: x.isin([
-                                "goal",
-                                "goal from penalty",
-                                "goal from free"
-                            ]).sum()
-                        ),
-                        TwoPointers=(
-                            "__stat1_lower__",
-                            lambda x: x.isin([
-                                "2 pointer",
-                                "2 pointer from free"
-                            ]).sum()
-                        ),
-                        Points=(
-                            "__stat1_lower__",
-                            lambda x: x.isin([
-                                "point",
-                                "point from free",
-                                "point from 45"
-                            ]).sum()
-                        ),
-                        Wides=(
-                            "__stat1_lower__",
-                            lambda x: x.str.contains(
-                                "wide",
-                                na=False
-                            ).sum()
-                        ),
-                        Shorts=(
-                            "__stat1_lower__",
-                            lambda x: x.str.contains(
-                                "short",
-                                na=False
-                            ).sum()
-                        ),
-                        TotalShots=(
-                            "__stat1_lower__",
-                            "count"
-                        )
-                    )
-                    .reset_index()
-                )
-
-                summary["Scores"] = (
-                    summary["Goals"]
-                    + summary["TwoPointers"]
-                    + summary["Points"]
-                )
-
-                summary["Efficiency"] = (
-                    summary["Scores"]
-                    / summary["TotalShots"]
-                ).fillna(0)
-
-                summary["Efficiency"] = (
-                    (
-                        summary["Efficiency"]
-                        * 100
-                    )
-                    .round(0)
-                    .astype(int)
-                    .astype(str)
-                    + "%"
-                )
-
-                summary["Score Return"] = (
-                    summary["Goals"]
-                    .astype(str)
-                    + "-"
-                    + (
-                        summary["Points"]
-                        + (
-                            summary["TwoPointers"]
-                            * 2
-                        )
-                    ).astype(str)
-                )
-
-                summary = summary.rename(
-                    columns={
-                        "__player_clean__":
-                        "Player",
-                        "TwoPointers":
-                        "2 Pointers",
-                        "TotalShots":
-                        "Total Shots"
-                    }
-                )
-
-                keep_cols = [
-                    "Player",
-                    "Goals",
-                    "2 Pointers",
-                    "Points",
-                    "Efficiency",
-                    "Score Return",
-                    "Wides",
-                    "Shorts",
-                    "Total Shots"
-                ]
-
-                hide_if_zero = [
-                    "Goals",
-                    "2 Pointers",
-                    "Points",
-                    "Wides",
-                    "Shorts"
-                ]
-
-                final_cols = []
-
-                for col in keep_cols:
-
-                    if col not in hide_if_zero:
-                        final_cols.append(col)
-
-                    elif summary[col].sum() > 0:
-                        final_cols.append(col)
-
-                summary = summary[
-                    final_cols
-                ].sort_values(
-                    by="Total Shots",
-                    ascending=False
-                )
-
-                return summary
-
-            play_table = (
-                build_player_shot_summary(
-                    shot_table_df[
-                        ~shot_table_df[
-                            "__is_placed__"
-                        ]
-                    ]
-                )
-            )
-
-            placed_table = (
-                build_player_shot_summary(
-                    shot_table_df[
-                        shot_table_df[
-                            "__is_placed__"
-                        ]
-                    ]
-                )
-            )
-
-            st.markdown(
-                "**Shots From Play**"
-            )
-
-            if not play_table.empty:
-                st.dataframe(
-                    play_table,
-                    use_container_width=True,
-                    hide_index=True
-                )
-            else:
-                st.info(
-                    "No shots from play."
-                )
-
-            st.markdown(
-                "**Placed Ball Shots**"
-            )
-
-            if not placed_table.empty:
-                st.dataframe(
-                    placed_table,
-                    use_container_width=True,
-                    hide_index=True
-                )
-            else:
-                st.info(
-                    "No placed ball shots."
-                )
                 
             
         st.markdown("### Legend")
