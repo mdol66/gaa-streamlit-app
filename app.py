@@ -565,6 +565,9 @@ def classify_score_source(score_idx, match_df, cols):
 
     if not score_team or score_team in ["1st half", "2nd half"]:
         return "Review Needed"
+        
+    score_position = match_df.index.get_loc(score_idx)
+    
     if (
         score_half == "1st half"
         and str(score_row[cols["time"]]).strip() == "00:53"
@@ -572,22 +575,20 @@ def classify_score_source(score_idx, match_df, cols):
     ):
         return "Free Won"
 
-    score_position = match_df.index.get_loc(score_idx)
     previous_df = match_df.iloc[:score_position].copy()
-    score_position = match_df.index.get_loc(score_idx)
 
     previous_df = previous_df[
         previous_df[cols["half"]].astype(str).str.strip().str.lower() == score_half
     ].copy()
-
-    if score_position <= 1 and meaningful_previous.empty:
-        return "Won Throw-In"
 
     meaningful_previous = previous_df[
         ~previous_df[cols["team"]].astype(str).str.strip().str.lower().isin(
             ["1st half", "2nd half"]
         )
     ].copy()
+
+    if score_position <= 1 and meaningful_previous.empty:
+        return "Won Throw-In"
 
     if meaningful_previous.empty:
 
