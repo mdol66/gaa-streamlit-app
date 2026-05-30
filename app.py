@@ -2577,27 +2577,47 @@ with tab2:
         .str.lower()
     )
 
-    score_rows = test_df[
-        test_df["__stat1_lower__"].isin(score_events_source)
-    ].copy()
-
     source_results = []
 
-    for idx in score_rows.index:
-
-        source = classify_score_source(
-            idx,
-            test_df,
-            cols
+    if cols["match_no"]:
+        match_groups = test_df.groupby(
+            test_df[cols["match_no"]].astype(str),
+            sort=False
         )
+    else:
+        match_groups = [("Selected Data", test_df)]
 
-        source_results.append({
-            "Half": score_rows.loc[idx, cols["half"]],
-            "Time": score_rows.loc[idx, cols["time"]],
-            "Team": score_rows.loc[idx, cols["team"]],
-            "Score": score_rows.loc[idx, cols["stat1"]],
-            "Source": source
-        })
+    for match_label, match_source_df in match_groups:
+
+        match_source_df = match_source_df.reset_index(drop=True)
+
+        score_rows = match_source_df[
+            match_source_df["__stat1_lower__"].isin(score_events_source)
+        ].copy()
+
+        for idx in score_rows.index:
+
+            source = classify_score_source(
+                idx,
+                match_source_df,
+                cols
+            )
+
+            team_value = str(score_rows.loc[idx, cols["team"]]).strip()
+
+            if team_value.lower() == "ballintubber":
+                team_group = "Ballintubber"
+            else:
+                team_group = "Opposition"
+
+            source_results.append({
+                "Match": match_label,
+                "Half": score_rows.loc[idx, cols["half"]],
+                "Time": score_rows.loc[idx, cols["time"]],
+                "Team": team_group,
+                "Score": score_rows.loc[idx, cols["stat1"]],
+                "Source": source
+            })
 
     source_table = pd.DataFrame(source_results)
 
