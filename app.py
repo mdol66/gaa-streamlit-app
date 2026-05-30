@@ -2438,38 +2438,38 @@ with tab1:
             .apply(clean_player_name)
         )
 
-        shot_table_df["__stat1_lower__"] = (
-            shot_table_df[cols["stat1"]]
-            .astype(str)
-            .str.strip()
-            .str.lower()
-        )
-            shot_table_events = [
-                "goal",
-                "goal from penalty",
-                "goal from free",
-                "point",
-                "point from free",
-                "point from 45",
-                "2 pointer",
-                "2 pointer from free",
-                "wide",
-                "wide from free",
-                "short",
-                "short from free",
-                "saved",
-                "saved from free",
-                "off posts",
-                "off posts from free",
-                "out for 45",
-                "out for 45 from free"
-            ]
+    shot_table_df["__stat1_lower__"] = (
+        shot_table_df[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+        shot_table_events = [
+            "goal",
+            "goal from penalty",
+            "goal from free",
+            "point",
+            "point from free",
+            "point from 45",
+            "2 pointer",
+            "2 pointer from free",
+            "wide",
+            "wide from free",
+            "short",
+            "short from free",
+            "saved",
+            "saved from free",
+            "off posts",
+            "off posts from free",
+            "out for 45",
+            "out for 45 from free"
+        ]
 
-            shot_table_df = shot_table_df[
-                shot_table_df["__stat1_lower__"].isin(
-                    shot_table_events
-                )
-            ].copy()
+        shot_table_df = shot_table_df[
+            shot_table_df["__stat1_lower__"].isin(
+                shot_table_events
+            )
+        ].copy()
 
         shot_table_df["__is_placed__"] = (
             shot_table_df[cols["stat2"]]
