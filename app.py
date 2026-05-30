@@ -2753,11 +2753,38 @@ with tab2:
         by=["Team", "Sort_Order"]
     ).drop(columns=["Sort_Order"])
 
-    st.dataframe(
-        source_summary,
-        use_container_width=True,
-        hide_index=True
-    )
+    source_col1, source_col2 = st.columns([1, 1])
+
+    with source_col1:
+        st.dataframe(
+            source_summary,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    with source_col2:
+        fig_source = px.bar(
+            source_summary,
+            x="Scores",
+            y="Source",
+            color="Team",
+            orientation="h",
+            text="Scores",
+            title="Source of Score"
+        )
+
+        fig_source.update_layout(
+            height=360,
+            margin=dict(l=10, r=10, t=45, b=10),
+            yaxis_title=None,
+            xaxis_title="Scores",
+            legend_title=None
+        )
+
+        st.plotly_chart(
+            fig_source,
+            use_container_width=True
+        )
     
     def is_in(event_series, values):
         return event_series.isin(values)
