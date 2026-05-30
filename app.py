@@ -799,7 +799,8 @@ if cols["half"]:
     half_choice = st.sidebar.selectbox("Half", halves)
     if half_choice != "All":
         plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
-
+        
+analysis_df = plot_df.copy()
 shot_type_filter = "All"
 
 if mode == "Shots" and cols["stat1"] and cols["stat2"]:
