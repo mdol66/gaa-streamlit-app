@@ -3516,21 +3516,44 @@ with tab4:
             "TotalShots": "Total Shots"
         })
 
+        display_columns = [
+            "Player",
+            "Goals",
+            "2 Pointers",
+            "Points",
+            "Efficiency",
+            "Score Return",
+            "Wides",
+            "Shorts",
+            "Saved",
+            "Off Posts",
+            "Out for 45",
+            "Total Shots"
+        ]
+
+        zero_hide_columns = [
+            "Goals",
+            "2 Pointers",
+            "Points",
+            "Wides",
+            "Shorts",
+            "Saved",
+            "Off Posts",
+            "Out for 45"
+        ]
+
+        columns_to_keep = []
+
+        for col in display_columns:
+
+            if col not in zero_hide_columns:
+                columns_to_keep.append(col)
+
+            elif summary[col].sum() > 0:
+                columns_to_keep.append(col)
+
         summary = summary[
-            [
-                "Player",
-                "Goals",
-                "2 Pointers",
-                "Points",
-                "Efficiency",
-                "Score Return",
-                "Wides",
-                "Shorts",
-                "Saved",
-                "Off Posts",
-                "Out for 45",
-                "Total Shots"
-            ]
+            columns_to_keep
         ].sort_values(
             by="Total Shots",
             ascending=False
