@@ -3378,7 +3378,7 @@ with tab4:
 
     st.subheader("Player Shot Analysis")
 
-    player_shot_df = plot_df.copy()
+    player_shot_df = analysis_df.copy()
 
     player_shot_df = player_shot_df[
         player_shot_df[cols["team"]]
