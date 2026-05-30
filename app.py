@@ -848,11 +848,13 @@ filters_applied = (
 )
 
 plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
-tab0, tab1, tab2, tab3 = st.tabs([
+
+tab0, tab1, tab2, tab3, tab4 = st.tabs([
     "Match Dashboard",
     "Pitch Map",
     "Scoring Analysis",
-    "Non-Scoring Analysis"
+    "Non-Scoring Analysis",
+    "Player Shot Analysis"
 ])
 
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
