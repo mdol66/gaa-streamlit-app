@@ -2806,9 +2806,9 @@ with tab1:
             hide_index=True,
             column_config={
                 "Outcome": st.column_config.TextColumn(width="small"),
-                "1": st.column_config.NumberColumn(width=65),
-                "2": st.column_config.NumberColumn(width=65),
-                "3": st.column_config.NumberColumn(width=65),
+                "1": st.column_config.NumberColumn(width=40),
+                "2": st.column_config.NumberColumn(width=40),
+                "3": st.column_config.NumberColumn(width=40),
             }
         )
 
