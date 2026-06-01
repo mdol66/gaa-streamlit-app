@@ -2791,6 +2791,17 @@ with tab1:
             justify-content: center !important;
             text-align: center !important;
         }
+        /* Reduce row height */
+        div[data-testid="stDataFrame"] [role="gridcell"] {
+            min-height: 24px !important;
+            height: 24px !important;
+        }
+        
+        /* Reduce header height */
+        div[data-testid="stDataFrame"] [role="columnheader"] {
+            min-height: 24px !important;
+            height: 24px !important;
+        }
         </style>
         """, unsafe_allow_html=True)
         
