@@ -418,17 +418,6 @@ def add_numbered_markers(
             )
         )
 
-                hoverinfo="text",
-                hoverlabel=dict(font_size=14),
-                customdata=group[
-                    [label_col] + ([player_col] if player_col and player_col in group.columns else [])
-                ].values,
-                hovertemplate="Player=%{customdata[1]}<extra></extra>"
-                if player_col and player_col in group.columns
-                else "<extra></extra>",
-            )
-        )
-
 
 def infer_columns(df: pd.DataFrame) -> dict[str, Optional[str]]:
     return {
