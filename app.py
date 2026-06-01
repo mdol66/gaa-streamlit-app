@@ -2721,40 +2721,40 @@ with tab1:
                     .reset_index()
                 )
         
-        legend_counts.columns = ["category", "count"]
+            legend_counts.columns = ["category", "count"]
 
-        palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
-
-        for _, row in legend_counts.iterrows():
-            cat = row["category"]
-            cnt = row["count"]
-            if str(cat).lower() == "point":
-                color = "#FFFFFF"
-                border_color = "#444444"
-            elif str(cat).lower() == "2 pointer":
-                color = "#FFA500"
-                border_color = "#444444"
-            else:
-                color = palette.get(cat, "#000000")
-                border_color = "#E8E8E8"
-
-            st.markdown(
-                f"""
-                <div style="display:flex; align-items:center; margin-bottom:6px;">
-                    <div style="
-                        width:14px;
-                        height:14px;
-                        border-radius:50%;
-                        background:{color};
-                        border:2px solid {border_color};
-                        margin-right:8px;
-                        flex-shrink:0;
-                    "></div>
-                    <div style="font-size:14px;">{cat} ({cnt})</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
+    
+            for _, row in legend_counts.iterrows():
+                cat = row["category"]
+                cnt = row["count"]
+                if str(cat).lower() == "point":
+                    color = "#FFFFFF"
+                    border_color = "#444444"
+                elif str(cat).lower() == "2 pointer":
+                    color = "#FFA500"
+                    border_color = "#444444"
+                else:
+                    color = palette.get(cat, "#000000")
+                    border_color = "#E8E8E8"
+    
+                st.markdown(
+                    f"""
+                    <div style="display:flex; align-items:center; margin-bottom:6px;">
+                        <div style="
+                            width:14px;
+                            height:14px;
+                            border-radius:50%;
+                            background:{color};
+                            border:2px solid {border_color};
+                            margin-right:8px;
+                            flex-shrink:0;
+                        "></div>
+                        <div style="font-size:14px;">{cat} ({cnt})</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
     # --- Channel breakdown (1 = left, 3 = right) ---
         st.markdown("<h4 style='margin-bottom:4px;'>Channel breakdown</h4>", unsafe_allow_html=True)
 
