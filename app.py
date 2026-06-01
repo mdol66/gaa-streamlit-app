@@ -2805,7 +2805,7 @@ with tab1:
         </style>
         """, unsafe_allow_html=True)
         
-      st.table(
+        st.table(
         channel_table.style.apply(
             lambda row: [
                 "font-weight: bold" if row["Outcome"] == "Total" else ""
