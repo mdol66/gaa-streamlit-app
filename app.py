@@ -378,7 +378,12 @@ def add_numbered_markers(
     df[category_col] = df[category_col].map(normalize_outcome)
 
     for category, group in df.groupby(category_col, dropna=False):
-        if str(category) == "point":
+        if str(category).lower() == "point":
+            color = "#FFFFFF"
+        elif str(category).lower() == "2 pointer":
+            color = "#FFA500"
+        else:
+            color = palette.get(str(category), "#000000")
             color = "#FFFFFF"
         elif str(category) == "2 pointer":
             color = "#FFA500"
