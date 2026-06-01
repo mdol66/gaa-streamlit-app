@@ -2697,37 +2697,40 @@ with tab1:
             value=True,
             key="show_pitch_legend"
         )
+
         if show_legend:
-                st.markdown("### Legend")
-                if mode == "Shots":
-                    st.markdown(
-                        """
-                        <div style="
-                            font-size:12px;
-                            margin-bottom:8px;
-                            line-height:1.3;
-                        ">
-                            ⚪ White border = From Play<br>
-                            ⚫ Black border = From Placed
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-        
-                legend_counts = (
-                    marker_df[cols["outcome"]]
-                    .map(normalize_outcome)
-                    .value_counts()
-                    .reset_index()
+            st.markdown("### Legend")
+
+            if mode == "Shots":
+                st.markdown(
+                    """
+                    <div style="
+                        font-size:12px;
+                        margin-bottom:8px;
+                        line-height:1.3;
+                    ">
+                        ⚪ White border = From Play<br>
+                        ⚫ Black border = From Placed
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
-        
+
+            legend_counts = (
+                marker_df[cols["outcome"]]
+                .map(normalize_outcome)
+                .value_counts()
+                .reset_index()
+            )
+
             legend_counts.columns = ["category", "count"]
 
             palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
-    
+
             for _, row in legend_counts.iterrows():
                 cat = row["category"]
                 cnt = row["count"]
+
                 if str(cat).lower() == "point":
                     color = "#FFFFFF"
                     border_color = "#444444"
@@ -2737,7 +2740,7 @@ with tab1:
                 else:
                     color = palette.get(cat, "#000000")
                     border_color = "#E8E8E8"
-    
+
                 st.markdown(
                     f"""
                     <div style="display:flex; align-items:center; margin-bottom:6px;">
@@ -2755,6 +2758,7 @@ with tab1:
                     """,
                     unsafe_allow_html=True
                 )
+
     # --- Channel breakdown (1 = left, 3 = right) ---
         st.markdown("<h4 style='margin-bottom:4px;'>Channel breakdown</h4>", unsafe_allow_html=True)
 
