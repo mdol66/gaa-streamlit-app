@@ -2814,8 +2814,21 @@ with tab1:
     
             table th,
             table td {
-                padding: 4px 10px !important;
+                padding: 4px 8px !important;
                 white-space: nowrap !important;
+            }
+    
+            table th:first-child,
+            table td:first-child {
+                width: 95px !important;
+                max-width: 95px !important;
+            }
+    
+            table th:not(:first-child),
+            table td:not(:first-child) {
+                width: 42px !important;
+                max-width: 42px !important;
+                text-align: center !important;
             }
             </style>
             """,
