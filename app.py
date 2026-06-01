@@ -727,133 +727,158 @@ elif cols["outcome"] is None:
     cols["outcome"] = "__plot_category__"
 
 st.sidebar.header("Filters")
-st.sidebar.markdown("### Match Filters")
 
-if cols["match_no"] and cols["team"]:
-    match_info = (
-        plot_df[[cols["match_no"], cols["team"]]]
-        .dropna()
-        .astype(str)
-        .drop_duplicates()
-    )
+match_display_choices = []
+team_choices = []
+player_choices = []
+half_choice = "All"
+shot_type_filter = "All"
 
-    match_labels = {}
-    for match_no in sorted(match_info[cols["match_no"]].unique(), key=lambda x: int(x) if x.isdigit() else x):
-        teams_for_match = sorted(match_info[match_info[cols["match_no"]] == match_no][cols["team"]].unique().tolist())
-        opposition = [t for t in teams_for_match if t.lower() != "ballintubber"]
-        opp_text = opposition[0] if opposition else "Unknown"
-        match_labels[f"{match_no} v {opp_text}"] = match_no
+with st.sidebar.form("filter_form"):
 
-    default_match = list(match_labels.keys())[-1]
-    
-    match_display_choices = st.sidebar.multiselect(
-        "Match Number",
-        list(match_labels.keys()),
-        default=[default_match]
-    )
+    st.markdown("### Match Filters")
+
+    if cols["match_no"] and cols["team"]:
+        match_info = (
+            plot_df[[cols["match_no"], cols["team"]]]
+            .dropna()
+            .astype(str)
+            .drop_duplicates()
+        )
+
+        match_labels = {}
+        for match_no in sorted(match_info[cols["match_no"]].unique(), key=lambda x: int(x) if x.isdigit() else x):
+            teams_for_match = sorted(match_info[match_info[cols["match_no"]] == match_no][cols["team"]].unique().tolist())
+            opposition = [t for t in teams_for_match if t.lower() != "ballintubber"]
+            opp_text = opposition[0] if opposition else "Unknown"
+            match_labels[f"{match_no} v {opp_text}"] = match_no
+
+        default_match = list(match_labels.keys())[-1]
+
+        match_display_choices = st.multiselect(
+            "Match Number",
+            list(match_labels.keys()),
+            default=[default_match]
+        )
 
     if match_display_choices:
         selected_match_nos = [match_labels[label] for label in match_display_choices]
         plot_df = plot_df[plot_df[cols["match_no"]].astype(str).isin(selected_match_nos)]
 
-if cols["team"]:
-    teams = sorted([
-        t for t in plot_df[cols["team"]].dropna().astype(str).unique().tolist()
-        if t.lower() not in ["1st half", "2nd half"]
-    ])
-    team_choices = st.sidebar.multiselect("Team", teams)
-    if team_choices:
-        plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
+    if cols["team"]:
+        teams = sorted([
+            t for t in plot_df[cols["team"]].dropna().astype(str).unique().tolist()
+            if t.lower() not in ["1st half", "2nd half"]
+        ])
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### Map Options")
-mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
-st.session_state["mode"] = mode
+        team_choices = st.multiselect("Team", teams)
 
-if cols["player"]:
-    plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
+        if team_choices:
+            plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
 
-    player_source_df = plot_df.copy()
+    st.markdown("---")
+    st.markdown("### Map Options")
+
+    mode = st.radio(
+        "Map type",
+        ["All events", "Shots", "Kickouts", "Turnovers"],
+        index=0
+    )
+
+    st.session_state["mode"] = mode
+
+    if cols["player"]:
+        plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
+
+        player_source_df = plot_df.copy()
+
+        if cols["stat1"]:
+            stat1_for_players = player_source_df[cols["stat1"]].astype(str).str.lower()
+
+            if mode == "Shots":
+                player_source_df = player_source_df[
+                    stat1_for_players.str.contains(
+                        "goal|point|2 point|wide|short|post|saved",
+                        na=False
+                    )
+                ]
+            elif mode == "Kickouts":
+                player_source_df = player_source_df[
+                    stat1_for_players.str.contains("kick ?out", na=False)
+                ]
+            elif mode == "Turnovers":
+                player_source_df = player_source_df[
+                    stat1_for_players.str.contains("turnover", na=False)
+                ]
+
+        players = sorted(
+            player_source_df["__player_clean__"]
+            .dropna()
+            .loc[lambda s: s.astype(str).str.strip() != ""]
+            .unique()
+            .tolist()
+        )
+
+        st.caption("Only players with events matching current filters are shown")
+
+        player_choices = st.multiselect("Player", players)
+
+        if player_choices:
+            plot_df = plot_df[plot_df["__player_clean__"].isin(player_choices)]
+
+    if cols["half"]:
+        halves = ["All"] + sorted(plot_df[cols["half"]].dropna().astype(str).unique().tolist())
+
+        half_choice = st.selectbox("Half", halves)
+
+        if half_choice != "All":
+            plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
+
+    analysis_df = plot_df.copy()
+
+    if mode == "Shots" and cols["stat1"] and cols["stat2"]:
+        shot_type_filter = st.selectbox(
+            "Shot Type",
+            ["All", "From Play", "From Placed"]
+        )
 
     if cols["stat1"]:
-        stat1_for_players = player_source_df[cols["stat1"]].astype(str).str.lower()
+        stat1_series = plot_df[cols["stat1"]].astype(str).str.lower()
 
         if mode == "Shots":
-            player_source_df = player_source_df[
-                stat1_for_players.str.contains(
-                    "goal|point|2 point|wide|short|post|saved",
-                    na=False
-                )
-            ]
+            shot_mask = stat1_series.str.contains(
+                "goal|point|2 point|wide|short|post|saved",
+                na=False
+            )
+
+            plot_df = plot_df[shot_mask]
+
+            if cols["stat2"]:
+                stat2_filled = plot_df[cols["stat2"]].fillna("").astype(str).str.strip() != ""
+
+                if shot_type_filter == "From Play":
+                    plot_df = plot_df[~stat2_filled]
+                elif shot_type_filter == "From Placed":
+                    plot_df = plot_df[stat2_filled]
+
         elif mode == "Kickouts":
-            player_source_df = player_source_df[
-                stat1_for_players.str.contains("kick ?out", na=False)
+            plot_df = plot_df[
+                plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kick ?out", na=False)
             ]
+
         elif mode == "Turnovers":
-            player_source_df = player_source_df[
-                stat1_for_players.str.contains("turnover", na=False)
-            ]
+            to_mask = stat1_series.str.contains("turnover", na=False)
+            plot_df = plot_df[to_mask]
 
-    players = sorted(
-        player_source_df["__player_clean__"]
-        .dropna()
-        .loc[lambda s: s.astype(str).str.strip() != ""]
-        .unique()
-        .tolist()
-    )
+    outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outcome).astype(str).unique().tolist())
 
-    st.sidebar.caption("Only players with events matching current filters are shown")
-    player_choices = st.sidebar.multiselect("Player", players)
+    outcome_choice = st.selectbox("Outcome", outcomes)
 
-    if player_choices:
-        plot_df = plot_df[plot_df["__player_clean__"].isin(player_choices)]
+    if outcome_choice != "All":
+        plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 
-if cols["half"]:
-    halves = ["All"] + sorted(plot_df[cols["half"]].dropna().astype(str).unique().tolist())
-    half_choice = st.sidebar.selectbox("Half", halves)
-    if half_choice != "All":
-        plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
-        
-analysis_df = plot_df.copy()
-shot_type_filter = "All"
+    apply_filters = st.form_submit_button("Apply filters")
 
-if mode == "Shots" and cols["stat1"] and cols["stat2"]:
-    shot_type_filter = st.sidebar.selectbox(
-        "Shot Type",
-        ["All", "From Play", "From Placed"]
-    )
-
-if cols["stat1"]:
-    stat1_series = plot_df[cols["stat1"]].astype(str).str.lower()
-
-    if mode == "Shots":
-        shot_mask = stat1_series.str.contains(
-            "goal|point|2 point|wide|short|post|saved",
-            na=False
-        )
-        plot_df = plot_df[shot_mask]
-
-        if cols["stat2"]:
-            stat2_filled = plot_df[cols["stat2"]].fillna("").astype(str).str.strip() != ""
-
-            if shot_type_filter == "From Play":
-                plot_df = plot_df[~stat2_filled]
-            elif shot_type_filter == "From Placed":
-                plot_df = plot_df[stat2_filled]
-
-    elif mode == "Kickouts":
-        plot_df = plot_df[
-            plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kick ?out", na=False)
-        ]
-
-    elif mode == "Turnovers":
-        to_mask = stat1_series.str.contains("turnover", na=False)
-        plot_df = plot_df[to_mask]
-
-outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outcome).astype(str).unique().tolist())
-outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
-if outcome_choice != "All":
-    plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 filters_applied = (
     len(match_display_choices) > 0 or
     len(team_choices) > 0 or
