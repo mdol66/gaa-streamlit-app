@@ -2820,8 +2820,8 @@ with tab1:
     
             table th:first-child,
             table td:first-child {
-                width: 95px !important;
-                max-width: 95px !important;
+                width: 75px !important;
+                max-width: 75px !important;
             }
     
             table th:not(:first-child),
