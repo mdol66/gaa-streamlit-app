@@ -417,7 +417,7 @@ def add_numbered_markers(
                 else "<extra></extra>",
             )
         )
-                ),
+
                 hoverinfo="text",
                 hoverlabel=dict(font_size=14),
                 customdata=group[
