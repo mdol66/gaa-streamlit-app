@@ -2754,10 +2754,11 @@ with tab1:
         # Use original % positions for clean split
         x_series = channel_df[cols["x"]]
 
+
         channel_df["Channel"] = pd.cut(
             x_series,
             bins=[-0.01, 33.33, 66.66, 100.01],
-            labels=["3", "2", "1"]
+            labels=["1", "2", "3"]
         )
 
         channel_df["Outcome"] = channel_df[cols["outcome"]].map(normalize_outcome)
