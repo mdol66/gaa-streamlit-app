@@ -378,17 +378,14 @@ def add_numbered_markers(
     df[category_col] = df[category_col].map(normalize_outcome)
 
     for category, group in df.groupby(category_col, dropna=False):
-    if str(category).lower() == "point":
-        color = "#FFFFFF"
-    elif str(category).lower() == "2 pointer":
-        color = "#FFA500"
-    else:
-        color = palette.get(str(category), "#000000")
-        color = "#FFFFFF"
-    elif str(category) == "2 pointer":
-        color = "#FFA500"
+    
+        if str(category).lower() == "point":
+            color = "#FFFFFF"
+        elif str(category).lower() == "2 pointer":
+            color = "#FFA500"
         else:
             color = palette.get(str(category), "#000000")
+    
         fig.add_trace(
             go.Scatter(
                 x=group[x_col],
@@ -400,7 +397,7 @@ def add_numbered_markers(
                     sizemode="diameter",
                     sizemin=6,
                     color=color,
-                    opacity=0.7,
+                    opacity=1.0,
                     line=dict(
                         color=group[cols["stat2"]].apply(
                             lambda x: "#000000" if pd.notna(x) and str(x).strip() != "" else "#FFFFFF"
@@ -409,6 +406,17 @@ def add_numbered_markers(
                             lambda x: 2 if pd.notna(x) and str(x).strip() != "" else 2
                         )
                     )
+                ),
+                hoverinfo="text",
+                hoverlabel=dict(font_size=14),
+                customdata=group[
+                    [label_col] + ([player_col] if player_col and player_col in group.columns else [])
+                ].values,
+                hovertemplate="Player=%{customdata[1]}<extra></extra>"
+                if player_col and player_col in group.columns
+                else "<extra></extra>",
+            )
+        )
                 ),
                 hoverinfo="text",
                 hoverlabel=dict(font_size=14),
