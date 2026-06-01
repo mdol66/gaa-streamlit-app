@@ -2805,22 +2805,14 @@ with tab1:
         </style>
         """, unsafe_allow_html=True)
         
-        st.dataframe(
+          st.table(
             channel_table.style.apply(
                 lambda row: [
                     "font-weight: bold" if row["Outcome"] == "Total" else ""
                     for _ in row
                 ],
                 axis=1
-            ),
-            use_container_width=False,
-            hide_index=True,
-            column_config={
-                "Outcome": st.column_config.TextColumn(width="small"),
-                "1": st.column_config.NumberColumn(width=40),
-                "2": st.column_config.NumberColumn(width=40),
-                "3": st.column_config.NumberColumn(width=40),
-            }
+            )
         )
 
     with col2:
