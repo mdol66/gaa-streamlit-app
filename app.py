@@ -393,7 +393,7 @@ def add_numbered_markers(
                 mode="markers",
                 name=str(category),
                 marker=dict(
-                    size=13,
+                    size=12,
                     sizemode="diameter",
                     sizemin=6,
                     color=color,
