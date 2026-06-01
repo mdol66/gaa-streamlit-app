@@ -2805,15 +2805,15 @@ with tab1:
         </style>
         """, unsafe_allow_html=True)
         
-          st.table(
-            channel_table.style.apply(
-                lambda row: [
-                    "font-weight: bold" if row["Outcome"] == "Total" else ""
-                    for _ in row
-                ],
-                axis=1
-            )
+      st.table(
+        channel_table.style.apply(
+            lambda row: [
+                "font-weight: bold" if row["Outcome"] == "Total" else ""
+                for _ in row
+            ],
+            axis=1
         )
+    )
 
     with col2:
         st.plotly_chart(fig, use_container_width=False)
