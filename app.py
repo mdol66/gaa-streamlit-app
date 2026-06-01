@@ -2722,7 +2722,15 @@ with tab1:
         for _, row in legend_counts.iterrows():
             cat = row["category"]
             cnt = row["count"]
-            color = palette.get(cat, "#000000")
+            if str(cat).lower() == "point":
+                color = "#FFFFFF"
+                border_color = "#444444"
+            elif str(cat).lower() == "2 pointer":
+                color = "#FFA500"
+                border_color = "#444444"
+            else:
+                color = palette.get(cat, "#000000")
+                border_color = "#E8E8E8"
 
             st.markdown(
                 f"""
@@ -2732,7 +2740,7 @@ with tab1:
                         height:14px;
                         border-radius:50%;
                         background:{color};
-                        border:2px solid #E8E8E8;
+                        border:2px solid {border_color};
                         margin-right:8px;
                         flex-shrink:0;
                     "></div>
