@@ -2692,28 +2692,34 @@ with tab1:
     )
     
     with col1:
-        st.markdown("### Legend")   
-        if mode == "Shots":
-            st.markdown(
-                """
-                <div style="
-                    font-size:12px;
-                    margin-bottom:8px;
-                    line-height:1.3;
-                ">
-                    ⚪ White border = From Play<br>
-                    ⚫ Black border = From Placed
-                </div>
-                """,
-                unsafe_allow_html=True
+    show_legend = st.checkbox(
+        "Show Legend",
+        value=True,
+        key="show_pitch_legend"
+    )
+    if show_legend:
+            st.markdown("### Legend")
+            if mode == "Shots":
+                st.markdown(
+                    """
+                    <div style="
+                        font-size:12px;
+                        margin-bottom:8px;
+                        line-height:1.3;
+                    ">
+                        ⚪ White border = From Play<br>
+                        ⚫ Black border = From Placed
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+    
+            legend_counts = (
+                marker_df[cols["outcome"]]
+                .map(normalize_outcome)
+                .value_counts()
+                .reset_index()
             )
-
-        legend_counts = (
-            marker_df[cols["outcome"]]
-            .map(normalize_outcome)
-            .value_counts()
-            .reset_index()
-        )
         
         legend_counts.columns = ["category", "count"]
 
