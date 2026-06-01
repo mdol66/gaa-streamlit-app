@@ -2805,6 +2805,23 @@ with tab1:
         </style>
         """, unsafe_allow_html=True)
         
+        st.markdown(
+            """
+            <style>
+            table {
+                width: auto !important;
+            }
+    
+            table th,
+            table td {
+                padding: 4px 10px !important;
+                white-space: nowrap !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        
         st.table(
         channel_table.style.apply(
             lambda row: [
