@@ -258,7 +258,7 @@ def add_pitch_labels(fig: go.Figure) -> None:
     for x, label in [(19.33, "1"), (50, "2"), (80.67, "3")]:
         fig.add_annotation(
             x=x,
-            y=3,
+            y=0,
             text=label,
             showarrow=False,
             font=dict(size=22, color="rgba(220,220,220,0.45)"),
@@ -266,7 +266,7 @@ def add_pitch_labels(fig: go.Figure) -> None:
 
         fig.add_annotation(
             x=x,
-            y=97,
+            y=100,
             text=label,
             showarrow=False,
             font=dict(size=22, color="rgba(220,220,220,0.45)"),
