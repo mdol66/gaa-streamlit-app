@@ -2787,6 +2787,9 @@ with tab1:
             .unstack(fill_value=0)
             .reset_index()
         )
+        # Swap Channel 1 and Channel 3 counts to match the flipped pitch map
+        if "1" in channel_table.columns and "3" in channel_table.columns:
+            channel_table[["1", "3"]] = channel_table[["3", "1"]]
 
         # Add totals row
         totals = channel_table.select_dtypes(include='number').sum()
