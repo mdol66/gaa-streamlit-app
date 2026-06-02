@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-st.set_page_config(page_title="Gaelic Football Pitch Maps", layout="wide")
+st.set_page_config(page_title="Gaelic Football Match Analysis App", layout="wide")
 
 st.markdown("""
 <style>
@@ -18,7 +18,7 @@ section[data-testid="stSidebar"] .block-container {
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     gap: 0.35rem !important;
 }
-
+ 
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {
@@ -155,8 +155,8 @@ def build_pitch_shapes() -> list[dict]:
     y100_20 = 100.0 - y20
     y100_45 = 100.0 - y45
 
-    large_w = sw(19.0)
-    small_w = sw(14.0)
+    large_w = sw(15.0)
+    small_w = sw(10.5)
     goal_w = sw(6.5)
     cx = 50.0
 
@@ -215,9 +215,10 @@ def build_pitch_shapes() -> list[dict]:
             path += f" L {x},{y}"
         return path
 
-    rx13 = sw(13.0)
-    ry13 = sy(13.0)
-
+        # Small D / semi-circle
+    ry13 = sy(15.0)
+    rx13 = ry13 * ((x_right - x_left) / 100)
+    
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y20, rx13, ry13, 0, 180), line=line))
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, y100_20, rx13, ry13, 180, 360), line=line))
 
@@ -234,23 +235,30 @@ def build_pitch_shapes() -> list[dict]:
 def add_pitch_labels(fig: go.Figure) -> None:
     fig.add_annotation(
         x=50,
-        y=15,
-        text="Ballintubber GOAL",
-        showarrow=False,
-        font=dict(size=24, color="rgba(255,255,255,0.42)"),
-    )
-    fig.add_annotation(
-        x=50,
-        y=85,
+        y=0,
         text="Opposition GOAL",
         showarrow=False,
-        font=dict(size=24, color="rgba(0,0,0,0.42)"),
+        font=dict(
+            size=18,
+            color="rgba(255,255,255,0.55)"
+        ),
+    )
+
+    fig.add_annotation(
+        x=50,
+        y=100,
+        text="Ballintubber GOAL",
+        showarrow=False,
+        font=dict(
+            size=18,
+            color="rgba(255,255,255,0.55)"
+        ),
     )
     # Channel labels
     for x, label in [(19.33, "1"), (50, "2"), (80.67, "3")]:
         fig.add_annotation(
             x=x,
-            y=3,
+            y=2,
             text=label,
             showarrow=False,
             font=dict(size=22, color="rgba(220,220,220,0.45)"),
@@ -258,7 +266,7 @@ def add_pitch_labels(fig: go.Figure) -> None:
 
         fig.add_annotation(
             x=x,
-            y=97,
+            y=98,
             text=label,
             showarrow=False,
             font=dict(size=22, color="rgba(220,220,220,0.45)"),
@@ -323,7 +331,7 @@ def event_palette() -> dict[str, str]:
     return {
         "goal": "#15FF00",
         "point": "#F5A300",
-        "2 pointer": "#A39A00",
+        "2 pointer": "#FFD700",
         "wide": "#FF3B30",
         "off posts": "#A8A8A8",
         "out for 45": "#20D5E8",
@@ -340,7 +348,7 @@ def event_palette_all() -> dict[str, str]:
     return {
         "goal": "#00C853",
         "point": "#FFB300",
-        "2 pointer": "#8E24AA",
+        "2 pointer": "#FFD700",
         "wide": "#F4511E",
         "off posts": "#90A4AE",
         "out for 45": "#00ACC1",
@@ -370,7 +378,14 @@ def add_numbered_markers(
     df[category_col] = df[category_col].map(normalize_outcome)
 
     for category, group in df.groupby(category_col, dropna=False):
-        color = palette.get(str(category), "#000000")
+    
+        if str(category).lower() == "point":
+            color = "#FFFFFF"
+        elif str(category).lower() == "2 pointer":
+            color = "#FFA500"
+        else:
+            color = palette.get(str(category), "#000000")
+    
         fig.add_trace(
             go.Scatter(
                 x=group[x_col],
@@ -378,11 +393,11 @@ def add_numbered_markers(
                 mode="markers",
                 name=str(category),
                 marker=dict(
-                    size=13,
+                    size=12,
                     sizemode="diameter",
                     sizemin=6,
                     color=color,
-                    opacity=0.7,
+                    opacity=1.0,
                     line=dict(
                         color=group[cols["stat2"]].apply(
                             lambda x: "#000000" if pd.notna(x) and str(x).strip() != "" else "#FFFFFF"
@@ -429,11 +444,25 @@ def build_display_number(df: pd.DataFrame, number_col: Optional[str]) -> pd.Seri
 
 
 def clean_player_name(value: str) -> str:
+    if pd.isna(value):
+        return "Unallocated"
+
     text = str(value).strip()
+
+    if text.lower() in ["nan", "none", ""]:
+        return "Unallocated"
+
     parts = text.split()
+
     if len(parts) >= 2 and parts[0].isdigit():
-        return " ".join(parts[1:])
-    return text
+        cleaned = " ".join(parts[1:])
+    else:
+        cleaned = text
+
+    if cleaned.strip().lower() in ["nan", "none", ""]:
+        return "Unallocated"
+
+    return cleaned
 
 
 def build_player_scoring_table(
@@ -540,6 +569,118 @@ def parse_match_minute(value):
         return float(text)
     except Exception:
         return None
+
+def classify_score_source(score_idx, match_df, cols):
+    score_row = match_df.loc[score_idx]
+
+    score_team = str(score_row[cols["team"]]).strip().lower()
+    score_half = str(score_row[cols["half"]]).strip().lower()
+    score_event = str(score_row[cols["stat1"]]).strip().lower()
+
+    if not score_team or score_team in ["1st half", "2nd half"]:
+        return "Review Needed"
+        
+    score_position = match_df.index.get_loc(score_idx)
+    
+    if (
+        score_half == "1st half"
+        and str(score_row[cols["time"]]).strip() == "00:53"
+        and score_team != "ballintubber"
+    ):
+        return "Free Won"
+
+    previous_df = match_df.iloc[:score_position].copy()
+
+    previous_df = previous_df[
+        previous_df[cols["half"]].astype(str).str.strip().str.lower() == score_half
+    ].copy()
+
+    meaningful_previous = previous_df[
+        ~previous_df[cols["team"]].astype(str).str.strip().str.lower().isin(
+            ["1st half", "2nd half"]
+        )
+    ].copy()
+
+    if score_position <= 1 and meaningful_previous.empty:
+        return "Won Throw-In"
+
+    if meaningful_previous.empty:
+
+        last_previous_event = (
+            str(previous_df.iloc[-1][cols["stat1"]])
+            .strip()
+            .lower()
+            if not previous_df.empty
+            else ""
+        )
+
+        if (
+            "free" in last_previous_event
+            and "conceded" in last_previous_event
+        ):
+            return "Free Won"
+
+        return "Won Throw-In"
+
+
+    for _, row in meaningful_previous.iloc[::-1].iterrows():
+        event = str(row[cols["stat1"]]).strip().lower()
+        team = str(row[cols["team"]]).strip().lower()
+
+        same_team = team == score_team
+        opposition_team = team != score_team
+
+        # Opposition short directly gives possession to scoring team
+        if "short" in event and opposition_team:
+            return "Short Won"
+
+        # Same-team short is continuation of possession
+        if "short" in event and same_team:
+            continue
+
+        # Frees do not automatically create source.
+        # Keep tracing back through free sequences.
+        # If there is no earlier possession source in this half,
+        # the free itself is the source.
+        if "free" in event and "conceded" in event:
+            row_position = meaningful_previous.index.get_loc(row.name)
+            earlier_events = meaningful_previous.iloc[:row_position]
+
+            if earlier_events.empty:
+                return "Free Won"
+
+            continue
+
+        # Same-team turnover won
+        if event == "turnover won" and same_team:
+            return "Turnover Won"
+
+        # Opposition turnover lost
+        if event == "turnover lost" and opposition_team:
+            return "Turnover Won"
+
+        # Same-team own kickout retained
+        if "kick out won" in event and same_team:
+            return "Own Kickout Won"
+
+        # Opposition kickout lost
+        if "kick out lost" in event and opposition_team:
+            return "Opposition Kickout Won"
+
+        # If previous clear possession was opposition and no transfer was logged
+        if opposition_team and event in [
+            "point", "point from free", "point from 45",
+            "2 pointer", "2 pointer from free",
+            "goal", "goal from free", "goal from penalty",
+            "wide", "wide from free",
+            "saved", "saved from free",
+            "off posts", "off posts from free",
+            "out for 45", "out for 45 from free"
+        ]:
+            return "Turnover Won"
+
+    return "Review Needed"
+
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -586,132 +727,158 @@ elif cols["outcome"] is None:
     cols["outcome"] = "__plot_category__"
 
 st.sidebar.header("Filters")
-st.sidebar.markdown("### Match Filters")
 
-if cols["match_no"] and cols["team"]:
-    match_info = (
-        plot_df[[cols["match_no"], cols["team"]]]
-        .dropna()
-        .astype(str)
-        .drop_duplicates()
-    )
+match_display_choices = []
+team_choices = []
+player_choices = []
+half_choice = "All"
+shot_type_filter = "All"
 
-    match_labels = {}
-    for match_no in sorted(match_info[cols["match_no"]].unique(), key=lambda x: int(x) if x.isdigit() else x):
-        teams_for_match = sorted(match_info[match_info[cols["match_no"]] == match_no][cols["team"]].unique().tolist())
-        opposition = [t for t in teams_for_match if t.lower() != "ballintubber"]
-        opp_text = opposition[0] if opposition else "Unknown"
-        match_labels[f"{match_no} v {opp_text}"] = match_no
+with st.sidebar.form("filter_form"):
 
-    default_match = list(match_labels.keys())[-1]
-    
-    match_display_choices = st.sidebar.multiselect(
-        "Match Number",
-        list(match_labels.keys()),
-        default=[default_match]
-    )
+    st.markdown("### Match Filters")
+
+    if cols["match_no"] and cols["team"]:
+        match_info = (
+            plot_df[[cols["match_no"], cols["team"]]]
+            .dropna()
+            .astype(str)
+            .drop_duplicates()
+        )
+
+        match_labels = {}
+        for match_no in sorted(match_info[cols["match_no"]].unique(), key=lambda x: int(x) if x.isdigit() else x):
+            teams_for_match = sorted(match_info[match_info[cols["match_no"]] == match_no][cols["team"]].unique().tolist())
+            opposition = [t for t in teams_for_match if t.lower() != "ballintubber"]
+            opp_text = opposition[0] if opposition else "Unknown"
+            match_labels[f"{match_no} v {opp_text}"] = match_no
+
+        default_match = list(match_labels.keys())[-1]
+
+        match_display_choices = st.multiselect(
+            "Match Number",
+            list(match_labels.keys()),
+            default=[default_match]
+        )
 
     if match_display_choices:
         selected_match_nos = [match_labels[label] for label in match_display_choices]
         plot_df = plot_df[plot_df[cols["match_no"]].astype(str).isin(selected_match_nos)]
 
-if cols["team"]:
-    teams = sorted([
-        t for t in plot_df[cols["team"]].dropna().astype(str).unique().tolist()
-        if t.lower() not in ["1st half", "2nd half"]
-    ])
-    team_choices = st.sidebar.multiselect("Team", teams)
-    if team_choices:
-        plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
+    if cols["team"]:
+        teams = sorted([
+            t for t in plot_df[cols["team"]].dropna().astype(str).unique().tolist()
+            if t.lower() not in ["1st half", "2nd half"]
+        ])
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### Map Options")
-mode = st.sidebar.radio("Map type", ["All events", "Shots", "Kickouts", "Turnovers"], index=0)
-st.session_state["mode"] = mode
+        team_choices = st.multiselect("Team", teams)
 
-if cols["player"]:
-    plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
+        if team_choices:
+            plot_df = plot_df[plot_df[cols["team"]].astype(str).isin(team_choices)]
 
-    player_source_df = plot_df.copy()
+    st.markdown("---")
+    st.markdown("### Map Options")
+
+    mode = st.radio(
+        "Map type",
+        ["All events", "Shots", "Kickouts", "Turnovers"],
+        index=0
+    )
+
+    st.session_state["mode"] = mode
+
+    if cols["player"]:
+        plot_df["__player_clean__"] = plot_df[cols["player"]].astype(str).apply(clean_player_name)
+
+        player_source_df = plot_df.copy()
+
+        if cols["stat1"]:
+            stat1_for_players = player_source_df[cols["stat1"]].astype(str).str.lower()
+
+            if mode == "Shots":
+                player_source_df = player_source_df[
+                    stat1_for_players.str.contains(
+                        "goal|point|2 point|wide|short|post|saved",
+                        na=False
+                    )
+                ]
+            elif mode == "Kickouts":
+                player_source_df = player_source_df[
+                    stat1_for_players.str.contains("kick ?out", na=False)
+                ]
+            elif mode == "Turnovers":
+                player_source_df = player_source_df[
+                    stat1_for_players.str.contains("turnover", na=False)
+                ]
+
+        players = sorted(
+            player_source_df["__player_clean__"]
+            .dropna()
+            .loc[lambda s: s.astype(str).str.strip() != ""]
+            .unique()
+            .tolist()
+        )
+
+        st.caption("Only players with events matching current filters are shown")
+
+        player_choices = st.multiselect("Player", players)
+
+        if player_choices:
+            plot_df = plot_df[plot_df["__player_clean__"].isin(player_choices)]
+
+    if cols["half"]:
+        halves = ["All"] + sorted(plot_df[cols["half"]].dropna().astype(str).unique().tolist())
+
+        half_choice = st.selectbox("Half", halves)
+
+        if half_choice != "All":
+            plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
+
+    analysis_df = plot_df.copy()
+
+    if mode == "Shots" and cols["stat1"] and cols["stat2"]:
+        shot_type_filter = st.selectbox(
+            "Shot Type",
+            ["All", "From Play", "From Placed"]
+        )
 
     if cols["stat1"]:
-        stat1_for_players = player_source_df[cols["stat1"]].astype(str).str.lower()
+        stat1_series = plot_df[cols["stat1"]].astype(str).str.lower()
 
         if mode == "Shots":
-            player_source_df = player_source_df[
-                stat1_for_players.str.contains(
-                    "goal|point|2 point|wide|short|post|saved",
-                    na=False
-                )
-            ]
+            shot_mask = stat1_series.str.contains(
+                "goal|point|2 point|wide|short|post|saved",
+                na=False
+            )
+
+            plot_df = plot_df[shot_mask]
+
+            if cols["stat2"]:
+                stat2_filled = plot_df[cols["stat2"]].fillna("").astype(str).str.strip() != ""
+
+                if shot_type_filter == "From Play":
+                    plot_df = plot_df[~stat2_filled]
+                elif shot_type_filter == "From Placed":
+                    plot_df = plot_df[stat2_filled]
+
         elif mode == "Kickouts":
-            player_source_df = player_source_df[
-                stat1_for_players.str.contains("kick ?out", na=False)
+            plot_df = plot_df[
+                plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kick ?out", na=False)
             ]
+
         elif mode == "Turnovers":
-            player_source_df = player_source_df[
-                stat1_for_players.str.contains("turnover", na=False)
-            ]
+            to_mask = stat1_series.str.contains("turnover", na=False)
+            plot_df = plot_df[to_mask]
 
-    players = sorted(
-        player_source_df["__player_clean__"]
-        .dropna()
-        .loc[lambda s: s.astype(str).str.strip() != ""]
-        .unique()
-        .tolist()
-    )
+    outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outcome).astype(str).unique().tolist())
 
-    st.sidebar.caption("Only players with events matching current filters are shown")
-    player_choices = st.sidebar.multiselect("Player", players)
+    outcome_choice = st.selectbox("Outcome", outcomes)
 
-    if player_choices:
-        plot_df = plot_df[plot_df["__player_clean__"].isin(player_choices)]
+    if outcome_choice != "All":
+        plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 
-if cols["half"]:
-    halves = ["All"] + sorted(plot_df[cols["half"]].dropna().astype(str).unique().tolist())
-    half_choice = st.sidebar.selectbox("Half", halves)
-    if half_choice != "All":
-        plot_df = plot_df[plot_df[cols["half"]].astype(str) == half_choice]
+    apply_filters = st.form_submit_button("Apply filters")
 
-shot_type_filter = "All"
-
-if mode == "Shots" and cols["stat1"] and cols["stat2"]:
-    shot_type_filter = st.sidebar.selectbox(
-        "Shot Type",
-        ["All", "From Play", "From Placed"]
-    )
-
-if cols["stat1"]:
-    stat1_series = plot_df[cols["stat1"]].astype(str).str.lower()
-
-    if mode == "Shots":
-        shot_mask = stat1_series.str.contains(
-            "goal|point|2 point|wide|short|post|saved",
-            na=False
-        )
-        plot_df = plot_df[shot_mask]
-
-        if cols["stat2"]:
-            stat2_filled = plot_df[cols["stat2"]].fillna("").astype(str).str.strip() != ""
-
-            if shot_type_filter == "From Play":
-                plot_df = plot_df[~stat2_filled]
-            elif shot_type_filter == "From Placed":
-                plot_df = plot_df[stat2_filled]
-
-    elif mode == "Kickouts":
-        plot_df = plot_df[
-            plot_df[cols["stat1"]].astype(str).str.lower().str.contains("kick ?out", na=False)
-        ]
-
-    elif mode == "Turnovers":
-        to_mask = stat1_series.str.contains("turnover", na=False)
-        plot_df = plot_df[to_mask]
-
-outcomes = ["All"] + sorted(plot_df[cols["outcome"]].dropna().map(normalize_outcome).astype(str).unique().tolist())
-outcome_choice = st.sidebar.selectbox("Outcome", outcomes)
-if outcome_choice != "All":
-    plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 filters_applied = (
     len(match_display_choices) > 0 or
     len(team_choices) > 0 or
@@ -721,11 +888,13 @@ filters_applied = (
 )
 
 plot_df["__plot_number__"] = range(1, len(plot_df) + 1)
-tab0, tab1, tab2, tab3 = st.tabs([
+
+tab0, tab1, tab2, tab3, tab4 = st.tabs([
     "Match Dashboard",
     "Pitch Map",
     "Scoring Analysis",
-    "Non-Scoring Analysis"
+    "Non-Scoring Analysis",
+    "Player Shot Analysis"
 ])
 
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
@@ -871,7 +1040,14 @@ with tab0:
     with left_col:
         with st.container(border=True):
     
-            st.markdown("### Scoring")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">Scoring</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             scoring_df = dashboard_df.copy()
     
@@ -1044,7 +1220,7 @@ with tab0:
                     scoring_table,
                     hide_index=True,
                     use_container_width=True,
-                    height=620
+                    height=638
                 )
     
         
@@ -1177,16 +1353,117 @@ with tab0:
                     comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
                 )
 
-                st.table(
+                st.dataframe(
                     comparison_df[
                         ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
-                    ]
+                    ],
+                    hide_index=True,
+                    use_container_width=True,
+                    height=275
                 )
+
+            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+
+            st.markdown("### Scorers")
+
+            scorers_df = dashboard_df.copy()
+
+            scorers_df = scorers_df[
+                scorers_df[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+
+            scorers_df["__player_clean__"] = (
+                scorers_df[cols["player"]]
+                .astype(str)
+                .apply(clean_player_name)
+            )
+
+            scorers_df["__stat1_lower__"] = (
+                scorers_df[cols["stat1"]]
+                .astype(str)
+                .str.lower()
+            )
+
+            scorers_df = scorers_df[
+                scorers_df["__stat1_lower__"]
+                .str.contains("goal|point|2 pointer", na=False)
+            ].copy()
+
+            if not scorers_df.empty:
+                scorer_table = (
+                    scorers_df
+                    .groupby("__player_clean__")
+                    .agg(
+                        Goals=("__stat1_lower__", lambda x: x.str.contains("goal", na=False).sum()),
+                        Points=("__stat1_lower__", lambda x: (
+                            x.str.contains("point", na=False).sum()
+                            + x.str.contains("2 pointer", na=False).sum()
+                        ))
+                    )
+                    .reset_index()
+                )
+
+                scorer_table["Score"] = scorer_table.apply(
+                    lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d}",
+                    axis=1
+                )
+
+                scorer_table = (
+                    scorers_df
+                    .groupby("__player_clean__")
+                    .agg(
+                        Goals=("__stat1_lower__", lambda x: x.eq("goal").sum()),
+                        OnePointers=("__stat1_lower__", lambda x: x.eq("point").sum()),
+                        TwoPointers=("__stat1_lower__", lambda x: x.eq("2 pointer").sum())
+                    )
+                    .reset_index()
+                )
+                
+                scorer_table["Points"] = (
+                    scorer_table["OnePointers"]
+                    + scorer_table["TwoPointers"] * 2
+                )
+                
+                scorer_table["TotalPoints"] = (
+                    scorer_table["Goals"] * 3
+                    + scorer_table["Points"]
+                )
+                
+                scorer_table["Score"] = scorer_table.apply(
+                    lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d} ({int(row['TotalPoints'])})",
+                    axis=1
+                )
+                
+                scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
+                
+                scorer_table = scorer_table.sort_values(
+                    by="TotalPoints",
+                    ascending=False
+                )
+                
+                scorer_table = scorer_table[["Player", "Score"]]
+                
+                st.dataframe(
+                    scorer_table,
+                    hide_index=True,
+                    use_container_width=True,
+                    height=308
+                )        
     
     with right_col:
         with st.container(border=True):
     
-            st.markdown("### Kickouts")
+            st.markdown(
+                """
+                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                    <h3 style="margin:0;">Kickouts</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             ko_df = dashboard_df.copy()
     
@@ -1381,6 +1658,70 @@ with tab0:
                     )
                 else:
                     st.info("No kickout data")
+                    
+                st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    
+                st.markdown("### Kickout Receivers")
+    
+                ko_receivers_df = dashboard_df.copy()
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                    .eq("ballintubber")
+                ].copy()
+    
+                ko_receivers_df["__stat1_lower__"] = (
+                    ko_receivers_df[cols["stat1"]]
+                    .astype(str)
+                    .str.lower()
+                )
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df["__stat1_lower__"]
+                    .str.contains("kick ?out", na=False)
+                ].copy()
+    
+                ko_receivers_df = ko_receivers_df[
+                    ko_receivers_df["__stat1_lower__"]
+                    .str.contains("won", na=False)
+                ].copy()
+    
+                if not ko_receivers_df.empty:
+    
+                    ko_receivers_df["__player_clean__"] = (
+                        ko_receivers_df[cols["player"]]
+                        .astype(str)
+                        .apply(clean_player_name)
+                    )
+    
+                    ko_receiver_table = (
+                        ko_receivers_df
+                        .groupby("__player_clean__")
+                        .size()
+                        .reset_index(name="Own KO Won")
+                        .sort_values(
+                            by="Own KO Won",
+                            ascending=False
+                        )
+                        .head(8)
+                    )
+    
+                    ko_receiver_table = ko_receiver_table.rename(
+                        columns={
+                            "__player_clean__": "Player"
+                        }
+                    )
+    
+                    st.dataframe(
+                        ko_receiver_table,
+                        hide_index=True,
+                        use_container_width=True,
+                        height=326
+                    )
+
+
     st.markdown("---")
     st.markdown("### Match Timeline")
 
@@ -1484,7 +1825,6 @@ with tab0:
             .str.lower()
             .eq("ballintubber")
         ].copy()
-        
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=bt_scores_h1["__minute__"],
@@ -1500,23 +1840,78 @@ with tab0:
                 hoverinfo="text"
             )
         )
+        bt_misses_h1["__miss_text__"] = (
+            bt_misses_h1["__score_event__"]
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
+        )
+
+        h1_score_only = h1_scores[
+            h1_scores["__score_event__"].isin(score_events)
+        ].copy()
         
+        h1_miss_only = h1_scores[
+            h1_scores["__score_event__"].isin(miss_events_timeline)
+        ].copy()
+        
+        bt_scores_h1 = h1_score_only[
+            h1_score_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        opp_scores_h1 = h1_score_only[
+            ~h1_score_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        bt_misses_h1 = h1_miss_only[
+            h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+        
+        opp_misses_h1 = h1_miss_only[
+            ~h1_miss_only[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+
+        bt_misses_h1["__miss_text__"] = (
+            bt_misses_h1["__score_event__"]
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
+        )
+
+        opp_misses_h1["__miss_text__"] = (
+            opp_misses_h1["__score_event__"]
+            .apply(lambda x: "$" if "short" in str(x).lower() else "")
+        )
+
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=bt_misses_h1["__minute__"],
                 y=[1] * len(bt_misses_h1),
-                mode="markers",
+                mode="markers+text",
+                text=bt_misses_h1["__miss_text__"],
+                textposition="middle center",
+                textfont=dict(size=9, color="#888888"),
                 marker=dict(
-                    size=8,
+                    size=6,
                     color="#888888",
-                    symbol="x-thin-open"
+                    symbol=bt_misses_h1["__score_event__"].apply(
+                        lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                    )
                 ),
                 name="BT Misses",
                 hovertext=bt_misses_h1[cols["stat1"]],
                 hoverinfo="text"
             )
         )
-        
+
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_scores_h1["__minute__"],
@@ -1532,16 +1927,21 @@ with tab0:
                 hoverinfo="text"
             )
         )
-        
+
         fig_timeline_h1.add_trace(
             go.Scatter(
                 x=opp_misses_h1["__minute__"],
                 y=[2] * len(opp_misses_h1),
-                mode="markers",
+                mode="markers+text",
+                text=opp_misses_h1["__miss_text__"],
+                textposition="middle center",
+                textfont=dict(size=9, color="#888888"),
                 marker=dict(
-                    size=8,
+                    size=6,
                     color="#888888",
-                    symbol="x-thin-open"
+                    symbol=opp_misses_h1["__score_event__"].apply(
+                        lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                    )
                 ),
                 name="Opp Misses",
                 hovertext=opp_misses_h1[cols["stat1"]],
@@ -1760,6 +2160,10 @@ with tab0:
                 h2_scores["__score_event__"].isin(score_events)
             ].copy()
             
+            h2_score_only = h2_scores[
+                h2_scores["__score_event__"].isin(score_events)
+            ].copy()
+            
             h2_miss_only = h2_scores[
                 h2_scores["__score_event__"].isin(miss_events_timeline)
             ].copy()
@@ -1791,7 +2195,6 @@ with tab0:
                 .str.lower()
                 .eq("ballintubber")
             ].copy()
-            
             fig_timeline_h2.add_trace(
                 go.Scatter(
                     x=bt_scores_h2["__minute__"],
@@ -1807,23 +2210,37 @@ with tab0:
                     hoverinfo="text"
                 )
             )
-            
+            bt_misses_h2["__miss_text__"] = (
+                bt_misses_h2["__score_event__"]
+                .apply(lambda x: "$" if "short" in str(x).lower() else "")
+            )
+
+            opp_misses_h2["__miss_text__"] = (
+                opp_misses_h2["__score_event__"]
+                .apply(lambda x: "$" if "short" in str(x).lower() else "")
+            )
+
             fig_timeline_h2.add_trace(
                 go.Scatter(
                     x=bt_misses_h2["__minute__"],
                     y=[1] * len(bt_misses_h2),
-                    mode="markers",
+                    mode="markers+text",
+                    text=bt_misses_h2["__miss_text__"],
+                    textposition="middle center",
+                    textfont=dict(size=9, color="#888888"),
                     marker=dict(
-                        size=8,
+                        size=6,
                         color="#888888",
-                        symbol="x-thin-open"
+                        symbol=bt_misses_h2["__score_event__"].apply(
+                            lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                        )
                     ),
                     name="BT Misses",
                     hovertext=bt_misses_h2[cols["stat1"]],
                     hoverinfo="text"
                 )
             )
-            
+
             fig_timeline_h2.add_trace(
                 go.Scatter(
                     x=opp_scores_h2["__minute__"],
@@ -1839,16 +2256,21 @@ with tab0:
                     hoverinfo="text"
                 )
             )
-            
+
             fig_timeline_h2.add_trace(
                 go.Scatter(
                     x=opp_misses_h2["__minute__"],
                     y=[2] * len(opp_misses_h2),
-                    mode="markers",
+                    mode="markers+text",
+                    text=opp_misses_h2["__miss_text__"],
+                    textposition="middle center",
+                    textfont=dict(size=9, color="#888888"),
                     marker=dict(
-                        size=8,
+                        size=6,
                         color="#888888",
-                        symbol="x-thin-open"
+                        symbol=opp_misses_h2["__score_event__"].apply(
+                            lambda x: "circle-open" if "short" in str(x).lower() else "x-thin-open"
+                        )
                     ),
                     name="Opp Misses",
                     hovertext=opp_misses_h2[cols["stat1"]],
@@ -1996,17 +2418,17 @@ with tab0:
                 ),
                 yaxis=dict(
                     tickmode="array",
-                    tickvals=[1, 2, 3, 4, 5, 6],
+                    tickvals=[1, 2, 3, 4, 5],
                     ticktext=[
                         "BT Scores",
                         "Opp Scores",
                         "BT Kickouts",
                         "Opp Kickouts",
-                        "BT Turnovers",
-                        "Opp Turnovers"
+                        "Turnovers"
                     ],
-                    range=[0.5, 6.5]
+                    range=[0.5, 5.5]
                 ),
+                
                 showlegend=False
             )
 
@@ -2015,6 +2437,11 @@ with tab0:
                 use_container_width=True,
                 key="timeline_second_half"
             )
+        
+            st.markdown(
+                "<div style='height:80px;'></div>",
+                unsafe_allow_html=True
+            )
 
 with tab1:
     fig = make_pitch_figure()
@@ -2022,54 +2449,316 @@ with tab1:
     marker_df = plot_df.copy()
 
     if len(marker_df):
+        marker_df["__x_plot_flipped__"] = (
+            100
+            - marker_df["__x_plot__"]
+        )
+
+        marker_df["__y_plot_flipped__"] = (
+            100
+            - marker_df["__y_plot__"]
+        )
         add_numbered_markers(
             fig,
             marker_df,
-            "__x_plot__",
-            "__y_plot__",
+            "__x_plot_flipped__",
+            "__y_plot_flipped__",
             "__plot_number__",
             cols["outcome"],
             cols["player"]
         )
 
-    col1, col2 = st.columns([2, 5], vertical_alignment="center")
+    with st.expander(
+        "Player Shot Analysis Table",
+        expanded=False
+    ):
+        shot_table_df = analysis_df.copy()
 
-    with col1:
-        st.markdown("### Legend")
+        shot_table_df = shot_table_df[
+            shot_table_df[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
 
-        legend_counts = (
-            marker_df[cols["outcome"]]
-            .map(normalize_outcome)
-            .value_counts()
-            .reset_index()
+        shot_table_df["__player_clean__"] = (
+            shot_table_df[cols["player"]]
+            .astype(str)
+            .apply(clean_player_name)
         )
-        
-        legend_counts.columns = ["category", "count"]
 
-        palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
+        shot_table_df["__stat1_lower__"] = (
+            shot_table_df[cols["stat1"]]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
 
-        for _, row in legend_counts.iterrows():
-            cat = row["category"]
-            cnt = row["count"]
-            color = palette.get(cat, "#000000")
+        shot_table_events = [
+            "goal",
+            "goal from penalty",
+            "goal from free",
+            "point",
+            "point from free",
+            "point from 45",
+            "2 pointer",
+            "2 pointer from free",
+            "wide",
+            "wide from free",
+            "short",
+            "short from free",
+            "saved",
+            "saved from free",
+            "off posts",
+            "off posts from free",
+            "out for 45",
+            "out for 45 from free"
+        ]
 
-            st.markdown(
-                f"""
-                <div style="display:flex; align-items:center; margin-bottom:6px;">
-                    <div style="
-                        width:14px;
-                        height:14px;
-                        border-radius:50%;
-                        background:{color};
-                        border:2px solid #E8E8E8;
-                        margin-right:8px;
-                        flex-shrink:0;
-                    "></div>
-                    <div style="font-size:14px;">{cat} ({cnt})</div>
-                </div>
-                """,
-                unsafe_allow_html=True
+        shot_table_df = shot_table_df[
+            shot_table_df["__stat1_lower__"].isin(
+                shot_table_events
             )
+        ].copy()
+
+        shot_table_df["__is_placed__"] = (
+            shot_table_df[cols["stat2"]]
+            .fillna("")
+            .astype(str)
+            .str.strip() != ""
+        )
+
+        def build_player_shot_summary(df):
+
+            if df.empty:
+                return pd.DataFrame()
+
+            summary = (
+                df.groupby("__player_clean__")
+                .agg(
+                    Goals=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "goal",
+                            "goal from penalty",
+                            "goal from free"
+                        ]).sum()
+                    ),
+                    TwoPointers=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "2 pointer",
+                            "2 pointer from free"
+                        ]).sum()
+                    ),
+                    Points=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "point",
+                            "point from free",
+                            "point from 45"
+                        ]).sum()
+                    ),
+                    Wides=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "wide",
+                            na=False
+                        ).sum()
+                    ),
+                    Shorts=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "short",
+                            na=False
+                        ).sum()
+                    ),
+                    TotalShots=(
+                        "__stat1_lower__",
+                        "count"
+                    )
+                )
+                .reset_index()
+            )
+
+            summary["Scores"] = (
+                summary["Goals"]
+                + summary["TwoPointers"]
+                + summary["Points"]
+            )
+
+            summary["Efficiency"] = (
+                summary["Scores"]
+                / summary["TotalShots"]
+            ).fillna(0)
+
+            summary["Efficiency"] = (
+                (
+                    summary["Efficiency"]
+                    * 100
+                )
+                .round(0)
+                .astype(int)
+                .astype(str)
+                + "%"
+            )
+
+            summary["Score Return"] = (
+                summary["Goals"]
+                .astype(str)
+                + "-"
+                + (
+                    summary["Points"]
+                    + (
+                        summary["TwoPointers"]
+                        * 2
+                    )
+                ).astype(str)
+            )
+
+            summary = summary.rename(
+                columns={
+                    "__player_clean__":
+                    "Player",
+                    "TwoPointers":
+                    "2 Pointers",
+                    "TotalShots":
+                    "Total Shots"
+                }
+            )
+
+            summary = summary[
+                [
+                    "Player",
+                    "Goals",
+                    "2 Pointers",
+                    "Points",
+                    "Efficiency",
+                    "Score Return",
+                    "Wides",
+                    "Shorts",
+                    "Total Shots"
+                ]
+            ].sort_values(
+                by="Total Shots",
+                ascending=False
+            )
+
+            return summary
+
+        play_table = (
+            build_player_shot_summary(
+                shot_table_df[
+                    ~shot_table_df[
+                        "__is_placed__"
+                    ]
+                ]
+            )
+        )
+
+        placed_table = (
+            build_player_shot_summary(
+                shot_table_df[
+                    shot_table_df[
+                        "__is_placed__"
+                    ]
+                ]
+            )
+        )
+
+        st.markdown(
+            "**Shots From Play**"
+        )
+
+        st.dataframe(
+            play_table,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.markdown(
+            "**Placed Ball Shots**"
+        )
+
+        st.dataframe(
+            placed_table,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    col1, col2 = st.columns(
+        [2, 5],
+        vertical_alignment="top"
+    )
+    
+    with col1:
+        show_legend = st.checkbox(
+            "Show Legend",
+            value=True,
+            key="show_pitch_legend"
+        )
+
+        if show_legend:
+            st.markdown("### Legend")
+
+            if mode == "Shots":
+                st.markdown(
+                    """
+                    <div style="
+                        font-size:12px;
+                        margin-bottom:8px;
+                        line-height:1.3;
+                    ">
+                        ⚪ White border = From Play<br>
+                        ⚫ Black border = From Placed
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            legend_counts = (
+                marker_df[cols["outcome"]]
+                .map(normalize_outcome)
+                .value_counts()
+                .reset_index()
+            )
+
+            legend_counts.columns = ["category", "count"]
+
+            palette = event_palette_all() if st.session_state.get("mode") == "All events" else event_palette()
+
+            for _, row in legend_counts.iterrows():
+                cat = row["category"]
+                cnt = row["count"]
+
+                if str(cat).lower() == "point":
+                    color = "#FFFFFF"
+                    border_color = "#444444"
+                elif str(cat).lower() == "2 pointer":
+                    color = "#FFA500"
+                    border_color = "#444444"
+                else:
+                    color = palette.get(cat, "#000000")
+                    border_color = "#E8E8E8"
+
+                st.markdown(
+                    f"""
+                    <div style="display:flex; align-items:center; margin-bottom:6px;">
+                        <div style="
+                            width:14px;
+                            height:14px;
+                            border-radius:50%;
+                            background:{color};
+                            border:2px solid {border_color};
+                            margin-right:8px;
+                            flex-shrink:0;
+                        "></div>
+                        <div style="font-size:14px;">{cat} ({cnt})</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
     # --- Channel breakdown (1 = left, 3 = right) ---
         st.markdown("<h4 style='margin-bottom:4px;'>Channel breakdown</h4>", unsafe_allow_html=True)
 
@@ -2082,6 +2771,7 @@ with tab1:
 
         # Use original % positions for clean split
         x_series = channel_df[cols["x"]]
+
 
         channel_df["Channel"] = pd.cut(
             x_series,
@@ -2119,26 +2809,59 @@ with tab1:
             justify-content: center !important;
             text-align: center !important;
         }
+        /* Reduce row height */
+        div[data-testid="stDataFrame"] [role="gridcell"] {
+            min-height: 24px !important;
+            height: 24px !important;
+        }
+        
+        /* Reduce header height */
+        div[data-testid="stDataFrame"] [role="columnheader"] {
+            min-height: 24px !important;
+            height: 24px !important;
+        }
         </style>
         """, unsafe_allow_html=True)
         
-        st.dataframe(
-            channel_table.style.apply(
-                lambda row: [
-                    "font-weight: bold" if row["Outcome"] == "Total" else ""
-                    for _ in row
-                ],
-                axis=1
-            ),
-            use_container_width=False,
-            hide_index=True,
-            column_config={
-                "Outcome": st.column_config.TextColumn(width="small"),
-                "1": st.column_config.NumberColumn(width=50),
-                "2": st.column_config.NumberColumn(width=50),
-                "3": st.column_config.NumberColumn(width=50),
+        st.markdown(
+            """
+            <style>
+            table {
+                width: auto !important;
             }
+    
+            table th,
+            table td {
+                padding: 4px 8px !important;
+                white-space: nowrap !important;
+            }
+    
+            table th:first-child,
+            table td:first-child {
+                width: 75px !important;
+                max-width: 75px !important;
+            }
+    
+            table th:not(:first-child),
+            table td:not(:first-child) {
+                width: 42px !important;
+                max-width: 42px !important;
+                text-align: center !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
         )
+        
+        st.table(
+        channel_table.style.apply(
+            lambda row: [
+                "font-weight: bold" if row["Outcome"] == "Total" else ""
+                for _ in row
+            ],
+            axis=1
+        )
+    )
 
     with col2:
         st.plotly_chart(fig, use_container_width=False)
@@ -2150,6 +2873,253 @@ with tab1:
 
 
 with tab2:
+
+    test_df = df.copy()
+
+    if cols["match_no"] and match_display_choices:
+        selected_match_nos = [
+            match_labels[label]
+            for label in match_display_choices
+        ]
+
+        test_df = test_df[
+            test_df[cols["match_no"]]
+            .astype(str)
+            .isin(selected_match_nos)
+        ].copy()
+
+    test_df = test_df.reset_index(drop=True)
+
+    score_events_source = [
+        "goal",
+        "goal from penalty",
+        "goal from free",
+        "point",
+        "point from free",
+        "point from 45",
+        "2 pointer",
+        "2 pointer from free"
+    ]
+
+    test_df["__stat1_lower__"] = (
+        test_df[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    source_results = []
+
+    if cols["match_no"]:
+        match_groups = test_df.groupby(
+            test_df[cols["match_no"]].astype(str),
+            sort=False
+        )
+    else:
+        match_groups = [("Selected Data", test_df)]
+
+    for match_label, match_source_df in match_groups:
+
+        match_source_df = match_source_df.reset_index(drop=True)
+
+        score_rows = match_source_df[
+            match_source_df["__stat1_lower__"].isin(score_events_source)
+        ].copy()
+
+        for idx in score_rows.index:
+
+            source = classify_score_source(
+                idx,
+                match_source_df,
+                cols
+            )
+
+            team_value = str(score_rows.loc[idx, cols["team"]]).strip()
+
+            if team_value.lower() == "ballintubber":
+                team_group = "Ballintubber"
+            else:
+                team_group = "Opposition"
+
+            source_results.append({
+                "Match": match_label,
+                "Half": score_rows.loc[idx, cols["half"]],
+                "Time": score_rows.loc[idx, cols["time"]],
+                "Team": team_group,
+                "Score": score_rows.loc[idx, cols["stat1"]],
+                "Source": source
+            })
+
+    source_table = pd.DataFrame(source_results)
+
+    with st.expander(
+        "Source of Score Debug Table",
+        expanded=False
+    ):
+        st.dataframe(
+            source_table,
+            use_container_width=True,
+            hide_index=True
+        )
+    st.subheader("Source of Score Summary")
+    st.caption(
+        "Shows where each team's scores originated from. "
+        "% of Scores = percentage of that team's total scores."
+    )
+
+    st.markdown(
+        "<div style='height:4px;'></div>",
+        unsafe_allow_html=True
+    )
+
+    source_table["Score_Value"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({
+            "goal": 3,
+            "goal from free": 3,
+            "goal from penalty": 3,
+            "2 pointer": 2,
+            "2 pointer from free": 2,
+            "point": 1,
+            "point from free": 1,
+            "point from 45": 1
+        })
+        .fillna(0)
+    )
+
+    source_table["Goals"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "goal",
+            "goal from free",
+            "goal from penalty"
+        ])
+        .astype(int)
+    )
+
+    source_table["Points"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "point",
+            "point from free",
+            "point from 45"
+        ])
+        .astype(int)
+    )
+
+    source_table["TwoPointers"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "2 pointer",
+            "2 pointer from free"
+        ])
+        .astype(int)
+    )
+
+    source_summary = (
+        source_table
+        .groupby(["Team", "Source"], as_index=False)
+        .agg({
+            "Score": "count",
+            "Goals": "sum",
+            "Points": "sum",
+            "TwoPointers": "sum",
+            "Score_Value": "sum"
+        })
+        .rename(columns={"Score": "Scores"})
+    )
+
+    source_summary["Score Total"] = (
+        source_summary["Goals"].astype(str)
+        + "-"
+        + (
+            source_summary["Points"]
+            + (source_summary["TwoPointers"] * 2)
+        ).astype(str)
+    )
+
+    source_summary["% of Scores"] = (
+        source_summary["Scores"]
+        / source_summary.groupby("Team")["Scores"]
+        .transform("sum")
+        * 100
+    ).round(0).astype(int).astype(str) + "%"
+
+    source_order = {
+        "Turnover Won": 1,
+        "Opposition Kickout Won": 2,
+        "Own Kickout Won": 3,
+        "Short Won": 4,
+        "Free Won": 5,
+        "Won Throw-In": 6,
+        "Review Needed": 7
+    }
+
+    source_summary["Sort_Order"] = (
+        source_summary["Source"]
+        .map(source_order)
+        .fillna(999)
+    )
+
+    source_summary = source_summary[
+        [
+            "Team",
+            "Source",
+            "Scores",
+            "% of Scores",
+            "Score Total",
+            "Sort_Order"
+        ]
+    ].sort_values(
+        by=["Team", "Sort_Order"]
+    ).drop(columns=["Sort_Order"])
+
+    source_col1, source_col2 = st.columns([1, 1])
+
+    with source_col1:
+        st.dataframe(
+            source_summary,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    with source_col2:
+        fig_source = px.bar(
+            source_summary,
+            x="Scores",
+            y="Source",
+            color="Team",
+            orientation="h",
+            text="Score Total",
+            title="Source of Score",
+            color_discrete_map={
+                "Ballintubber": "red",
+                "Opposition": "lightgrey"
+            }
+        )
+
+        fig_source.update_layout(
+            height=360,
+            margin=dict(l=10, r=10, t=45, b=10),
+            yaxis_title=None,
+            xaxis_title="Scores",
+            legend_title=None
+        )
+
+        st.plotly_chart(
+            fig_source,
+            use_container_width=True
+        )
+    
     def is_in(event_series, values):
         return event_series.isin(values)
 
@@ -2575,6 +3545,10 @@ with tab2:
             player_summary_display,
             use_container_width=True
         )
+        st.markdown(
+            "<div style='height:80px;'></div>",
+            unsafe_allow_html=True
+        )
     
     else:
         st.info("No player scoring data for current filters.")
@@ -2731,4 +3705,7 @@ with tab2:
                 player_table.style.set_properties(**{"text-align": "left"}),
                 use_container_width=True
             )
-
+            st.markdown(
+                "<div style='height:80px;'></div>",
+                unsafe_allow_html=True
+            )
