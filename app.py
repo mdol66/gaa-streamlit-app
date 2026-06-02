@@ -2529,7 +2529,8 @@ with tab1:
         )
 
         def build_player_shot_summary(df):
-              if df.empty:
+
+            if df.empty:
                 return pd.DataFrame()
 
             summary = (
