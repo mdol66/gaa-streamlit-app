@@ -2529,8 +2529,7 @@ with tab1:
         )
 
         def build_player_shot_summary(df):
-
-            if df.empty:
+              if df.empty:
                 return pd.DataFrame()
 
             summary = (
@@ -2570,6 +2569,27 @@ with tab1:
                         "__stat1_lower__",
                         lambda x: x.str.contains(
                             "short",
+                            na=False
+                        ).sum()
+                    ),
+                    Saved=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "saved",
+                            na=False
+                        ).sum()
+                    ),
+                    OffPosts=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "off posts",
+                            na=False
+                        ).sum()
+                    ),
+                    OutFor45=(
+                        "__stat1_lower__",
+                        lambda x: x.str.contains(
+                            "out for 45",
                             na=False
                         ).sum()
                     ),
@@ -2618,12 +2638,11 @@ with tab1:
 
             summary = summary.rename(
                 columns={
-                    "__player_clean__":
-                    "Player",
-                    "TwoPointers":
-                    "2 Pointers",
-                    "TotalShots":
-                    "Total Shots"
+                    "__player_clean__": "Player",
+                    "TwoPointers": "2 Pointers",
+                    "OffPosts": "Off Posts",
+                    "OutFor45": "Out for 45",
+                    "TotalShots": "Total Shots"
                 }
             )
 
@@ -2637,6 +2656,9 @@ with tab1:
                     "Score Return",
                     "Wides",
                     "Shorts",
+                    "Saved",
+                    "Off Posts",
+                    "Out for 45",
                     "Total Shots"
                 ]
             ].sort_values(
