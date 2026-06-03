@@ -3933,6 +3933,63 @@ with tab4:
             title="Source Event Locations"
         )
 
+        trace_score_series = (
+            trace_map_df["Score"]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+        )
+
+        trace_goals = trace_score_series.isin([
+            "goal",
+            "goal from free",
+            "goal from penalty"
+        ]).sum()
+
+        trace_points = trace_score_series.isin([
+            "point",
+            "point from free",
+            "point from 45"
+        ]).sum()
+
+        trace_two_pointers = trace_score_series.isin([
+            "2 pointer",
+            "2 pointer from free"
+        ]).sum()
+
+        trace_score_points = (
+            trace_points
+            + (trace_two_pointers * 2)
+        )
+
+        trace_score_value = (
+            (trace_goals * 3)
+            + trace_score_points
+        )
+
+        trace_score_label = (
+            f"{trace_goals}-{trace_score_points} "
+            f"({trace_score_value})"
+        )
+
+        trace_fig.add_annotation(
+            x=50,
+            y=8,
+            text=(
+                "<b>Score Value</b><br>"
+                f"{trace_score_label}"
+            ),
+            showarrow=False,
+            font=dict(
+                size=16,
+                color="black"
+            ),
+            bgcolor="white",
+            bordercolor="black",
+            borderwidth=1,
+            borderpad=6
+        )
+
         trace_fig.add_trace(
             go.Scatter(
                 x=trace_map_df["__source_x_plot_flipped__"],
