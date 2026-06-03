@@ -2979,332 +2979,6 @@ with tab1:
 
 with tab2:
 
-    test_df = df.copy()
-
-    if cols["match_no"] and match_display_choices:
-        selected_match_nos = [
-            match_labels[label]
-            for label in match_display_choices
-        ]
-
-        test_df = test_df[
-            test_df[cols["match_no"]]
-            .astype(str)
-            .isin(selected_match_nos)
-        ].copy()
-
-    test_df = test_df.reset_index(drop=True)
-
-    score_events_source = [
-        "goal",
-        "goal from penalty",
-        "goal from free",
-        "point",
-        "point from free",
-        "point from 45",
-        "2 pointer",
-        "2 pointer from free"
-    ]
-
-    test_df["__stat1_lower__"] = (
-        test_df[cols["stat1"]]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-    )
-
-    source_results = []
-
-    if cols["match_no"]:
-        match_groups = test_df.groupby(
-            test_df[cols["match_no"]].astype(str),
-            sort=False
-        )
-    else:
-        match_groups = [("Selected Data", test_df)]
-
-    for match_label, match_source_df in match_groups:
-
-        match_source_df = match_source_df.reset_index(drop=True)
-
-        score_rows = match_source_df[
-            match_source_df["__stat1_lower__"].isin(score_events_source)
-        ].copy()
-
-        for idx in score_rows.index:
-           
-            source_result = classify_score_source(
-                idx,
-                match_source_df,
-                cols,
-                return_event=True
-            )
-
-            if isinstance(source_result, tuple):
-                source = source_result[0]
-                source_event_row = source_result[1]
-            else:
-                source = source_result
-                source_event_row = None
-
-            team_value = str(score_rows.loc[idx, cols["team"]]).strip()
-
-            if team_value.lower() == "ballintubber":
-                team_group = "Ballintubber"
-            else:
-                team_group = "Opposition"
-
-            source_results.append({
-                "Match": match_label,
-                "Half": score_rows.loc[idx, cols["half"]],
-                "Time": score_rows.loc[idx, cols["time"]],
-                "Team": team_group,
-                "Score": score_rows.loc[idx, cols["stat1"]],
-                "Source": source,
-                "Source Half": source_event_row[cols["half"]] if source_event_row is not None else None,
-                "Source Time": source_event_row[cols["time"]] if source_event_row is not None else None,
-                "Source Team": source_event_row[cols["team"]] if source_event_row is not None else None,
-                "Source Player": source_event_row[cols["player"]] if source_event_row is not None and cols["player"] else None,
-                "Source Event": source_event_row[cols["stat1"]] if source_event_row is not None else None,
-                "Source X": source_event_row[cols["x"]] if source_event_row is not None else None,
-                "Source Y": source_event_row[cols["y"]] if source_event_row is not None else None
-            })
-
-    source_table = pd.DataFrame(source_results)
-
-    with st.expander(
-        "Source of Score Debug Table",
-        expanded=False
-    ):
-        st.dataframe(
-            source_table,
-            use_container_width=True,
-            hide_index=True
-        )
-    st.subheader("Source of Score Summary")
-    st.caption(
-        "Shows where each team's scores originated from. "
-        "% of Scores = percentage of that team's total scores."
-    )
-
-    st.markdown(
-        "<div style='height:4px;'></div>",
-        unsafe_allow_html=True
-    )
-
-    source_table["Score_Value"] = (
-        source_table["Score"]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .map({
-            "goal": 3,
-            "goal from free": 3,
-            "goal from penalty": 3,
-            "2 pointer": 2,
-            "2 pointer from free": 2,
-            "point": 1,
-            "point from free": 1,
-            "point from 45": 1
-        })
-        .fillna(0)
-    )
-
-    source_table["Goals"] = (
-        source_table["Score"]
-        .astype(str)
-        .str.lower()
-        .isin([
-            "goal",
-            "goal from free",
-            "goal from penalty"
-        ])
-        .astype(int)
-    )
-
-    source_table["Points"] = (
-        source_table["Score"]
-        .astype(str)
-        .str.lower()
-        .isin([
-            "point",
-            "point from free",
-            "point from 45"
-        ])
-        .astype(int)
-    )
-
-    source_table["TwoPointers"] = (
-        source_table["Score"]
-        .astype(str)
-        .str.lower()
-        .isin([
-            "2 pointer",
-            "2 pointer from free"
-        ])
-        .astype(int)
-    )
-
-    source_summary = (
-        source_table
-        .groupby(["Team", "Source"], as_index=False)
-        .agg({
-            "Score": "count",
-            "Goals": "sum",
-            "Points": "sum",
-            "TwoPointers": "sum",
-            "Score_Value": "sum"
-        })
-        .rename(columns={"Score": "Scores"})
-    )
-
-    source_summary["Score Total"] = (
-        source_summary["Goals"].astype(str)
-        + "-"
-        + (
-            source_summary["Points"]
-            + (source_summary["TwoPointers"] * 2)
-        ).astype(str)
-    )
-
-    source_summary["% of Scores"] = (
-        source_summary["Scores"]
-        / source_summary.groupby("Team")["Scores"]
-        .transform("sum")
-        * 100
-    ).round(0).astype(int).astype(str) + "%"
-
-    source_order = {
-        "Turnover Won": 1,
-        "Opposition Kickout Won": 2,
-        "Own Kickout Won": 3,
-        "Short Won": 4,
-        "Free Won": 5,
-        "Won Throw-In": 6,
-        "Review Needed": 7
-    }
-
-    source_summary["Sort_Order"] = (
-        source_summary["Source"]
-        .map(source_order)
-        .fillna(999)
-    )
-
-    source_summary = source_summary[
-        [
-            "Team",
-            "Source",
-            "Scores",
-            "% of Scores",
-            "Score Total",
-            "Sort_Order"
-        ]
-    ].sort_values(
-        by=["Team", "Sort_Order"]
-    ).drop(columns=["Sort_Order"])
-
-    source_col1, source_col2 = st.columns([1, 1])
-
-    with source_col1:
-        st.dataframe(
-            source_summary,
-            use_container_width=True,
-            hide_index=True
-        )
-
-    with source_col2:
-        fig_source = px.bar(
-            source_summary,
-            x="Scores",
-            y="Source",
-            color="Team",
-            orientation="h",
-            text="Score Total",
-            title="Source of Score",
-            color_discrete_map={
-                "Ballintubber": "red",
-                "Opposition": "lightgrey"
-            }
-        )
-
-        fig_source.update_layout(
-            height=360,
-            margin=dict(l=10, r=10, t=45, b=10),
-            yaxis_title=None,
-            xaxis_title="Scores",
-            legend_title=None
-        )
-
-        st.plotly_chart(
-            fig_source,
-            use_container_width=True
-        )
-    st.markdown("---")
-    st.subheader("Source Event Trace")
-
-    trace_team_options = sorted(
-        source_table["Team"]
-        .dropna()
-        .astype(str)
-        .unique()
-        .tolist()
-    )
-
-    trace_source_options = sorted(
-        source_table["Source"]
-        .dropna()
-        .astype(str)
-        .unique()
-        .tolist()
-    )
-
-    trace_col1, trace_col2 = st.columns([1, 1])
-
-    with trace_col1:
-        selected_trace_team = st.selectbox(
-            "Trace Team",
-            trace_team_options,
-            key="trace_team_select"
-        )
-
-    with trace_col2:
-        selected_trace_source = st.selectbox(
-            "Trace Source",
-            trace_source_options,
-            key="trace_source_select"
-        )
-
-    trace_df = source_table[
-        (source_table["Team"] == selected_trace_team)
-        & (source_table["Source"] == selected_trace_source)
-    ].copy()
-
-    trace_display_cols = [
-        "Match",
-        "Half",
-        "Time",
-        "Team",
-        "Score",
-        "Source",
-        "Source Half",
-        "Source Time",
-        "Source Team",
-        "Source Player",
-        "Source Event",
-        "Source X",
-        "Source Y"
-    ]
-
-    trace_display_cols = [
-        col for col in trace_display_cols
-        if col in trace_df.columns
-    ]
-
-    st.dataframe(
-        trace_df[trace_display_cols],
-        use_container_width=True,
-        hide_index=True
-    )
 
    
     def is_in(event_series, values):
@@ -3896,3 +3570,331 @@ with tab2:
                 "<div style='height:80px;'></div>",
                 unsafe_allow_html=True
             )
+with tab4:
+
+    test_df = df.copy()
+
+    if cols["match_no"] and match_display_choices:
+        selected_match_nos = [
+            match_labels[label]
+            for label in match_display_choices
+        ]
+
+        test_df = test_df[
+            test_df[cols["match_no"]]
+            .astype(str)
+            .isin(selected_match_nos)
+        ].copy()
+
+    test_df = test_df.reset_index(drop=True)
+
+    score_events_source = [
+        "goal",
+        "goal from penalty",
+        "goal from free",
+        "point",
+        "point from free",
+        "point from 45",
+        "2 pointer",
+        "2 pointer from free"
+    ]
+
+    test_df["__stat1_lower__"] = (
+        test_df[cols["stat1"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    source_results = []
+
+    if cols["match_no"]:
+        match_groups = test_df.groupby(
+            test_df[cols["match_no"]].astype(str),
+            sort=False
+        )
+    else:
+        match_groups = [("Selected Data", test_df)]
+
+    for match_label, match_source_df in match_groups:
+
+        match_source_df = match_source_df.reset_index(drop=True)
+
+        score_rows = match_source_df[
+            match_source_df["__stat1_lower__"].isin(score_events_source)
+        ].copy()
+
+        for idx in score_rows.index:
+           
+            source_result = classify_score_source(
+                idx,
+                match_source_df,
+                cols,
+                return_event=True
+            )
+
+            if isinstance(source_result, tuple):
+                source = source_result[0]
+                source_event_row = source_result[1]
+            else:
+                source = source_result
+                source_event_row = None
+
+            team_value = str(score_rows.loc[idx, cols["team"]]).strip()
+
+            if team_value.lower() == "ballintubber":
+                team_group = "Ballintubber"
+            else:
+                team_group = "Opposition"
+
+            source_results.append({
+                "Match": match_label,
+                "Half": score_rows.loc[idx, cols["half"]],
+                "Time": score_rows.loc[idx, cols["time"]],
+                "Team": team_group,
+                "Score": score_rows.loc[idx, cols["stat1"]],
+                "Source": source,
+                "Source Half": source_event_row[cols["half"]] if source_event_row is not None else None,
+                "Source Time": source_event_row[cols["time"]] if source_event_row is not None else None,
+                "Source Team": source_event_row[cols["team"]] if source_event_row is not None else None,
+                "Source Player": source_event_row[cols["player"]] if source_event_row is not None and cols["player"] else None,
+                "Source Event": source_event_row[cols["stat1"]] if source_event_row is not None else None,
+                "Source X": source_event_row[cols["x"]] if source_event_row is not None else None,
+                "Source Y": source_event_row[cols["y"]] if source_event_row is not None else None
+            })
+
+    source_table = pd.DataFrame(source_results)
+
+    with st.expander(
+        "Source of Score Debug Table",
+        expanded=False
+    ):
+        st.dataframe(
+            source_table,
+            use_container_width=True,
+            hide_index=True
+        )
+    st.subheader("Source of Score Summary")
+    st.caption(
+        "Shows where each team's scores originated from. "
+        "% of Scores = percentage of that team's total scores."
+    )
+
+    st.markdown(
+        "<div style='height:4px;'></div>",
+        unsafe_allow_html=True
+    )
+
+    source_table["Score_Value"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({
+            "goal": 3,
+            "goal from free": 3,
+            "goal from penalty": 3,
+            "2 pointer": 2,
+            "2 pointer from free": 2,
+            "point": 1,
+            "point from free": 1,
+            "point from 45": 1
+        })
+        .fillna(0)
+    )
+
+    source_table["Goals"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "goal",
+            "goal from free",
+            "goal from penalty"
+        ])
+        .astype(int)
+    )
+
+    source_table["Points"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "point",
+            "point from free",
+            "point from 45"
+        ])
+        .astype(int)
+    )
+
+    source_table["TwoPointers"] = (
+        source_table["Score"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "2 pointer",
+            "2 pointer from free"
+        ])
+        .astype(int)
+    )
+
+    source_summary = (
+        source_table
+        .groupby(["Team", "Source"], as_index=False)
+        .agg({
+            "Score": "count",
+            "Goals": "sum",
+            "Points": "sum",
+            "TwoPointers": "sum",
+            "Score_Value": "sum"
+        })
+        .rename(columns={"Score": "Scores"})
+    )
+
+    source_summary["Score Total"] = (
+        source_summary["Goals"].astype(str)
+        + "-"
+        + (
+            source_summary["Points"]
+            + (source_summary["TwoPointers"] * 2)
+        ).astype(str)
+    )
+
+    source_summary["% of Scores"] = (
+        source_summary["Scores"]
+        / source_summary.groupby("Team")["Scores"]
+        .transform("sum")
+        * 100
+    ).round(0).astype(int).astype(str) + "%"
+
+    source_order = {
+        "Turnover Won": 1,
+        "Opposition Kickout Won": 2,
+        "Own Kickout Won": 3,
+        "Short Won": 4,
+        "Free Won": 5,
+        "Won Throw-In": 6,
+        "Review Needed": 7
+    }
+
+    source_summary["Sort_Order"] = (
+        source_summary["Source"]
+        .map(source_order)
+        .fillna(999)
+    )
+
+    source_summary = source_summary[
+        [
+            "Team",
+            "Source",
+            "Scores",
+            "% of Scores",
+            "Score Total",
+            "Sort_Order"
+        ]
+    ].sort_values(
+        by=["Team", "Sort_Order"]
+    ).drop(columns=["Sort_Order"])
+
+    source_col1, source_col2 = st.columns([1, 1])
+
+    with source_col1:
+        st.dataframe(
+            source_summary,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    with source_col2:
+        fig_source = px.bar(
+            source_summary,
+            x="Scores",
+            y="Source",
+            color="Team",
+            orientation="h",
+            text="Score Total",
+            title="Source of Score",
+            color_discrete_map={
+                "Ballintubber": "red",
+                "Opposition": "lightgrey"
+            }
+        )
+
+        fig_source.update_layout(
+            height=360,
+            margin=dict(l=10, r=10, t=45, b=10),
+            yaxis_title=None,
+            xaxis_title="Scores",
+            legend_title=None
+        )
+
+        st.plotly_chart(
+            fig_source,
+            use_container_width=True
+        )
+    st.markdown("---")
+    st.subheader("Source Event Trace")
+
+    trace_team_options = sorted(
+        source_table["Team"]
+        .dropna()
+        .astype(str)
+        .unique()
+        .tolist()
+    )
+
+    trace_source_options = sorted(
+        source_table["Source"]
+        .dropna()
+        .astype(str)
+        .unique()
+        .tolist()
+    )
+
+    trace_col1, trace_col2 = st.columns([1, 1])
+
+    with trace_col1:
+        selected_trace_team = st.selectbox(
+            "Trace Team",
+            trace_team_options,
+            key="trace_team_select"
+        )
+
+    with trace_col2:
+        selected_trace_source = st.selectbox(
+            "Trace Source",
+            trace_source_options,
+            key="trace_source_select"
+        )
+
+    trace_df = source_table[
+        (source_table["Team"] == selected_trace_team)
+        & (source_table["Source"] == selected_trace_source)
+    ].copy()
+
+    trace_display_cols = [
+        "Match",
+        "Half",
+        "Time",
+        "Team",
+        "Score",
+        "Source",
+        "Source Half",
+        "Source Time",
+        "Source Team",
+        "Source Player",
+        "Source Event",
+        "Source X",
+        "Source Y"
+    ]
+
+    trace_display_cols = [
+        col for col in trace_display_cols
+        if col in trace_df.columns
+    ]
+
+    st.dataframe(
+        trace_df[trace_display_cols],
+        use_container_width=True,
+        hide_index=True
+    )
