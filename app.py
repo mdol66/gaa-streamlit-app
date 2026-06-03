@@ -973,7 +973,7 @@ tab0, tab1, tab2, tab3, tab4 = st.tabs([
     "Pitch Map",
     "Scoring Analysis",
     "Non-Scoring Analysis",
-    "Player Shot Analysis"
+    "Source of Score"
 ])
 
 plot_df[cols["x"]] = pd.to_numeric(plot_df[cols["x"]], errors="coerce").fillna(-1)
