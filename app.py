@@ -570,7 +570,12 @@ def parse_match_minute(value):
     except Exception:
         return None
 
-def classify_score_source(score_idx, match_df, cols):
+def classify_score_source(
+    score_idx,
+    match_df,
+    cols,
+    return_event=False
+):
     score_row = match_df.loc[score_idx]
 
     score_team = str(score_row[cols["team"]]).strip().lower()
