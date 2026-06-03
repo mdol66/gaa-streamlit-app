@@ -3893,8 +3893,13 @@ with tab4:
         if col in trace_df.columns
     ]
 
-    st.dataframe(
-        trace_df[trace_display_cols],
-        use_container_width=True,
-        hide_index=True
-    )
+    with st.expander(
+        "Source Event Trace Table",
+        expanded=False
+    ):
+        st.dataframe(
+            trace_df[trace_display_cols],
+            use_container_width=True,
+            hide_index=True,
+            height=120
+        )
