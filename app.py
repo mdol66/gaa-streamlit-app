@@ -576,6 +576,19 @@ def classify_score_source(score_idx, match_df, cols):
     score_team = str(score_row[cols["team"]]).strip().lower()
     score_half = str(score_row[cols["half"]]).strip().lower()
     score_event = str(score_row[cols["stat1"]]).strip().lower()
+    score_time = str(
+        score_row[cols["time"]]
+    ).strip()
+
+    try:
+        score_minutes = int(
+            score_time.split(":")[0]
+        )
+    except Exception:
+        score_minutes = 99
+
+    if score_minutes < 2:
+        return "Won Throw-In"
 
     if not score_team or score_team in ["1st half", "2nd half"]:
         return "Review Needed"
