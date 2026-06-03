@@ -3892,7 +3892,87 @@ with tab4:
         col for col in trace_display_cols
         if col in trace_df.columns
     ]
+    trace_map_df = trace_df.copy()
 
+    trace_map_df["Source X"] = pd.to_numeric(
+        trace_map_df["Source X"],
+        errors="coerce"
+    )
+
+    trace_map_df["Source Y"] = pd.to_numeric(
+        trace_map_df["Source Y"],
+        errors="coerce"
+    )
+
+    trace_map_df = trace_map_df[
+        trace_map_df["Source X"].notna()
+        & trace_map_df["Source Y"].notna()
+    ].copy()
+
+    if not trace_map_df.empty:
+
+        trace_map_df["__source_x_plot__"] = (
+            x_left
+            + (trace_map_df["Source X"] / 100.0)
+            * (x_right - x_left)
+        )
+
+        trace_map_df["__source_y_plot__"] = trace_map_df["Source Y"]
+
+        trace_map_df["__source_x_plot_flipped__"] = (
+            100
+            - trace_map_df["__source_x_plot__"]
+        )
+
+        trace_map_df["__source_y_plot_flipped__"] = (
+            100
+            - trace_map_df["__source_y_plot__"]
+        )
+
+        trace_fig = make_pitch_figure(
+            title="Source Event Locations"
+        )
+
+        trace_fig.add_trace(
+            go.Scatter(
+                x=trace_map_df["__source_x_plot_flipped__"],
+                y=trace_map_df["__source_y_plot_flipped__"],
+                mode="markers",
+                marker=dict(
+                    size=12,
+                    color="#FF0000",
+                    opacity=0.85,
+                    line=dict(
+                        color="#FFFFFF",
+                        width=2
+                    )
+                ),
+                hovertext=(
+                    "Time: "
+                    + trace_map_df["Source Time"].astype(str)
+                    + "<br>Team: "
+                    + trace_map_df["Source Team"].astype(str)
+                    + "<br>Player: "
+                    + trace_map_df["Source Player"].astype(str)
+                    + "<br>Event: "
+                    + trace_map_df["Source Event"].astype(str)
+                    + "<br>Score: "
+                    + trace_map_df["Score"].astype(str)
+                ),
+                hoverinfo="text",
+                showlegend=False
+            )
+        )
+
+        st.plotly_chart(
+            trace_fig,
+            use_container_width=False
+        )
+
+    else:
+        st.info(
+            "No source event locations available for this selection."
+        )
     with st.expander(
         "Source Event Trace Table",
         expanded=False
