@@ -3973,10 +3973,12 @@ with tab4:
         )
 
         trace_fig.add_annotation(
-            x=50,
-            y=8,
+            x=0.24,
+            y=1.025,
+            xref="paper",
+            yref="paper",
             text=(
-                "<b>Score Value</b><br>"
+                "<b>Score Value:</b> "
                 f"{trace_score_label}"
             ),
             showarrow=False,
