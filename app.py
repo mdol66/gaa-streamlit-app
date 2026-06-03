@@ -3938,7 +3938,22 @@ with tab4:
                 x=trace_map_df["__source_x_plot_flipped__"],
                 y=trace_map_df["__source_y_plot_flipped__"],
                 mode="markers+text",
-                text=trace_map_df["Score"].astype(str),
+                text=(
+                    trace_map_df["Score"]
+                    .astype(str)
+                    .str.lower()
+                    .map({
+                        "point": "P",
+                        "point from free": "P",
+                        "point from 45": "P",
+                        "goal": "G",
+                        "goal from free": "G",
+                        "goal from penalty": "G",
+                        "2 pointer": "2P",
+                        "2 pointer from free": "2P"
+                    })
+                    .fillna("")
+                ),
                 textposition="top center",
                 textfont=dict(
                     size=12,
