@@ -3973,7 +3973,7 @@ with tab4:
         )
 
         trace_fig.add_annotation(
-            x=2.00,
+            x=0.80,
             y=1.040,
             xref="paper",
             yref="paper",
