@@ -696,6 +696,7 @@ def classify_score_source(
 
         # Same-team turnover won
         if event == "turnover won" and same_team:
+
             if return_event:
                 return (
                     "Turnover Won",
@@ -703,7 +704,7 @@ def classify_score_source(
                 )
 
             return "Turnover Won"
-
+            
         # Opposition turnover lost
         if event == "turnover lost" and opposition_team:
                if return_event:
