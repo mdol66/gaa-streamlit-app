@@ -657,6 +657,9 @@ def classify_score_source(
 
 
     for _, row in meaningful_previous.iloc[::-1].iterrows():
+    
+        source_row = row
+    
         event = str(row[cols["stat1"]]).strip().lower()
         team = str(row[cols["team"]]).strip().lower()
 
@@ -665,6 +668,13 @@ def classify_score_source(
 
         # Opposition short directly gives possession to scoring team
         if "short" in event and opposition_team:
+        
+            if return_event:
+                return (
+                    "Short Won",
+                    source_row
+                )
+        
             return "Short Won"
 
         # Same-team short is continuation of possession
@@ -686,23 +696,49 @@ def classify_score_source(
 
         # Same-team turnover won
         if event == "turnover won" and same_team:
+            if return_event:
+                return (
+                    "Turnover Won",
+                    source_row
+                )
+
             return "Turnover Won"
 
         # Opposition turnover lost
         if event == "turnover lost" and opposition_team:
+               if return_event:
+                return (
+                    "Turnover Won",
+                    source_row
+                )
+
             return "Turnover Won"
 
         # Same-team own kickout retained
         if "kick out won" in event and same_team:
+        
+            if return_event:
+                return (
+                    "Own Kickout Won",
+                    source_row
+                )
+
             return "Own Kickout Won"
 
         # Opposition kickout lost
         if "kick out lost" in event and opposition_team:
+      
+            if return_event:
+                return (
+                    "Opposition Kickout Won",
+                    source_row
+                )
+
             return "Opposition Kickout Won"
 
         # If previous clear possession was opposition and no transfer was logged
         if opposition_team and event in [
-            "point", "point from free", "point from 45",
+              "point", "point from free", "point from 45",
             "2 pointer", "2 pointer from free",
             "goal", "goal from free", "goal from penalty",
             "wide", "wide from free",
@@ -710,6 +746,13 @@ def classify_score_source(
             "off posts", "off posts from free",
             "out for 45", "out for 45 from free"
         ]:
+
+            if return_event:
+                return (
+                    "Turnover Won",
+                    source_row
+                )
+
             return "Turnover Won"
 
     return "Review Needed"
@@ -2986,12 +3029,20 @@ with tab2:
         ].copy()
 
         for idx in score_rows.index:
-
-            source = classify_score_source(
+           
+            source_result = classify_score_source(
                 idx,
                 match_source_df,
-                cols
+                cols,
+                return_event=True
             )
+
+            if isinstance(source_result, tuple):
+                source = source_result[0]
+                source_event_row = source_result[1]
+            else:
+                source = source_result
+                source_event_row = None
 
             team_value = str(score_rows.loc[idx, cols["team"]]).strip()
 
@@ -3006,7 +3057,14 @@ with tab2:
                 "Time": score_rows.loc[idx, cols["time"]],
                 "Team": team_group,
                 "Score": score_rows.loc[idx, cols["stat1"]],
-                "Source": source
+                "Source": source,
+                "Source Half": source_event_row[cols["half"]] if source_event_row is not None else None,
+                "Source Time": source_event_row[cols["time"]] if source_event_row is not None else None,
+                "Source Team": source_event_row[cols["team"]] if source_event_row is not None else None,
+                "Source Player": source_event_row[cols["player"]] if source_event_row is not None and cols["player"] else None,
+                "Source Event": source_event_row[cols["stat1"]] if source_event_row is not None else None,
+                "Source X": source_event_row[cols["x"]] if source_event_row is not None else None,
+                "Source Y": source_event_row[cols["y"]] if source_event_row is not None else None
             })
 
     source_table = pd.DataFrame(source_results)
@@ -3178,7 +3236,74 @@ with tab2:
             fig_source,
             use_container_width=True
         )
-    
+    st.markdown("---")
+    st.subheader("Source Event Trace")
+
+    trace_team_options = sorted(
+        source_table["Team"]
+        .dropna()
+        .astype(str)
+        .unique()
+        .tolist()
+    )
+
+    trace_source_options = sorted(
+        source_table["Source"]
+        .dropna()
+        .astype(str)
+        .unique()
+        .tolist()
+    )
+
+    trace_col1, trace_col2 = st.columns([1, 1])
+
+    with trace_col1:
+        selected_trace_team = st.selectbox(
+            "Trace Team",
+            trace_team_options,
+            key="trace_team_select"
+        )
+
+    with trace_col2:
+        selected_trace_source = st.selectbox(
+            "Trace Source",
+            trace_source_options,
+            key="trace_source_select"
+        )
+
+    trace_df = source_table[
+        (source_table["Team"] == selected_trace_team)
+        & (source_table["Source"] == selected_trace_source)
+    ].copy()
+
+    trace_display_cols = [
+        "Match",
+        "Half",
+        "Time",
+        "Team",
+        "Score",
+        "Source",
+        "Source Half",
+        "Source Time",
+        "Source Team",
+        "Source Player",
+        "Source Event",
+        "Source X",
+        "Source Y"
+    ]
+
+    trace_display_cols = [
+        col for col in trace_display_cols
+        if col in trace_df.columns
+    ]
+
+    st.dataframe(
+        trace_df[trace_display_cols],
+        use_container_width=True,
+        hide_index=True
+    )
+
+   
     def is_in(event_series, values):
         return event_series.isin(values)
 
