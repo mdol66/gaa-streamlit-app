@@ -707,12 +707,14 @@ def classify_score_source(
             
         # Opposition turnover lost
         if event == "turnover lost" and opposition_team:
-               if return_event:
+
+            if return_event:
                 return (
                     "Turnover Won",
                     source_row
                 )
 
+            return "Turnover Won"
             return "Turnover Won"
 
         # Same-team own kickout retained
