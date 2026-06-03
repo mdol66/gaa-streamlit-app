@@ -3973,8 +3973,8 @@ with tab4:
         )
 
         trace_fig.add_annotation(
-            x=0.24,
-            y=1.025,
+            x=0.18,
+            y=1.045,
             xref="paper",
             yref="paper",
             text=(
@@ -3983,7 +3983,7 @@ with tab4:
             ),
             showarrow=False,
             font=dict(
-                size=16,
+                size=12,
                 color="black"
             ),
             bgcolor="white",
