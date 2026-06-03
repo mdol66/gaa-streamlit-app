@@ -605,6 +605,12 @@ def classify_score_source(score_idx, match_df, cols):
         return "Won Throw-In"
 
     if meaningful_previous.empty:
+        score_time = str(
+            score_row[cols["time"]]
+        ).strip()
+
+        if score_time < "02:00":
+            return "Won Throw-In"
 
         last_previous_event = (
             str(previous_df.iloc[-1][cols["stat1"]])
