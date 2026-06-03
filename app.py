@@ -3937,7 +3937,13 @@ with tab4:
             go.Scatter(
                 x=trace_map_df["__source_x_plot_flipped__"],
                 y=trace_map_df["__source_y_plot_flipped__"],
-                mode="markers",
+                mode="markers+text",
+                text=trace_map_df["Score"].astype(str),
+                textposition="top center",
+                textfont=dict(
+                    size=12,
+                    color="white"
+                ),
                 marker=dict(
                     size=12,
                     color="#FF0000",
