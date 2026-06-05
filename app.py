@@ -3809,7 +3809,7 @@ with tab4:
     with source_col2:
         fig_source = px.bar(
             source_summary,
-            x="Scores",
+            x="Score_Value",
             y="Source",
             color="Team",
             orientation="h",
@@ -3825,7 +3825,7 @@ with tab4:
             height=360,
             margin=dict(l=10, r=10, t=45, b=10),
             yaxis_title=None,
-            xaxis_title="Scores",
+            xaxis_title="Score Value",
             legend_title=None
         )
 
