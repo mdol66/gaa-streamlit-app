@@ -3825,7 +3825,7 @@ with tab4:
             text="Score Total",
             title="Source of Score",
             category_orders={
-                "Source": source_category_order[::-1]
+                "Source": source_category_order
             },
             color_discrete_map={
                 "Ballintubber": "red",
