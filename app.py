@@ -3790,6 +3790,7 @@ with tab4:
             "Scores",
             "% of Scores",
             "Score Total",
+            "Score_Value",
             "Sort_Order"
         ]
     ].sort_values(
