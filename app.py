@@ -3797,6 +3797,15 @@ with tab4:
         by=["Team", "Sort_Order"]
     ).drop(columns=["Sort_Order"])
 
+    source_category_order = (
+        source_summary
+        .groupby("Source")["Score_Value"]
+        .sum()
+        .sort_values(ascending=True)
+        .index
+        .tolist()
+    )
+
     source_col1, source_col2 = st.columns([1, 1])
 
     with source_col1:
