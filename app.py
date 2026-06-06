@@ -1650,28 +1650,31 @@ with tab0:
 
                     y_vals = pd.to_numeric(ko_df[cols["y"]], errors="coerce")
 
+                    short_zone_pct = (45.0 / 145.0) * 100.0
+                    far_short_start = 100.0 - short_zone_pct
+
                     bt_short_mask = (
                         ko_df["__is_ball__"]
                         & (y_vals >= 0)
-                        & (y_vals <= 35)
+                        & (y_vals <= short_zone_pct)
                     )
 
                     bt_long_mask = (
                         ko_df["__is_ball__"]
-                        & (y_vals > 35)
+                        & (y_vals > short_zone_pct)
                         & (y_vals <= 100)
                     )
 
                     opp_short_mask = (
                         (~ko_df["__is_ball__"])
-                        & (y_vals >= 65)
+                        & (y_vals >= far_short_start)
                         & (y_vals <= 100)
                     )
 
                     opp_long_mask = (
                         (~ko_df["__is_ball__"])
                         & (y_vals >= 0)
-                        & (y_vals < 65)
+                        & (y_vals < far_short_start)
                     )
 
                     bt_short = bt_short_mask.sum()
