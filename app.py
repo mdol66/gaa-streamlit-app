@@ -220,11 +220,12 @@ def build_pitch_shapes() -> list[dict]:
     ry13 = sy(15.0)
     rx13 = ry13 * ((x_right - x_left) / 100)
 
-    r40 = sy(40.0)
-    theta = math.degrees(math.asin(sy(20.0) / r40))
+    rx40 = sw(37.0)
+    ry40 = sy(40.0)
+    theta = math.degrees(math.asin(20.0 / 40.0))
 
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 0.0, r40, r40, theta, 180 - theta), line=line))
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 100.0, r40, r40, 180 + theta, 360 - theta), line=line))
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 0.0, rx40, ry40, theta, 180 - theta), line=line))
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 100.0, rx40, ry40, 180 + theta, 360 - theta), line=line))
 
     return shapes
 
