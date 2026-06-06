@@ -147,12 +147,6 @@ def build_pitch_shapes() -> list[dict]:
     def sy(m: float) -> float:
         return (m / pitch_len) * 100.0
 
-    rx40 = sw(38.0)
-    ry40 = sy(40.0)
-    theta = math.degrees(math.asin(20.0 / 40.0))
-
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 0.0, rx40, ry40, theta, 180 - theta), line=line))
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 100.0, rx40, ry40, 180 + theta, 360 - theta), line=line))
     y100_45 = 100.0 - y45
 
     large_w = sw(15.0)
@@ -218,16 +212,12 @@ def build_pitch_shapes() -> list[dict]:
         # Small D / semi-circle
     ry13 = sy(15.0)
     rx13 = ry13 * ((x_right - x_left) / 100)
-    
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, y20, rx13, ry13, 0, 180), line=line))
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, y100_20, rx13, ry13, 180, 360), line=line))
 
-    rx40 = sw(40.0)
-    ry40 = sy(40.0)
-    theta = math.degrees(math.asin(20.0 / 40.0))
+    r40 = sy(40.0)
+    theta = math.degrees(math.asin(sy(20.0) / r40))
 
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 0.0, rx40, ry40, theta, 180 - theta), line=line))
-    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 100.0, rx40, ry40, 180 + theta, 360 - theta), line=line))
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 0.0, r40, r40, theta, 180 - theta), line=line))
+    shapes.append(dict(type="path", path=ellipse_arc_path(cx, 100.0, r40, r40, 180 + theta, 360 - theta), line=line))
 
     return shapes
 
