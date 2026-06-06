@@ -147,7 +147,14 @@ def build_pitch_shapes() -> list[dict]:
     def sy(m: float) -> float:
         return (m / pitch_len) * 100.0
 
+    y13 = sy(13)
+    y20 = sy(20)
+    y45 = sy(45)
+    y50 = 50.0
+    y100_13 = 100.0 - y13
+    y100_20 = 100.0 - y20
     y100_45 = 100.0 - y45
+
 
     large_w = sw(15.0)
     small_w = sw(10.5)
