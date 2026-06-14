@@ -1744,7 +1744,7 @@ with tab0:
                     
                 st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
     
-                st.markdown("### Kickout Receivers")
+                st.markdown("### Own Kickout Receivers")
     
                 ko_receivers_df = dashboard_df.copy()
     
