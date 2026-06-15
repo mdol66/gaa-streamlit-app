@@ -402,9 +402,13 @@ def add_numbered_markers(
                     .apply(clean_player_name)
                     .apply(
                         lambda name: "".join(
-                            part[0].upper()
-                            for part in str(name).split()
-                            if part
+                            word[0].upper() + "".join(
+                                char.upper()
+                                for char in word[1:]
+                                if char.isupper()
+                            )
+                            for word in str(name).split()
+                            if word
                         )
                     )
                     if player_col and player_col in group.columns
