@@ -397,7 +397,16 @@ def add_numbered_markers(
                     else "markers"
                 ),
                 text=(
-                    group[player_col].astype(str).apply(clean_player_name)
+                    group[player_col]
+                    .astype(str)
+                    .apply(clean_player_name)
+                    .apply(
+                        lambda name: "".join(
+                            part[0].upper()
+                            for part in str(name).split()
+                            if part
+                        )
+                    )
                     if player_col and player_col in group.columns
                     else None
                 ),
