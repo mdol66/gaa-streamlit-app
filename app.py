@@ -229,6 +229,8 @@ def build_pitch_shapes() -> list[dict]:
 
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, 0.0, rx40, ry40, theta, 180 - theta), line=line))
     shapes.append(dict(type="path", path=ellipse_arc_path(cx, 100.0, rx40, ry40, 180 + theta, 360 - theta), line=line))
+    for shape in shapes:
+        shape["layer"] = "below"
 
     return shapes
 
