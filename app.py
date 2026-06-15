@@ -417,7 +417,7 @@ def add_numbered_markers(
                 textposition="top center",
                 textfont=dict(
                     size=10,
-                    color="white"
+                    color="black"
                 ),
                 name=str(category),
                 marker=dict(
