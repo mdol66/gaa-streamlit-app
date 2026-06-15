@@ -391,7 +391,21 @@ def add_numbered_markers(
             go.Scatter(
                 x=group[x_col],
                 y=group[y_col],
-                mode="markers",
+                mode=(
+                    "markers+text"
+                    if st.session_state.get("show_player_names", False)
+                    else "markers"
+                ),
+                text=(
+                    group[player_col].astype(str).apply(clean_player_name)
+                    if player_col and player_col in group.columns
+                    else None
+                ),
+                textposition="top center",
+                textfont=dict(
+                    size=10,
+                    color="white"
+                ),
                 name=str(category),
                 marker=dict(
                     size=12,
@@ -2802,6 +2816,11 @@ with tab1:
             "Show Legend",
             value=True,
             key="show_pitch_legend"
+        )
+        show_player_names = st.checkbox(
+            "Show Player Names",
+            value=False,
+            key="show_player_names"
         )
 
         if show_legend:
