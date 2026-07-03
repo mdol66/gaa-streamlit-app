@@ -1522,7 +1522,6 @@ with tab0:
                     comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
                 )
 
-                st.dataframe(
         opp_display_name = (
             opp_name if "opp_name" in locals()
             else "Opposition"
