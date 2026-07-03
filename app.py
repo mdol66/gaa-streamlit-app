@@ -1190,6 +1190,7 @@ with tab0:
                     border:1px solid #D9DDE3;
                     border-radius:7px;
                     padding:6px 10px;
+                    margin-top:-12px;
                     margin-bottom:6px;
                 ">
                     <h3 style="margin:0;">Scoring</h3>
