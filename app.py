@@ -789,6 +789,7 @@ def classify_score_source(
             return "Turnover Won"
 
     return "Review Needed"
+
 def render_stat_bar(
     left_label,
     right_label,
@@ -801,65 +802,35 @@ def render_stat_bar(
     try:
         left_num = float(str(left_value).replace("%", ""))
         right_num = float(str(right_value).replace("%", ""))
+
+        total = left_num + right_num
+        left_pct = 50 if total == 0 else (left_num / total) * 100
+
     except Exception:
         return
 
-    total = left_num + right_num
+    html = f"""
+<div style="margin-bottom:18px;">
 
-    if total == 0:
-        left_pct = 50
-    else:
-        left_pct = (left_num / total) * 100
+    <div style="display:flex;justify-content:space-between;font-weight:700;font-size:18px;">
+        <span>{left_value}</span>
+        <span>{right_value}</span>
+    </div>
+
+    <div style="text-align:center;margin-top:-22px;margin-bottom:6px;font-size:15px;">
+        {metric}
+    </div>
+
+    <div style="height:10px;background:#EFEFEF;border-radius:10px;overflow:hidden;display:flex;">
+        <div style="width:{left_pct:.1f}%;background:{left_colour};"></div>
+        <div style="width:{100-left_pct:.1f}%;background:{right_colour};"></div>
+    </div>
+
+</div>
+"""
 
     st.markdown(
-        f"""
-        <div style="margin-bottom:18px;">
-
-            <div style="
-                display:flex;
-                justify-content:space-between;
-                font-weight:700;
-                font-size:18px;
-            ">
-                <span>{left_value}</span>
-                <span>{right_value}</span>
-            </div>
-
-            <div style="
-                text-align:center;
-                margin-top:-24px;
-                margin-bottom:6px;
-                font-size:15px;
-            ">
-                {metric}
-            </div>
-
-            <div style="
-                width:100%;
-                height:10px;
-                background:#EFEFEF;
-                border-radius:10px;
-                overflow:hidden;
-            ">
-
-                <div style="
-                    width:{left_pct:.1f}%;
-                    height:10px;
-                    background:{left_colour};
-                    float:left;
-                "></div>
-
-                <div style="
-                    width:{100-left_pct:.1f}%;
-                    height:10px;
-                    background:{right_colour};
-                    float:left;
-                "></div>
-
-            </div>
-
-        </div>
-        """,
+        html,
         unsafe_allow_html=True
     )
     
