@@ -1843,13 +1843,31 @@ with tab0:
                         ]
                     })
 
-                    st.dataframe(
-                        kickout_table[
-                            ["Ballintubber", "Metric", opp_display_name]
-                        ],
-                        hide_index=True,
-                        use_container_width=True
+                    st.markdown(
+                        f"""
+                        <div style="
+                            display:flex;
+                            justify-content:space-between;
+                            font-weight:700;
+                            font-size:13px;
+                            margin-bottom:6px;
+                            text-transform:uppercase;
+                        ">
+                            <span>Ballintubber</span>
+                            <span>{opp_display_name}</span>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
                     )
+
+                    for _, row in kickout_table.iterrows():
+                        render_stat_bar(
+                            "Ballintubber",
+                            opp_display_name,
+                            row["Metric"].strip(),
+                            row["Ballintubber"],
+                            row[opp_display_name]
+                        )
                 else:
                     st.info("No kickout data")
                     
