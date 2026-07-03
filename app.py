@@ -1655,7 +1655,13 @@ with tab0:
     
             st.markdown(
                 """
-                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                <div style="
+                    border:1px solid #D9DDE3;
+                    border-radius:7px;
+                    padding:0px 0px;
+                    margin-top:-12px;
+                    margin-bottom:6px;
+                ">
                     <h3 style="margin:0;">Kickouts</h3>
                 </div>
                 """,
