@@ -809,40 +809,22 @@ def render_stat_bar(
     except Exception:
         return
 
-    html = f"""
-    <div style="margin-bottom:14px;">
+    st.html(
+        f"""
+        <div style="margin-bottom:14px;">
+            <div style="display:grid;grid-template-columns:60px 1fr 60px;align-items:center;margin-bottom:4px;font-size:16px;font-weight:700;">
+                <div style="text-align:left;">{left_value}</div>
+                <div style="text-align:center;">{metric}</div>
+                <div style="text-align:right;">{right_value}</div>
+            </div>
 
-        <div style="
-            display:grid;
-            grid-template-columns:60px 1fr 60px;
-            align-items:center;
-            margin-bottom:4px;
-            font-size:16px;
-            font-weight:700;
-        ">
-            <div style="text-align:left;">{left_value}</div>
-            <div style="text-align:center;">{metric}</div>
-            <div style="text-align:right;">{right_value}</div>
+            <div style="height:10px;background:#EFEFEF;border-radius:10px;overflow:hidden;display:flex;">
+                <div style="width:{left_pct:.1f}%;background:{left_colour};"></div>
+                <div style="width:{100-left_pct:.1f}%;background:{right_colour};"></div>
+            </div>
         </div>
-
-        <div style="
-            height:10px;
-            background:#EFEFEF;
-            border-radius:10px;
-            overflow:hidden;
-            display:flex;
-        ">
-            <div style="width:{left_pct:.1f}%;background:{left_colour};"></div>
-            <div style="width:{100-left_pct:.1f}%;background:{right_colour};"></div>
-        </div>
-
-    </div>
-    """
-
-    st.markdown(
-        html,
-        unsafe_allow_html=True
-    )    
+        """
+    )
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
