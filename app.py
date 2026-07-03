@@ -789,7 +789,80 @@ def classify_score_source(
             return "Turnover Won"
 
     return "Review Needed"
+def render_stat_bar(
+    left_label,
+    right_label,
+    metric,
+    left_value,
+    right_value,
+    left_colour="#D83A32",
+    right_colour="#D9D9D9"
+):
+    try:
+        left_num = float(str(left_value).replace("%", ""))
+        right_num = float(str(right_value).replace("%", ""))
+    except Exception:
+        return
 
+    total = left_num + right_num
+
+    if total == 0:
+        left_pct = 50
+    else:
+        left_pct = (left_num / total) * 100
+
+    st.markdown(
+        f"""
+        <div style="margin-bottom:18px;">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                font-weight:700;
+                font-size:18px;
+            ">
+                <span>{left_value}</span>
+                <span>{right_value}</span>
+            </div>
+
+            <div style="
+                text-align:center;
+                margin-top:-24px;
+                margin-bottom:6px;
+                font-size:15px;
+            ">
+                {metric}
+            </div>
+
+            <div style="
+                width:100%;
+                height:10px;
+                background:#EFEFEF;
+                border-radius:10px;
+                overflow:hidden;
+            ">
+
+                <div style="
+                    width:{left_pct:.1f}%;
+                    height:10px;
+                    background:{left_colour};
+                    float:left;
+                "></div>
+
+                <div style="
+                    width:{100-left_pct:.1f}%;
+                    height:10px;
+                    background:{right_colour};
+                    float:left;
+                "></div>
+
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -1323,14 +1396,39 @@ with tab0:
                     }
                 ])
     
+
                 scoring_table = pd.DataFrame(rows)
-    
-                st.dataframe(
-                    scoring_table,
-                    hide_index=True,
-                    use_container_width=True,
-                    height=638
+
+                opp_display_name = (
+                    opp_name if "opp_name" in locals()
+                    else "Opposition"
                 )
+
+                st.markdown(
+                    f"""
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        font-weight:700;
+                        font-size:13px;
+                        margin-bottom:12px;
+                        text-transform:uppercase;
+                    ">
+                        <span>Ballintubber</span>
+                        <span>{opp_display_name}</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                for _, row in scoring_table.iterrows():
+                    render_stat_bar(
+                        "Ballintubber",
+                        opp_display_name,
+                        row["Metric"],
+                        row["Ballintubber"],
+                        row[opp_display_name]
+                    )
     
         
     with mid_col:
