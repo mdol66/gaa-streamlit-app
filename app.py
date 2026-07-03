@@ -1523,13 +1523,36 @@ with tab0:
                 )
 
                 st.dataframe(
-                    comparison_df[
-                        ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
-                    ],
-                    hide_index=True,
-                    use_container_width=True,
-                    height=275
-                )
+        opp_display_name = (
+            opp_name if "opp_name" in locals()
+            else "Opposition"
+        )
+
+        st.markdown(
+            f"""
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                font-weight:700;
+                font-size:13px;
+                margin-bottom:6px;
+                text-transform:uppercase;
+            ">
+                <span>Ballintubber</span>
+                <span>{opp_display_name}</span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        for _, row in comparison_df.iterrows():
+            render_stat_bar(
+                "Ballintubber",
+                opp_display_name,
+                row["Metric"],
+                row["Ballintubber"],
+                row[opp_display_name]
+            )
 
             st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
