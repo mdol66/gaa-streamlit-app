@@ -1189,7 +1189,7 @@ with tab0:
                 <div style="
                     border:1px solid #D9DDE3;
                     border-radius:7px;
-                    padding:2px 2px;
+                    padding:0px 0px;
                     margin-top:-12px;
                     margin-bottom:6px;
                 ">
