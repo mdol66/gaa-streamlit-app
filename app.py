@@ -1183,10 +1183,15 @@ with tab0:
 
     with left_col:
         with st.container(border=True):
-    
+  
             st.markdown(
                 """
-                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                <div style="
+                    border:1px solid #D9DDE3;
+                    border-radius:7px;
+                    padding:6px 10px;
+                    margin-bottom:6px;
+                ">
                     <h3 style="margin:0;">Scoring</h3>
                 </div>
                 """,
