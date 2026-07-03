@@ -811,14 +811,14 @@ def render_stat_bar(
 
     st.html(
         f"""
-        <div style="margin-bottom:14px;">
-            <div style="display:grid;grid-template-columns:60px 1fr 60px;align-items:center;margin-bottom:4px;font-size:16px;font-weight:700;">
+        <div style="margin-bottom:3px;">
+            <div style="display:grid;grid-template-columns:45px 1fr 45px;align-items:center;margin-bottom:1px;font-size:12px;font-weight:700;">
                 <div style="text-align:left;">{left_value}</div>
                 <div style="text-align:center;">{metric}</div>
                 <div style="text-align:right;">{right_value}</div>
             </div>
 
-            <div style="height:10px;background:#EFEFEF;border-radius:10px;overflow:hidden;display:flex;">
+            <div style="height:6px;background:#EFEFEF;border-radius:6px;overflow:hidden;display:flex;">
                 <div style="width:{left_pct:.1f}%;background:{left_colour};"></div>
                 <div style="width:{100-left_pct:.1f}%;background:{right_colour};"></div>
             </div>
