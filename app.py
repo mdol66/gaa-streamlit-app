@@ -1828,30 +1828,38 @@ with tab0:
                         & ko_df["__is_won__"]
                     ).sum()
 
+              
+                    bt_short_retention = (
+                        bt_short_won / bt_short
+                        if bt_short > 0 else 0
+                    )
+
+                    opp_short_retention = (
+                        opp_short_won / opp_short
+                        if opp_short > 0 else 0
+                    )
+
                     kickout_table = pd.DataFrame({
                         "Ballintubber": [
                             bt_total,
                             bt_won,
                             bt_lost,
-                            f"{bt_short_won} from {bt_short}",
-                            f"{bt_long_won} from {bt_long}",
-                            f"{bt_retention:.0%}"
+                            f"{bt_retention:.0%}",
+                            f"{bt_short_won} / {bt_short} ({bt_short_retention:.0%})"
                         ],
                         "Metric": [
                             "  Total",
                             "  Won",
                             "  Lost",
-                            "  Short",
-                            "  Long",
-                            "  Retention"
+                            "  Retention",
+                            "  Short Kickouts"
                         ],
                         opp_display_name: [
                             opp_total,
                             opp_won,
                             opp_lost,
-                            f"{opp_short_won} from {opp_short}",
-                            f"{opp_long_won} from {opp_long}",
-                            f"{opp_retention:.0%}"
+                            f"{opp_retention:.0%}",
+                            f"{opp_short_won} / {opp_short} ({opp_short_retention:.0%})"
                         ]
                     })
 
@@ -1880,24 +1888,7 @@ with tab0:
                             row["Ballintubber"],
                             row[opp_display_name]
                         )
-                        bt_short_retention = (
-                            bt_short_won / bt_short
-                            if bt_short > 0 else 0
-                        )
-    
-                        opp_short_retention = (
-                            opp_short_won / opp_short
-                            if opp_short > 0 else 0
-                        )
-    
-                        st.markdown(
-                            f"""
-                            **Short Kickouts**
-    
-                            Ballintubber: {bt_short_won} / {bt_short} ({bt_short_retention:.0%})  
-                            {opp_display_name}: {opp_short_won} / {opp_short} ({opp_short_retention:.0%})
-                            """
-                        )
+                
                 else:
                     st.info("No kickout data")
                     
