@@ -1880,6 +1880,24 @@ with tab0:
                             row["Ballintubber"],
                             row[opp_display_name]
                         )
+                        bt_short_retention = (
+                            bt_short_won / bt_short
+                            if bt_short > 0 else 0
+                        )
+    
+                        opp_short_retention = (
+                            opp_short_won / opp_short
+                            if opp_short > 0 else 0
+                        )
+    
+                        st.markdown(
+                            f"""
+                            **Short Kickouts**
+    
+                            Ballintubber: {bt_short_won} / {bt_short} ({bt_short_retention:.0%})  
+                            {opp_display_name}: {opp_short_won} / {opp_short} ({opp_short_retention:.0%})
+                            """
+                        )
                 else:
                     st.info("No kickout data")
                     
