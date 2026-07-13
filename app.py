@@ -800,8 +800,22 @@ def render_stat_bar(
     right_colour="#D9D9D9"
 ):
     try:
-        left_num = float(str(left_value).replace("%", ""))
-        right_num = float(str(right_value).replace("%", ""))
+        def extract_bar_value(value):
+            value_text = str(value).strip()
+
+            if "(" in value_text and "%" in value_text:
+                return float(
+                    value_text
+                    .rsplit("(", 1)[1]
+                    .replace(")", "")
+                    .replace("%", "")
+                    .strip()
+                )
+
+            return float(value_text.replace("%", "").strip())
+
+        left_num = extract_bar_value(left_value)
+        right_num = extract_bar_value(right_value)
 
         total = left_num + right_num
         left_pct = 50 if total == 0 else (left_num / total) * 100
