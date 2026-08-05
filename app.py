@@ -2862,14 +2862,9 @@ with tab1:
                         "__stat1_lower__",
                         lambda x: x.isin([
                             "saved",
-                            "saved from free"
-                        ]).sum()
-                    ),
-                    SavedOutFor45=(
-                        "__stat1_lower__",
-                        lambda x: x.eq(
+                            "saved from free",
                             "saved out for 45"
-                        ).sum()
+                        ]).sum()
                     ),
                     OffPosts=(
                         "__stat1_lower__",
