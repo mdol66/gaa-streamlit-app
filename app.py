@@ -2880,12 +2880,6 @@ with tab1:
                             "out for 45 from free"
                         ]).sum()
                     ),
-                    OutFor45=(
-                        "__stat1_lower__",
-                        lambda x: x.str.contains(
-                            "out for 45",
-                            na=False
-                        ).sum()
                     ),
                     TotalShots=(
                         "__stat1_lower__",
