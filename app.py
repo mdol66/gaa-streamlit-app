@@ -793,6 +793,37 @@ def classify_score_source(
                 )
 
             return "Turnover Won"
+    if not meaningful_previous.empty:
+        first_previous = meaningful_previous.iloc[0]
+
+        first_previous_event = str(
+            first_previous[cols["stat1"]]
+        ).strip().lower()
+
+        first_previous_team = str(
+            first_previous[cols["team"]]
+        ).strip().lower()
+
+        first_previous_time = parse_match_minute(
+            first_previous[cols["time"]]
+        )
+
+        if (
+            first_previous_team == score_team
+            and first_previous_event in [
+                "saved",
+                "saved from free",
+                "short",
+                "short from free",
+                "off posts",
+                "off posts from free",
+                "out for 45",
+                "out for 45 from free"
+            ]
+            and first_previous_time is not None
+            and first_previous_time < 2
+        ):
+            return "Won Throw-In"
 
     return "Review Needed"
 
