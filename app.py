@@ -2860,9 +2860,15 @@ with tab1:
                     ),
                     Saved=(
                         "__stat1_lower__",
-                        lambda x: x.str.contains(
+                        lambda x: x.isin([
                             "saved",
-                            na=False
+                            "saved from free"
+                        ]).sum()
+                    ),
+                    SavedOutFor45=(
+                        "__stat1_lower__",
+                        lambda x: x.eq(
+                            "saved out for 45"
                         ).sum()
                     ),
                     OffPosts=(
@@ -2871,6 +2877,13 @@ with tab1:
                             "off posts",
                             na=False
                         ).sum()
+                    ),
+                    OutFor45=(
+                        "__stat1_lower__",
+                        lambda x: x.isin([
+                            "out for 45",
+                            "out for 45 from free"
+                        ]).sum()
                     ),
                     OutFor45=(
                         "__stat1_lower__",
