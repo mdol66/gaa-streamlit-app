@@ -710,7 +710,13 @@ def classify_score_source(
         # Same-team short is continuation of possession
         if "short" in event and same_team:
             continue
-
+        # Same-team shot retained (saved / off post / 45) - possession continues
+        if same_team and (
+            "saved" in event
+            or "off posts" in event
+            or "out for 45" in event
+        ):
+            continue
         # Frees do not automatically create source.
         # Keep tracing back through free sequences.
         # If there is no earlier possession source in this half,
