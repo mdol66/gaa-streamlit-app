@@ -2793,6 +2793,7 @@ with tab1:
             "short from free",
             "saved",
             "saved from free",
+            "saved out for 45",
             "off posts",
             "off posts from free",
             "out for 45",
@@ -2972,7 +2973,37 @@ with tab1:
                 ]
             )
         )
+        def hide_all_zero_columns(table):
+            if table.empty:
+                return table
 
+            always_show = [
+                "Player",
+                "Efficiency",
+                "Score Return",
+                "Total Shots"
+            ]
+
+            columns_to_keep = []
+
+            for column in table.columns:
+                if column in always_show:
+                    columns_to_keep.append(column)
+                elif pd.api.types.is_numeric_dtype(table[column]):
+                    if table[column].fillna(0).ne(0).any():
+                        columns_to_keep.append(column)
+                else:
+                    columns_to_keep.append(column)
+
+            return table[columns_to_keep]
+
+        play_table = hide_all_zero_columns(
+            play_table
+        )
+
+        placed_table = hide_all_zero_columns(
+            placed_table
+        )
         st.markdown(
             "**Shots From Play**"
         )
