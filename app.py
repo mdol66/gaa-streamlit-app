@@ -3198,7 +3198,7 @@ with tab2:
 
     miss_events = [
         "wide", "wide from free", "short", "out for 45", "saved",
-        "short from free", "wide from 45", "off posts from 45", "short from 45", "off posts"
+        "short from free", "wide from 45", "off posts from 45", "short from 45", "saved out for 45", "off posts"
     ]
 
     score_events = [
