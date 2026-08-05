@@ -2880,7 +2880,6 @@ with tab1:
                             "out for 45 from free"
                         ]).sum()
                     ),
-                    ),
                     TotalShots=(
                         "__stat1_lower__",
                         "count"
