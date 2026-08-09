@@ -4133,19 +4133,11 @@ with tab4:
     ].copy()
 
     trace_display_cols = [
-        "Match",
         "Half",
         "Time",
-        "Team",
         "Score",
         "Source",
-        "Source Half",
-        "Source Time",
-        "Source Team",
-        "Source Player",
-        "Source Event",
-        "Source X",
-        "Source Y"
+        "Source Player"
     ]
 
     trace_display_cols = [
