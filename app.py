@@ -4350,10 +4350,6 @@ with tab4:
                 use_container_width=True
             )
 
-    else:
-        st.info(
-            "No source event locations available for this selection."
-        )
         with trace_table_col:
             with st.expander(
                 "Source Event Trace Table",
@@ -4365,3 +4361,4 @@ with tab4:
                     hide_index=True,
                     height=760
                 )
+
