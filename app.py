@@ -4354,13 +4354,14 @@ with tab4:
         st.info(
             "No source event locations available for this selection."
         )
-    with st.expander(
-        "Source Event Trace Table",
-        expanded=False
-    ):
-        st.dataframe(
-            trace_df[trace_display_cols],
-            use_container_width=True,
-            hide_index=True,
-            height=120
-        )
+        with trace_table_col:
+            with st.expander(
+                "Source Event Trace Table",
+                expanded=True
+            ):
+                st.dataframe(
+                    trace_df[trace_display_cols],
+                    use_container_width=True,
+                    hide_index=True,
+                    height=760
+                )
