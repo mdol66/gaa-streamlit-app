@@ -4324,12 +4324,15 @@ with tab4:
             trace_fig.add_trace(
                 go.Scatter(
                     x=trace_map_df["__source_x_plot_flipped__"],
-                    y=trace_map_df["__source_y_plot_flipped__"],
+                    y=(
+                        trace_map_df["__source_y_plot_flipped__"]
+                        + 1.8
+                    ),
                     mode="text",
                     text=trace_player_labels,
-                    textposition="bottom center",
+                    textposition="middle center",
                     textfont=dict(
-                        size=10,
+                        size=13,
                         color="yellow"
                     ),
                     hoverinfo="skip",
