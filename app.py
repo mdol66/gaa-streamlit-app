@@ -4303,7 +4303,39 @@ with tab4:
                 showlegend=False
             )
         )
+        if show_trace_player_names:
+            trace_player_labels = (
+                trace_map_df["Source Player"]
+                .astype(str)
+                .apply(clean_player_name)
+                .apply(
+                    lambda name: "".join(
+                        word[0].upper() + "".join(
+                            char.upper()
+                            for char in word[1:]
+                            if char.isupper()
+                        )
+                        for word in str(name).split()
+                        if word
+                    )
+                )
+            )
 
+            trace_fig.add_trace(
+                go.Scatter(
+                    x=trace_map_df["__source_x_plot_flipped__"],
+                    y=trace_map_df["__source_y_plot_flipped__"],
+                    mode="text",
+                    text=trace_player_labels,
+                    textposition="bottom center",
+                    textfont=dict(
+                        size=10,
+                        color="yellow"
+                    ),
+                    hoverinfo="skip",
+                    showlegend=False
+                )
+            )
         st.plotly_chart(
             trace_fig,
             use_container_width=False
