@@ -4121,6 +4121,11 @@ with tab4:
             trace_source_options,
             key="trace_source_select"
         )
+    show_trace_player_names = st.checkbox(
+        "Show Player Names",
+        value=False,
+        key="show_trace_player_names"
+    )
 
     trace_df = source_table[
         (source_table["Team"] == selected_trace_team)
