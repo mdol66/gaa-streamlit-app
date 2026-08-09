@@ -4339,10 +4339,16 @@ with tab4:
                     showlegend=False
                 )
             )
-        st.plotly_chart(
-            trace_fig,
-            use_container_width=False
+        trace_map_col, trace_table_col = st.columns(
+            [2, 1],
+            gap="small"
         )
+
+        with trace_map_col:
+            st.plotly_chart(
+                trace_fig,
+                use_container_width=True
+            )
 
     else:
         st.info(
