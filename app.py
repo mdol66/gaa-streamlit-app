@@ -622,8 +622,7 @@ def classify_score_source(
     except Exception:
         score_minutes = 99
 
-    if score_minutes < 2:
-        return "Won Throw-In"
+
 
     if not score_team or score_team in ["1st half", "2nd half"]:
         return "Review Needed"
