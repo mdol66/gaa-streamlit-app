@@ -622,8 +622,7 @@ def classify_score_source(
     except Exception:
         score_minutes = 99
 
-    if score_minutes < 2:
-        return "Won Throw-In"
+
 
     if not score_team or score_team in ["1st half", "2nd half"]:
         return "Review Needed"
@@ -710,7 +709,13 @@ def classify_score_source(
         # Same-team short is continuation of possession
         if "short" in event and same_team:
             continue
-
+        # Same-team shot retained (saved / off post / 45) - possession continues
+        if same_team and (
+            "saved" in event
+            or "off posts" in event
+            or "out for 45" in event
+        ):
+            continue
         # Frees do not automatically create source.
         # Keep tracing back through free sequences.
         # If there is no earlier possession source in this half,
@@ -787,9 +792,89 @@ def classify_score_source(
                 )
 
             return "Turnover Won"
+    if not meaningful_previous.empty:
+        first_previous = meaningful_previous.iloc[0]
+
+        first_previous_event = str(
+            first_previous[cols["stat1"]]
+        ).strip().lower()
+
+        first_previous_team = str(
+            first_previous[cols["team"]]
+        ).strip().lower()
+
+        first_previous_time = parse_match_minute(
+            first_previous[cols["time"]]
+        )
+
+        if (
+            first_previous_team == score_team
+            and first_previous_event in [
+                "saved",
+                "saved from free",
+                "short",
+                "short from free",
+                "off posts",
+                "off posts from free",
+                "out for 45",
+                "out for 45 from free"
+            ]
+            and first_previous_time is not None
+            and first_previous_time < 2
+        ):
+            return "Won Throw-In"
 
     return "Review Needed"
 
+def render_stat_bar(
+    left_label,
+    right_label,
+    metric,
+    left_value,
+    right_value,
+    left_colour="#D83A32",
+    right_colour="#D9D9D9"
+):
+    try:
+        def extract_bar_value(value):
+            value_text = str(value).strip()
+
+            if "(" in value_text and "%" in value_text:
+                return float(
+                    value_text
+                    .rsplit("(", 1)[1]
+                    .replace(")", "")
+                    .replace("%", "")
+                    .strip()
+                )
+
+            return float(value_text.replace("%", "").strip())
+
+        left_num = extract_bar_value(left_value)
+        right_num = extract_bar_value(right_value)
+
+        total = left_num + right_num
+        left_pct = 50 if total == 0 else (left_num / total) * 100
+
+    except Exception:
+        return
+
+    st.html(
+        f"""
+        <div style="margin-bottom:3px;">
+            <div style="display:grid;grid-template-columns:45px 1fr 45px;align-items:center;margin-bottom:1px;font-size:12px;font-weight:700;">
+                <div style="text-align:left;">{left_value}</div>
+                <div style="text-align:center;">{metric}</div>
+                <div style="text-align:right;">{right_value}</div>
+            </div>
+
+            <div style="height:6px;background:#EFEFEF;border-radius:6px;overflow:hidden;display:flex;">
+                <div style="width:{left_pct:.1f}%;background:{left_colour};"></div>
+                <div style="width:{100-left_pct:.1f}%;background:{right_colour};"></div>
+            </div>
+        </div>
+        """
+    )
 # st.title("Gaelic Football Pitch Maps")
 # st.caption("Pitch layout matched to your Scores Stats Plus screenshots. Uses x_posn_% left→right and y_posn_% top→bottom.")
 
@@ -1148,10 +1233,16 @@ with tab0:
 
     with left_col:
         with st.container(border=True):
-    
+  
             st.markdown(
                 """
-                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                <div style="
+                    border:1px solid #D9DDE3;
+                    border-radius:7px;
+                    padding:0px 0px;
+                    margin-top:-12px;
+                    margin-bottom:6px;
+                ">
                     <h3 style="margin:0;">Scoring</h3>
                 </div>
                 """,
@@ -1323,14 +1414,39 @@ with tab0:
                     }
                 ])
     
+
                 scoring_table = pd.DataFrame(rows)
-    
-                st.dataframe(
-                    scoring_table,
-                    hide_index=True,
-                    use_container_width=True,
-                    height=638
+
+                opp_display_name = (
+                    opp_name if "opp_name" in locals()
+                    else "Opposition"
                 )
+
+                st.markdown(
+                    f"""
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        font-weight:700;
+                        font-size:13px;
+                        margin-bottom:12px;
+                        text-transform:uppercase;
+                    ">
+                        <span>Ballintubber</span>
+                        <span>{opp_display_name}</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                for _, row in scoring_table.iterrows():
+                    render_stat_bar(
+                        "Ballintubber",
+                        opp_display_name,
+                        row["Metric"],
+                        row["Ballintubber"],
+                        row[opp_display_name]
+                    )
     
         
     with mid_col:
@@ -1415,8 +1531,9 @@ with tab0:
                         "red_cards": (
                             team_df[cols["stat2"]]
                             .astype(str)
+                            .str.strip()
                             .str.lower()
-                            .eq("red card")
+                            .str.startswith("red card")
                             .sum()
                         )
                     }
@@ -1462,112 +1579,140 @@ with tab0:
                     comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
                 )
 
-                st.dataframe(
-                    comparison_df[
-                        ["Ballintubber", "Metric", opp_name if "opp_name" in locals() else "Opposition"]
-                    ],
-                    hide_index=True,
-                    use_container_width=True,
-                    height=275
-                )
+        opp_display_name = (
+            opp_name if "opp_name" in locals()
+            else "Opposition"
+        )
 
-            st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                font-weight:700;
+                font-size:13px;
+                margin-bottom:6px;
+                text-transform:uppercase;
+            ">
+                <span>Ballintubber</span>
+                <span>{opp_display_name}</span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-            st.markdown("### Scorers")
-
-            scorers_df = dashboard_df.copy()
-
-            scorers_df = scorers_df[
-                scorers_df[cols["team"]]
-                .astype(str)
-                .str.lower()
-                .eq("ballintubber")
-            ].copy()
-
-            scorers_df["__player_clean__"] = (
-                scorers_df[cols["player"]]
-                .astype(str)
-                .apply(clean_player_name)
+        for _, row in comparison_df.iterrows():
+            render_stat_bar(
+                "Ballintubber",
+                opp_display_name,
+                row["Metric"],
+                row["Ballintubber"],
+                row[opp_display_name]
             )
 
-            scorers_df["__stat1_lower__"] = (
-                scorers_df[cols["stat1"]]
-                .astype(str)
-                .str.lower()
+        st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+
+        st.markdown("### Scorers")
+
+        scorers_df = dashboard_df.copy()
+
+        scorers_df = scorers_df[
+            scorers_df[cols["team"]]
+            .astype(str)
+            .str.lower()
+            .eq("ballintubber")
+        ].copy()
+
+        scorers_df["__player_clean__"] = (
+            scorers_df[cols["player"]]
+            .astype(str)
+            .apply(clean_player_name)
+        )
+
+        scorers_df["__stat1_lower__"] = (
+            scorers_df[cols["stat1"]]
+            .astype(str)
+            .str.lower()
+        )
+
+        scorers_df = scorers_df[
+            scorers_df["__stat1_lower__"]
+            .str.contains("goal|point|2 pointer", na=False)
+        ].copy()
+
+        if not scorers_df.empty:
+            scorer_table = (
+                scorers_df
+                .groupby("__player_clean__")
+                .agg(
+                    Goals=("__stat1_lower__", lambda x: x.str.contains("goal", na=False).sum()),
+                    Points=("__stat1_lower__", lambda x: (
+                        x.str.contains("point", na=False).sum()
+                        + x.str.contains("2 pointer", na=False).sum()
+                    ))
+                )
+                .reset_index()
             )
 
-            scorers_df = scorers_df[
-                scorers_df["__stat1_lower__"]
-                .str.contains("goal|point|2 pointer", na=False)
-            ].copy()
+            scorer_table["Score"] = scorer_table.apply(
+                lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d}",
+                axis=1
+            )
 
-            if not scorers_df.empty:
-                scorer_table = (
-                    scorers_df
-                    .groupby("__player_clean__")
-                    .agg(
-                        Goals=("__stat1_lower__", lambda x: x.str.contains("goal", na=False).sum()),
-                        Points=("__stat1_lower__", lambda x: (
-                            x.str.contains("point", na=False).sum()
-                            + x.str.contains("2 pointer", na=False).sum()
-                        ))
-                    )
-                    .reset_index()
+            scorer_table = (
+                scorers_df
+                .groupby("__player_clean__")
+                .agg(
+                    Goals=("__stat1_lower__", lambda x: x.eq("goal").sum()),
+                    OnePointers=("__stat1_lower__", lambda x: x.eq("point").sum()),
+                    TwoPointers=("__stat1_lower__", lambda x: x.eq("2 pointer").sum())
                 )
-
-                scorer_table["Score"] = scorer_table.apply(
-                    lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d}",
-                    axis=1
-                )
-
-                scorer_table = (
-                    scorers_df
-                    .groupby("__player_clean__")
-                    .agg(
-                        Goals=("__stat1_lower__", lambda x: x.eq("goal").sum()),
-                        OnePointers=("__stat1_lower__", lambda x: x.eq("point").sum()),
-                        TwoPointers=("__stat1_lower__", lambda x: x.eq("2 pointer").sum())
-                    )
-                    .reset_index()
-                )
-                
-                scorer_table["Points"] = (
-                    scorer_table["OnePointers"]
-                    + scorer_table["TwoPointers"] * 2
-                )
-                
-                scorer_table["TotalPoints"] = (
-                    scorer_table["Goals"] * 3
-                    + scorer_table["Points"]
-                )
-                
-                scorer_table["Score"] = scorer_table.apply(
-                    lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d} ({int(row['TotalPoints'])})",
-                    axis=1
-                )
-                
-                scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
-                
-                scorer_table = scorer_table.sort_values(
-                    by="TotalPoints",
-                    ascending=False
-                )
-                
-                scorer_table = scorer_table[["Player", "Score"]]
-                
-                st.dataframe(
-                    scorer_table,
-                    hide_index=True,
-                    use_container_width=True,
-                    height=308
-                )        
+                .reset_index()
+            )
+            
+            scorer_table["Points"] = (
+                scorer_table["OnePointers"]
+                + scorer_table["TwoPointers"] * 2
+            )
+            
+            scorer_table["TotalPoints"] = (
+                scorer_table["Goals"] * 3
+                + scorer_table["Points"]
+            )
+            
+            scorer_table["Score"] = scorer_table.apply(
+                lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d} ({int(row['TotalPoints'])})",
+                axis=1
+            )
+            
+            scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
+            
+            scorer_table = scorer_table.sort_values(
+                by="TotalPoints",
+                ascending=False
+            )
+            
+            scorer_table = scorer_table[["Player", "Score"]]
+            
+            st.dataframe(
+                scorer_table,
+                hide_index=True,
+                use_container_width=True,
+                height=308
+            )        
     
     with right_col:
         with st.container(border=True):
     
             st.markdown(
                 """
-                <div style="margin-top:-0.7rem; margin-bottom:0.45rem;">
+                <div style="
+                    border:1px solid #D9DDE3;
+                    border-radius:7px;
+                    padding:0px 0px;
+                    margin-top:-12px;
+                    margin-bottom:6px;
+                ">
                     <h3 style="margin:0;">Kickouts</h3>
                 </div>
                 """,
@@ -1734,40 +1879,67 @@ with tab0:
                         & ko_df["__is_won__"]
                     ).sum()
 
+              
+                    bt_short_retention = (
+                        bt_short_won / bt_short
+                        if bt_short > 0 else 0
+                    )
+
+                    opp_short_retention = (
+                        opp_short_won / opp_short
+                        if opp_short > 0 else 0
+                    )
+
                     kickout_table = pd.DataFrame({
                         "Ballintubber": [
                             bt_total,
                             bt_won,
                             bt_lost,
-                            f"{bt_short_won} from {bt_short}",
-                            f"{bt_long_won} from {bt_long}",
-                            f"{bt_retention:.0%}"
+                            f"{bt_retention:.0%}",
+                            f"{bt_short_won} / {bt_short} ({bt_short_retention:.0%})"
                         ],
                         "Metric": [
                             "  Total",
                             "  Won",
                             "  Lost",
-                            "  Short",
-                            "  Long",
-                            "  Retention"
+                            "  Retention",
+                            "  Short Kickouts"
                         ],
                         opp_display_name: [
                             opp_total,
                             opp_won,
                             opp_lost,
-                            f"{opp_short_won} from {opp_short}",
-                            f"{opp_long_won} from {opp_long}",
-                            f"{opp_retention:.0%}"
+                            f"{opp_retention:.0%}",
+                            f"{opp_short_won} / {opp_short} ({opp_short_retention:.0%})"
                         ]
                     })
 
-                    st.dataframe(
-                        kickout_table[
-                            ["Ballintubber", "Metric", opp_display_name]
-                        ],
-                        hide_index=True,
-                        use_container_width=True
+                    st.markdown(
+                        f"""
+                        <div style="
+                            display:flex;
+                            justify-content:space-between;
+                            font-weight:700;
+                            font-size:13px;
+                            margin-bottom:6px;
+                            text-transform:uppercase;
+                        ">
+                            <span>Ballintubber</span>
+                            <span>{opp_display_name}</span>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
                     )
+
+                    for _, row in kickout_table.iterrows():
+                        render_stat_bar(
+                            "Ballintubber",
+                            opp_display_name,
+                            row["Metric"].strip(),
+                            row["Ballintubber"],
+                            row[opp_display_name]
+                        )
+                
                 else:
                     st.info("No kickout data")
                     
@@ -2621,6 +2793,7 @@ with tab1:
             "short from free",
             "saved",
             "saved from free",
+            "saved out for 45",
             "off posts",
             "off posts from free",
             "out for 45",
@@ -2687,10 +2860,11 @@ with tab1:
                     ),
                     Saved=(
                         "__stat1_lower__",
-                        lambda x: x.str.contains(
+                        lambda x: x.isin([
                             "saved",
-                            na=False
-                        ).sum()
+                            "saved from free",
+                            "saved out for 45"
+                        ]).sum()
                     ),
                     OffPosts=(
                         "__stat1_lower__",
@@ -2701,10 +2875,10 @@ with tab1:
                     ),
                     OutFor45=(
                         "__stat1_lower__",
-                        lambda x: x.str.contains(
+                        lambda x: x.isin([
                             "out for 45",
-                            na=False
-                        ).sum()
+                            "out for 45 from free"
+                        ]).sum()
                     ),
                     TotalShots=(
                         "__stat1_lower__",
@@ -2800,7 +2974,37 @@ with tab1:
                 ]
             )
         )
+        def hide_all_zero_columns(table):
+            if table.empty:
+                return table
 
+            always_show = [
+                "Player",
+                "Efficiency",
+                "Score Return",
+                "Total Shots"
+            ]
+
+            columns_to_keep = []
+
+            for column in table.columns:
+                if column in always_show:
+                    columns_to_keep.append(column)
+                elif pd.api.types.is_numeric_dtype(table[column]):
+                    if table[column].fillna(0).ne(0).any():
+                        columns_to_keep.append(column)
+                else:
+                    columns_to_keep.append(column)
+
+            return table[columns_to_keep]
+
+        play_table = hide_all_zero_columns(
+            play_table
+        )
+
+        placed_table = hide_all_zero_columns(
+            placed_table
+        )
         st.markdown(
             "**Shots From Play**"
         )
@@ -3026,7 +3230,7 @@ with tab2:
 
     miss_events = [
         "wide", "wide from free", "short", "out for 45", "saved",
-        "short from free", "wide from 45", "off posts from 45", "short from 45", "off posts"
+        "short from free", "wide from 45", "off posts from 45", "short from 45", "saved out for 45", "off posts"
     ]
 
     score_events = [
@@ -3917,6 +4121,11 @@ with tab4:
             trace_source_options,
             key="trace_source_select"
         )
+    show_trace_player_names = st.checkbox(
+        "Show Player Names",
+        value=False,
+        key="show_trace_player_names"
+    )
 
     trace_df = source_table[
         (source_table["Team"] == selected_trace_team)
@@ -3924,19 +4133,11 @@ with tab4:
     ].copy()
 
     trace_display_cols = [
-        "Match",
         "Half",
         "Time",
-        "Team",
         "Score",
         "Source",
-        "Source Half",
-        "Source Time",
-        "Source Team",
-        "Source Player",
-        "Source Event",
-        "Source X",
-        "Source Y"
+        "Source Player"
     ]
 
     trace_display_cols = [
@@ -4094,23 +4295,61 @@ with tab4:
                 showlegend=False
             )
         )
+        if show_trace_player_names:
+            trace_player_labels = (
+                trace_map_df["Source Player"]
+                .astype(str)
+                .apply(clean_player_name)
+                .apply(
+                    lambda name: "".join(
+                        word[0].upper() + "".join(
+                            char.upper()
+                            for char in word[1:]
+                            if char.isupper()
+                        )
+                        for word in str(name).split()
+                        if word
+                    )
+                )
+            )
 
-        st.plotly_chart(
-            trace_fig,
-            use_container_width=False
+            trace_fig.add_trace(
+                go.Scatter(
+                    x=trace_map_df["__source_x_plot_flipped__"],
+                    y=(
+                        trace_map_df["__source_y_plot_flipped__"]
+                        + 1.8
+                    ),
+                    mode="text",
+                    text=trace_player_labels,
+                    textposition="middle center",
+                    textfont=dict(
+                        size=13,
+                        color="yellow"
+                    ),
+                    hoverinfo="skip",
+                    showlegend=False
+                )
+            )
+        trace_map_col, trace_table_col = st.columns(
+            [2, 1],
+            gap="small"
         )
 
-    else:
-        st.info(
-            "No source event locations available for this selection."
-        )
-    with st.expander(
-        "Source Event Trace Table",
-        expanded=False
-    ):
-        st.dataframe(
-            trace_df[trace_display_cols],
-            use_container_width=True,
-            hide_index=True,
-            height=120
-        )
+        with trace_map_col:
+            st.plotly_chart(
+                trace_fig,
+                use_container_width=True
+            )
+
+        with trace_table_col:
+            with st.expander(
+                "Source Event Trace Table",
+                expanded=True
+            ):
+                st.dataframe(
+                    trace_df[trace_display_cols],
+                    use_container_width=True,
+                    hide_index=True,
+                    height=760
+                )
