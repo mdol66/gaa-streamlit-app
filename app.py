@@ -1531,8 +1531,9 @@ with tab0:
                         "red_cards": (
                             team_df[cols["stat2"]]
                             .astype(str)
+                            .str.strip()
                             .str.lower()
-                            .eq("red card")
+                            .str.startswith("red card")
                             .sum()
                         )
                     }
