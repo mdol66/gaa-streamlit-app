@@ -647,31 +647,28 @@ def classify_score_source(
     ].copy()
 
     meaningful_previous = previous_df[
-        (
+        previous_df[cols["team"]].notna()
+        & previous_df[cols["stat1"]].notna()
+        & (
+            previous_df[cols["team"]]
+            .astype(str)
+            .str.strip()
+            .ne("")
+        )
+        & (
+            previous_df[cols["stat1"]]
+            .astype(str)
+            .str.strip()
+            .ne("")
+        )
+        & (
             ~previous_df[cols["team"]]
             .astype(str)
             .str.strip()
             .str.lower()
             .isin([
-                "",
-                "nan",
-                "none",
-                "null",
                 "1st half",
                 "2nd half"
-            ])
-        )
-        &
-        (
-            ~previous_df[cols["stat1"]]
-            .astype(str)
-            .str.strip()
-            .str.lower()
-            .isin([
-                "",
-                "nan",
-                "none",
-                "null"
             ])
         )
     ].copy()
