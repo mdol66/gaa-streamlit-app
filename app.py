@@ -858,7 +858,11 @@ def classify_score_source(
         ):
             return "Won Throw-In"
 
-    return "Review Needed"
+    return (
+        f"Review Needed - "
+        f"Minutes={score_minutes}, "
+        f"Previous={len(meaningful_previous)}"
+    )
 
 def render_stat_bar(
     left_label,
