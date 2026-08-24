@@ -1453,6 +1453,13 @@ with tab0:
                     else "Opposition"
                 )
 
+                scoring_table = scoring_table[
+                    ~(
+                        (scoring_table["Ballintubber"] == 0)
+                        & (scoring_table[opp_display_name] == 0)
+                    )
+                ].copy()
+
                 st.markdown(
                     f"""
                     <div style="
