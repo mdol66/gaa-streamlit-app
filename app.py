@@ -625,7 +625,7 @@ def classify_score_source(
 
 
     if not score_team or score_team in ["1st half", "2nd half"]:
-        return "Review Needed - Invalid Team"
+        return "Review Needed"
         
     score_position = match_df.index.get_loc(score_idx)
     
