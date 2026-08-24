@@ -860,8 +860,8 @@ def classify_score_source(
 
     return (
         f"Review Needed - "
-        f"Minutes={score_minutes}, "
-        f"Previous={len(meaningful_previous)}"
+        f"PrevTeam={meaningful_previous.iloc[-1][cols['team']]}, "
+        f"PrevEvent={meaningful_previous.iloc[-1][cols['stat1']]}"
     )
 
 def render_stat_bar(
