@@ -657,6 +657,9 @@ def classify_score_source(
         ])
     ].copy()
 
+    if meaningful_previous.empty and score_minutes < 2:
+        return "Won Throw-In"
+
     if score_position <= 1 and meaningful_previous.empty:
         return "Won Throw-In"
 
