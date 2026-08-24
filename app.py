@@ -639,23 +639,45 @@ def classify_score_source(
     previous_df = match_df.iloc[:score_position].copy()
 
     previous_df = previous_df[
-        previous_df[cols["half"]].astype(str).str.strip().str.lower() == score_half
-    ].copy()
-
-    meaningful_previous = previous_df[
-        ~previous_df[cols["team"]]
+        previous_df[cols["half"]]
         .astype(str)
         .str.strip()
         .str.lower()
-        .isin([
-            "",
-            "nan",
-            "none",
-            "null",
-            "1st half",
-            "2nd half"
-        ])
+        .eq(score_half)
     ].copy()
+
+    meaningful_previous = previous_df[
+        (
+            ~previous_df[cols["team"]]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .isin([
+                "",
+                "nan",
+                "none",
+                "null",
+                "1st half",
+                "2nd half"
+            ])
+        )
+        &
+        (
+            ~previous_df[cols["stat1"]]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .isin([
+                "",
+                "nan",
+                "none",
+                "null"
+            ])
+        )
+    ].copy()
+
+    if meaningful_previous.empty and score_minutes < 2:
+        return "Won Throw-In"
 
     if meaningful_previous.empty and score_minutes < 2:
         return "Won Throw-In"
