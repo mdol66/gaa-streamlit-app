@@ -855,11 +855,7 @@ def classify_score_source(
         ):
             return "Won Throw-In"
 
-    return (
-        f"Review Needed - "
-        f"PrevTeam={meaningful_previous.iloc[-1][cols['team']]}, "
-        f"PrevEvent={meaningful_previous.iloc[-1][cols['stat1']]}"
-    )
+    return "Review Needed"
 
 def render_stat_bar(
     left_label,
