@@ -639,14 +639,45 @@ def classify_score_source(
     previous_df = match_df.iloc[:score_position].copy()
 
     previous_df = previous_df[
-        previous_df[cols["half"]].astype(str).str.strip().str.lower() == score_half
+        previous_df[cols["half"]]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .eq(score_half)
     ].copy()
 
     meaningful_previous = previous_df[
-        ~previous_df[cols["team"]].astype(str).str.strip().str.lower().isin(
-            ["1st half", "2nd half"]
+        previous_df[cols["team"]].notna()
+        & previous_df[cols["stat1"]].notna()
+        & (
+            previous_df[cols["team"]]
+            .astype(str)
+            .str.strip()
+            .ne("")
+        )
+        & (
+            previous_df[cols["stat1"]]
+            .astype(str)
+            .str.strip()
+            .ne("")
+        )
+        & (
+            ~previous_df[cols["team"]]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .isin([
+                "1st half",
+                "2nd half"
+            ])
         )
     ].copy()
+
+    if meaningful_previous.empty and score_minutes < 2:
+        return "Won Throw-In"
+
+    if meaningful_previous.empty and score_minutes < 2:
+        return "Won Throw-In"
 
     if score_position <= 1 and meaningful_previous.empty:
         return "Won Throw-In"
@@ -1421,6 +1452,13 @@ with tab0:
                     opp_name if "opp_name" in locals()
                     else "Opposition"
                 )
+
+                scoring_table = scoring_table[
+                    ~(
+                        (scoring_table["Ballintubber"] == 0)
+                        & (scoring_table[opp_display_name] == 0)
+                    )
+                ].copy()
 
                 st.markdown(
                     f"""
