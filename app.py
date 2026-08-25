@@ -1585,8 +1585,6 @@ with tab0:
 
                 comparison_df = pd.DataFrame({
                     "Ballintubber": [
-                        bt_metrics["to_won"],
-                        bt_metrics["to_lost"],
                         bt_metrics["net_to"],
                         bt_metrics["frees_conceded"],
                         bt_metrics["yellow_cards"],
@@ -1595,8 +1593,6 @@ with tab0:
                     ],
                     "Metric": [
                         "TO Won",
-                        "TO Lost",
-                        "Net TO",
                         "Frees Conceded",
                         "Yellow Cards",
                         "Black Cards",
@@ -1604,8 +1600,6 @@ with tab0:
                     ],
                     opp_name if "opp_name" in locals() else "Opposition": [
                         opp_metrics["to_won"],
-                        opp_metrics["to_lost"],
-                        opp_metrics["net_to"],
                         opp_metrics["frees_conceded"],
                         opp_metrics["yellow_cards"],
                         opp_metrics["black_cards"],
