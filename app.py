@@ -420,14 +420,6 @@ def add_numbered_markers(
                     if player_col and player_col in group.columns
                     else None
                 ),
-                        )
-                    )
-                    if player_col and player_col in group.columns
-                    else None
-                ),
-                    if player_col and player_col in group.columns
-                    else None
-                ),
                 textposition="top center",
                 textfont=dict(
                     size=10,
