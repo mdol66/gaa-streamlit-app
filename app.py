@@ -414,7 +414,7 @@ def add_numbered_markers(
                                 )
                                 for word in str(name).split()
                                 if word
-                            )
+                            ),
                         )
                     )
                     if player_col and player_col in group.columns
