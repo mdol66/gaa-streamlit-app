@@ -403,14 +403,18 @@ def add_numbered_markers(
                     .astype(str)
                     .apply(clean_player_name)
                     .apply(
-                        lambda name: "".join(
-                            word[0].upper() + "".join(
-                                char.upper()
-                                for char in word[1:]
-                                if char.isupper()
+                        lambda name: (
+                            str(name)
+                            if str(name).strip().isdigit()
+                            else "".join(
+                                word[0].upper() + "".join(
+                                    char.upper()
+                                    for char in word[1:]
+                                    if char.isupper()
+                                )
+                                for word in str(name).split()
+                                if word
                             )
-                            for word in str(name).split()
-                            if word
                         )
                     )
                     if player_col and player_col in group.columns
@@ -1586,8 +1590,6 @@ with tab0:
                 comparison_df = pd.DataFrame({
                     "Ballintubber": [
                         bt_metrics["to_won"],
-                        bt_metrics["to_lost"],
-                        bt_metrics["net_to"],
                         bt_metrics["frees_conceded"],
                         bt_metrics["yellow_cards"],
                         bt_metrics["black_cards"],
@@ -1595,8 +1597,6 @@ with tab0:
                     ],
                     "Metric": [
                         "TO Won",
-                        "TO Lost",
-                        "Net TO",
                         "Frees Conceded",
                         "Yellow Cards",
                         "Black Cards",
@@ -1604,8 +1604,6 @@ with tab0:
                     ],
                     opp_name if "opp_name" in locals() else "Opposition": [
                         opp_metrics["to_won"],
-                        opp_metrics["to_lost"],
-                        opp_metrics["net_to"],
                         opp_metrics["frees_conceded"],
                         opp_metrics["yellow_cards"],
                         opp_metrics["black_cards"],
@@ -1654,13 +1652,6 @@ with tab0:
 
         scorers_df = dashboard_df.copy()
 
-        scorers_df = scorers_df[
-            scorers_df[cols["team"]]
-            .astype(str)
-            .str.lower()
-            .eq("ballintubber")
-        ].copy()
-
         scorers_df["__player_clean__"] = (
             scorers_df[cols["player"]]
             .astype(str)
@@ -1675,69 +1666,124 @@ with tab0:
 
         scorers_df = scorers_df[
             scorers_df["__stat1_lower__"]
-            .str.contains("goal|point|2 pointer", na=False)
+            .isin([
+                "goal",
+                "point",
+                "2 pointer"
+            ])
         ].copy()
 
-        if not scorers_df.empty:
+        def build_team_scorers(team_df):
+            if team_df.empty:
+                return pd.DataFrame(
+                    columns=["Player", "Score"]
+                )
+
             scorer_table = (
-                scorers_df
+                team_df
                 .groupby("__player_clean__")
                 .agg(
-                    Goals=("__stat1_lower__", lambda x: x.str.contains("goal", na=False).sum()),
-                    Points=("__stat1_lower__", lambda x: (
-                        x.str.contains("point", na=False).sum()
-                        + x.str.contains("2 pointer", na=False).sum()
-                    ))
+                    Goals=(
+                        "__stat1_lower__",
+                        lambda x: x.eq("goal").sum()
+                    ),
+                    OnePointers=(
+                        "__stat1_lower__",
+                        lambda x: x.eq("point").sum()
+                    ),
+                    TwoPointers=(
+                        "__stat1_lower__",
+                        lambda x: x.eq("2 pointer").sum()
+                    )
                 )
                 .reset_index()
             )
 
-            scorer_table["Score"] = scorer_table.apply(
-                lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d}",
-                axis=1
-            )
-
-            scorer_table = (
-                scorers_df
-                .groupby("__player_clean__")
-                .agg(
-                    Goals=("__stat1_lower__", lambda x: x.eq("goal").sum()),
-                    OnePointers=("__stat1_lower__", lambda x: x.eq("point").sum()),
-                    TwoPointers=("__stat1_lower__", lambda x: x.eq("2 pointer").sum())
-                )
-                .reset_index()
-            )
-            
             scorer_table["Points"] = (
                 scorer_table["OnePointers"]
                 + scorer_table["TwoPointers"] * 2
             )
-            
+
             scorer_table["TotalPoints"] = (
                 scorer_table["Goals"] * 3
                 + scorer_table["Points"]
             )
-            
+
             scorer_table["Score"] = scorer_table.apply(
-                lambda row: f"{int(row['Goals'])}-{int(row['Points']):02d} ({int(row['TotalPoints'])})",
+                lambda row:
+                f"{int(row['Goals'])}-{int(row['Points']):02d} "
+                f"({int(row['TotalPoints'])})",
                 axis=1
             )
-            
-            scorer_table = scorer_table.rename(columns={"__player_clean__": "Player"})
-            
+
+            scorer_table = scorer_table.rename(
+                columns={
+                    "__player_clean__": "Player"
+                }
+            )
+
             scorer_table = scorer_table.sort_values(
                 by="TotalPoints",
                 ascending=False
             )
-            
-            scorer_table = scorer_table[["Player", "Score"]]
-            
-            st.dataframe(
-                scorer_table,
-                hide_index=True,
-                use_container_width=True,
-                height=308
-            )        
+
+            return scorer_table[
+                ["Player", "Score"]
+            ].reset_index(drop=True)
+
+        bt_scorers = build_team_scorers(
+            scorers_df[
+                scorers_df[cols["team"]]
+                .astype(str)
+                .str.lower()
+                .eq("ballintubber")
+            ].copy()
+        )
+
+        opp_scorers = build_team_scorers(
+            scorers_df[
+                (
+                    scorers_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                    .ne("ballintubber")
+                )
+                & (
+                    ~scorers_df[cols["team"]]
+                    .astype(str)
+                    .str.lower()
+                    .isin([
+                        "1st half",
+                        "2nd half"
+                    ])
+                )
+            ].copy()
+        )
+
+        scorers_display = pd.concat(
+            [
+                bt_scorers.rename(
+                    columns={
+                        "Player": "Ballintubber",
+                        "Score": "BT Score"
+                    }
+                ),
+                opp_scorers.rename(
+                    columns={
+                        "Player": opp_display_name,
+                        "Score": "Opp Score"
+                    }
+                )
+            ],
+            axis=1
+        ).fillna("")
+
+        st.dataframe(
+            scorers_display,
+            hide_index=True,
+            use_container_width=True,
+            height=308
+        )        
     
     with right_col:
         with st.container(border=True):
@@ -2045,7 +2091,7 @@ with tab0:
 
 
     st.markdown("---")
-    st.markdown("### Match Timeline")
+    st.markdown("### Match Events Timeline")
 
     timeline_col1 = st.container()
     
