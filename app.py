@@ -1241,18 +1241,22 @@ with tab0:
         bt_events = bt_df[cols["stat1"]].astype(str).str.lower()
         opp_events = opp_df[cols["stat1"]].astype(str).str.lower()
 
-        bt_goals = bt_events.str.contains("goal", na=False).sum()
+        bt_goals = bt_events.eq("goal").sum()
+        bt_one_pointers = bt_events.eq("point").sum()
+        bt_two_pointers = bt_events.eq("2 pointer").sum()
 
         bt_points = (
-            bt_events.str.contains("point", na=False).sum()
-            + bt_events.str.contains("2 pointer", na=False).sum()
+            bt_one_pointers
+            + (bt_two_pointers * 2)
         )
 
-        opp_goals = opp_events.str.contains("goal", na=False).sum()
+        opp_goals = opp_events.eq("goal").sum()
+        opp_one_pointers = opp_events.eq("point").sum()
+        opp_two_pointers = opp_events.eq("2 pointer").sum()
 
         opp_points = (
-            opp_events.str.contains("point", na=False).sum()
-            + opp_events.str.contains("2 pointer", na=False).sum()
+            opp_one_pointers
+            + (opp_two_pointers * 2)
         )
 
     scoreline_text = (
