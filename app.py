@@ -1264,8 +1264,26 @@ with tab0:
         f"v "
         f"{opp_goals}-{opp_points}"
     )
+
+    bt_total_points = (
+        bt_goals * 3
+        + bt_one_pointers
+        + bt_two_pointers * 2
+    )
+
+    opp_total_points = (
+        opp_goals * 3
+        + opp_one_pointers
+        + opp_two_pointers * 2
+    )
+
     st.markdown(f"### {selected_match_text}")
     st.markdown(f"#### Score: {scoreline_text}")
+    st.caption(
+        f"Score check: Ballintubber {bt_total_points} pts | "
+        f"{opp_display_name if 'opp_display_name' in locals() else 'Opposition'} "
+        f"{opp_total_points} pts"
+    )
 
     st.markdown("---")
     left_col, mid_col, right_col = st.columns([1.2, 1.0, 0.9])
