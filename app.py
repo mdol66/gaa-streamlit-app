@@ -1139,6 +1139,11 @@ with st.sidebar.expander("Dashboard Options", expanded=False):
         value=True,
         key="dashboard_show_red_cards"
     )
+    show_short_kickouts = st.checkbox(
+        "Short Kickouts",
+        value=True,
+        key="dashboard_show_short_kickouts"
+    )
 
 filters_applied = (
     len(match_display_choices) > 0 or
@@ -2062,6 +2067,10 @@ with tab0:
                             f"{opp_short_won} / {opp_short} ({opp_short_retention:.0%})"
                         ]
                     })
+                    if not show_short_kickouts:
+                        kickout_table = kickout_table[
+                            kickout_table["Metric"].str.strip() != "Short Kickouts"
+                        ].copy()
 
                     st.markdown(
                         f"""
