@@ -1107,6 +1107,43 @@ with st.sidebar.form("filter_form"):
         plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 
     apply_filters = st.form_submit_button("Apply filters")
+with st.sidebar.expander("Dashboard Options", expanded=False):
+    st.markdown("**General Play**")
+
+    show_to_won = st.checkbox(
+        "TO Won",
+        value=True,
+        key="dashboard_show_to_won"
+    )
+
+    show_frees_conceded = st.checkbox(
+        "Frees Conceded",
+        value=True,
+        key="dashboard_show_frees_conceded"
+    )
+
+    show_yellow_cards = st.checkbox(
+        "Yellow Cards",
+        value=True,
+        key="dashboard_show_yellow_cards"
+    )
+
+    show_black_cards = st.checkbox(
+        "Black Cards",
+        value=True,
+        key="dashboard_show_black_cards"
+    )
+
+    show_red_cards = st.checkbox(
+        "Red Cards",
+        value=True,
+        key="dashboard_show_red_cards"
+    )
+    show_short_kickouts = st.checkbox(
+        "Short Kickouts",
+        value=True,
+        key="dashboard_show_short_kickouts"
+    )
 
 filters_applied = (
     len(match_display_choices) > 0 or
@@ -1241,18 +1278,22 @@ with tab0:
         bt_events = bt_df[cols["stat1"]].astype(str).str.lower()
         opp_events = opp_df[cols["stat1"]].astype(str).str.lower()
 
-        bt_goals = bt_events.str.contains("goal", na=False).sum()
+        bt_goals = bt_events.eq("goal").sum()
+        bt_one_pointers = bt_events.eq("point").sum()
+        bt_two_pointers = bt_events.eq("2 pointer").sum()
 
         bt_points = (
-            bt_events.str.contains("point", na=False).sum()
-            + bt_events.str.contains("2 pointer", na=False).sum()
+            bt_one_pointers
+            + (bt_two_pointers * 2)
         )
 
-        opp_goals = opp_events.str.contains("goal", na=False).sum()
+        opp_goals = opp_events.eq("goal").sum()
+        opp_one_pointers = opp_events.eq("point").sum()
+        opp_two_pointers = opp_events.eq("2 pointer").sum()
 
         opp_points = (
-            opp_events.str.contains("point", na=False).sum()
-            + opp_events.str.contains("2 pointer", na=False).sum()
+            opp_one_pointers
+            + (opp_two_pointers * 2)
         )
 
     scoreline_text = (
@@ -1260,8 +1301,26 @@ with tab0:
         f"v "
         f"{opp_goals}-{opp_points}"
     )
+
+    bt_total_points = (
+        bt_goals * 3
+        + bt_one_pointers
+        + bt_two_pointers * 2
+    )
+
+    opp_total_points = (
+        opp_goals * 3
+        + opp_one_pointers
+        + opp_two_pointers * 2
+    )
+
     st.markdown(f"### {selected_match_text}")
     st.markdown(f"#### Score: {scoreline_text}")
+    st.caption(
+        f"Score check: Ballintubber {bt_total_points} pts | "
+        f"{opp_display_name if 'opp_display_name' in locals() else 'Opposition'} "
+        f"{opp_total_points} pts"
+    )
 
     st.markdown("---")
     left_col, mid_col, right_col = st.columns([1.2, 1.0, 0.9])
@@ -1614,6 +1673,17 @@ with tab0:
                 comparison_df[opp_name if "opp_name" in locals() else "Opposition"] = (
                     comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
                 )
+                general_play_visibility = {
+                    "TO Won": show_to_won,
+                    "Frees Conceded": show_frees_conceded,
+                    "Yellow Cards": show_yellow_cards,
+                    "Black Cards": show_black_cards,
+                    "Red Cards": show_red_cards
+                }
+
+                comparison_df = comparison_df[
+                    comparison_df["Metric"].map(general_play_visibility).fillna(True)
+                ].copy()
 
         opp_display_name = (
             opp_name if "opp_name" in locals()
@@ -1911,7 +1981,7 @@ with tab0:
 
                     y_vals = pd.to_numeric(ko_df[cols["y"]], errors="coerce")
 
-                    short_zone_pct = (45.0 / 145.0) * 100.0
+                    short_zone_pct = (43.0 / 145.0) * 100.0
                     far_short_start = 100.0 - short_zone_pct
 
                     bt_short_mask = (
@@ -1997,6 +2067,10 @@ with tab0:
                             f"{opp_short_won} / {opp_short} ({opp_short_retention:.0%})"
                         ]
                     })
+                    if not show_short_kickouts:
+                        kickout_table = kickout_table[
+                            kickout_table["Metric"].str.strip() != "Short Kickouts"
+                        ].copy()
 
                     st.markdown(
                         f"""
@@ -4437,3 +4511,4 @@ with tab4:
                     hide_index=True,
                     height=760
                 )
+
