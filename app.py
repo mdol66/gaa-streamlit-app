@@ -1668,6 +1668,17 @@ with tab0:
                 comparison_df[opp_name if "opp_name" in locals() else "Opposition"] = (
                     comparison_df[opp_name if "opp_name" in locals() else "Opposition"].astype(str)
                 )
+                general_play_visibility = {
+                    "TO Won": show_to_won,
+                    "Frees Conceded": show_frees_conceded,
+                    "Yellow Cards": show_yellow_cards,
+                    "Black Cards": show_black_cards,
+                    "Red Cards": show_red_cards
+                }
+
+                comparison_df = comparison_df[
+                    comparison_df["Metric"].map(general_play_visibility).fillna(True)
+                ].copy()
 
         opp_display_name = (
             opp_name if "opp_name" in locals()
