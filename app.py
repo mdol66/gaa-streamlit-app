@@ -1981,7 +1981,7 @@ with tab0:
 
                     y_vals = pd.to_numeric(ko_df[cols["y"]], errors="coerce")
 
-                    short_zone_pct = (45.0 / 145.0) * 100.0
+                    short_zone_pct = (43.0 / 145.0) * 100.0
                     far_short_start = 100.0 - short_zone_pct
 
                     bt_short_mask = (
