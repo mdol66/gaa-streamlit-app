@@ -1107,6 +1107,38 @@ with st.sidebar.form("filter_form"):
         plot_df = plot_df[plot_df[cols["outcome"]].map(normalize_outcome) == outcome_choice]
 
     apply_filters = st.form_submit_button("Apply filters")
+with st.sidebar.expander("Dashboard Options", expanded=False):
+    st.markdown("**General Play**")
+
+    show_to_won = st.checkbox(
+        "TO Won",
+        value=True,
+        key="dashboard_show_to_won"
+    )
+
+    show_frees_conceded = st.checkbox(
+        "Frees Conceded",
+        value=True,
+        key="dashboard_show_frees_conceded"
+    )
+
+    show_yellow_cards = st.checkbox(
+        "Yellow Cards",
+        value=True,
+        key="dashboard_show_yellow_cards"
+    )
+
+    show_black_cards = st.checkbox(
+        "Black Cards",
+        value=True,
+        key="dashboard_show_black_cards"
+    )
+
+    show_red_cards = st.checkbox(
+        "Red Cards",
+        value=True,
+        key="dashboard_show_red_cards"
+    )
 
 filters_applied = (
     len(match_display_choices) > 0 or
