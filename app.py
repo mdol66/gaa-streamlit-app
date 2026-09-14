@@ -466,6 +466,7 @@ def infer_columns(df: pd.DataFrame) -> dict[str, Optional[str]]:
         "time": first_existing(df, [["time"], ["match_time"], ["event_time"], ["timestamp"], ["minute"]], required=False),
         "match": first_existing(df, [["match"], ["match_name"], ["fixture"]], required=False),
         "match_no": first_existing(df, [["match_no"], ["match_number"], ["matchnum"], ["game_no"], ["game_number"]], required=False),
+        "competition": first_existing(df, [["competition"], ["competition_name"], ["comp"]], required=False),
         "stat1": first_existing(df, [["Stat_1"], ["stat_1"], ["stat1"]], required=False),
         "stat2": first_existing(df, [["Stat_2"], ["stat_2"], ["stat2"]], required=False),
     }
@@ -966,6 +967,28 @@ shot_type_filter = "All"
 with st.sidebar.form("filter_form"):
 
     st.markdown("### Match Filters")
+
+    if cols["competition"]:
+        competitions = sorted(
+            plot_df[cols["competition"]]
+            .dropna()
+            .astype(str)
+            .loc[lambda s: s.str.strip() != ""]
+            .unique()
+            .tolist()
+        )
+
+        competition_choices = st.multiselect(
+            "Competition",
+            competitions
+        )
+
+        if competition_choices:
+            plot_df = plot_df[
+                plot_df[cols["competition"]]
+                .astype(str)
+                .isin(competition_choices)
+            ]
 
     if cols["match_no"] and cols["team"]:
         match_info = (
