@@ -466,7 +466,11 @@ def infer_columns(df: pd.DataFrame) -> dict[str, Optional[str]]:
         "time": first_existing(df, [["time"], ["match_time"], ["event_time"], ["timestamp"], ["minute"]], required=False),
         "match": first_existing(df, [["match"], ["match_name"], ["fixture"]], required=False),
         "match_no": first_existing(df, [["match_no"], ["match_number"], ["matchnum"], ["game_no"], ["game_number"]], required=False),
-        "competition": first_existing(df, [["competition"], ["competition_name"], ["comp"]], required=False),
+        "competition": first_existing(
+            df,
+            [["competition"], ["competition_name"], ["competition name"], ["competitionname"], ["comp"]],
+            required=False
+        ),
         "stat1": first_existing(df, [["Stat_1"], ["stat_1"], ["stat1"]], required=False),
         "stat2": first_existing(df, [["Stat_2"], ["stat_2"], ["stat2"]], required=False),
     }
