@@ -1103,10 +1103,10 @@ with st.sidebar.form("filter_form"):
 
         if mode == "Shots":
             shot_mask = stat1_series.str.contains(
-                "goal|point|2 point|wide|short|post|saved",
+                "goal|point|2 point|wide|short|post|saved|45",
                 na=False
             )
-
+            
             plot_df = plot_df[shot_mask]
 
             if cols["stat2"]:
