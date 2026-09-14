@@ -961,6 +961,7 @@ elif cols["outcome"] is None:
     cols["outcome"] = "__plot_category__"
 
 st.sidebar.header("Filters")
+st.sidebar.caption("Competition filter test")
 
 match_display_choices = []
 team_choices = []
