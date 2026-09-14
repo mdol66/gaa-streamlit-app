@@ -961,7 +961,6 @@ elif cols["outcome"] is None:
     cols["outcome"] = "__plot_category__"
 
 st.sidebar.header("Filters")
-st.sidebar.write(df.columns.tolist())
 
 match_display_choices = []
 team_choices = []
